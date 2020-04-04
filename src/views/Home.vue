@@ -1,18 +1,121 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <el-row>
+      <el-select
+        v-model="value"
+        filterable
+        remote
+        placeholder="请搜索料号"
+        :remote-method="remoteMethod"
+        :loading="loading"
+      >
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+    </el-row>
+
+    <el-divider></el-divider>
+
+    <el-row :gutter="20">
+      <el-col
+        :span="6"
+        class="display-card"
+        v-for="(index, material) in materials"
+        :key="'material_' + index"
+        ><MaterialCard :material="material"></MaterialCard
+      ></el-col>
+
+      <el-col :span="6" class="display-card">
+        <div class="add-material-btn">
+          <el-tooltip
+            effect="dark"
+            content="点击添加料号"
+            placement="top-start"
+          >
+            <i class="el-icon-plus" @click="dialogFormVisible = true"></i>
+          </el-tooltip>
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-dialog title="添加料号" :visible.sync="dialogFormVisible" width="500px">
+      <el-form :model="form" label-position="left">
+        <el-form-item label="料号名称" :label-width="formLabelWidth">
+          <el-input v-model="form.materialName" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDialog">取 消</el-button>
+        <el-button type="primary" @click="addMaterial">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import MaterialCard from '@/components/MaterialCard.vue'
 
 export default {
   name: 'Home',
   components: {
-    HelloWorld
+    MaterialCard
+  },
+  data() {
+    return {
+      value: '',
+      dialogFormVisible: false,
+      formLabelWidth: '100px',
+      form: {
+        materialName: ''
+      },
+      materials: [],
+      loading: false,
+      options: []
+    }
+  },
+  methods: {
+    remoteMethod(val) {
+      console.log(val)
+    },
+    addMaterial() {
+      console.log(this.form.materialName)
+      this.closeDialog()
+    },
+    closeDialog() {
+      this.dialogFormVisible = false
+      this.form.materialName = ''
+    }
   }
 }
 </script>
+<style lang="scss">
+.display-card {
+  min-width: 33%;
+}
+
+.add-material-btn i.el-icon-plus {
+  display: block;
+  text-align: center;
+  font-size: 30px;
+  color: #999;
+  border: 1px dashed #999;
+  border-radius: 4px;
+  height: 268px;
+  line-height: 268px;
+  cursor: pointer;
+  margin: 16px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #333;
+    border-color: #333;
+  }
+}
+</style>
