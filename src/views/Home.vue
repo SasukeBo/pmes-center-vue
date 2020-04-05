@@ -25,9 +25,12 @@
       <el-col
         :span="6"
         class="display-card"
-        v-for="(index, material) in materials"
+        v-for="(material, index) in materials"
         :key="'material_' + index"
-        ><MaterialCard :material="material"></MaterialCard
+        ><MaterialCard
+          :materialID="material.id"
+          :pending="material.pending"
+        ></MaterialCard
       ></el-col>
 
       <el-col :span="6" class="display-card">
@@ -51,7 +54,13 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">取 消</el-button>
-        <el-button type="primary" @click="addMaterial">确 定</el-button>
+        <el-button
+          type="primary"
+          @click="addMaterial"
+          :loading="loading"
+          :disable="loading"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -60,11 +69,30 @@
 <script>
 // @ is an alias to /src
 import MaterialCard from '@/components/MaterialCard.vue'
+import gql from 'graphql-tag'
 
 export default {
   name: 'Home',
   components: {
     MaterialCard
+  },
+  apollo: {
+    materials: {
+      query: gql`
+        query($page: Int!, $limit: Int!) {
+          materials(page: $page, limit: $limit) {
+            id
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          page: this.page,
+          limit: this.limit
+        }
+      }
+    }
   },
   data() {
     return {
@@ -74,6 +102,8 @@ export default {
       form: {
         materialName: ''
       },
+      limit: 9,
+      page: 1,
       materials: [],
       loading: false,
       options: []
@@ -84,10 +114,35 @@ export default {
       console.log(val)
     },
     addMaterial() {
-      console.log(this.form.materialName)
-      this.closeDialog()
+      this.loading = true
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($materialName: String!) {
+              addMaterial(materialName: $materialName) {
+                id
+                name
+              }
+            }
+          `,
+          variables: {
+            materialName: this.form.materialName
+          }
+        })
+        .then(({ data }) => {
+          this.$message.success('添加料号成功。')
+          var material = data.addMaterial
+          material.pending = true
+          this.materials.push(material)
+          this.closeDialog()
+        })
+        .catch((e) => {
+          this.$message.error(e.message.replace('GraphQL error: ', ''))
+          this.closeDialog()
+        })
     },
     closeDialog() {
+      this.loading = false
       this.dialogFormVisible = false
       this.form.materialName = ''
     }
@@ -106,10 +161,10 @@ export default {
   color: #999;
   border: 1px dashed #999;
   border-radius: 4px;
-  height: 268px;
-  line-height: 268px;
+  height: 300px;
+  line-height: 300px;
   cursor: pointer;
-  margin: 16px;
+  margin: 0 16px;
   box-sizing: border-box;
   transition: all 0.3s ease;
 
