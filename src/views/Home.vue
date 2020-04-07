@@ -25,11 +25,12 @@
       <el-col
         :span="6"
         class="display-card"
-        v-for="(material, index) in materials"
+        v-for="(material, index) in materialWrap.materials"
         :key="'material_' + index"
         ><MaterialCard
           :materialID="material.id"
-          :pending="material.pending"
+          :pending.sync="material.pending"
+          :fileIDs="material.fileIDs"
         ></MaterialCard
       ></el-col>
 
@@ -63,6 +64,17 @@
         >
       </div>
     </el-dialog>
+
+    <div class="material-pagination">
+      <el-pagination
+        :current-page.sync="page"
+        :page-size="limit"
+        background
+        layout="prev, pager, next"
+        :total="materialWrap.total"
+      >
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -77,12 +89,15 @@ export default {
     MaterialCard
   },
   apollo: {
-    materials: {
+    materialWrap: {
       query: gql`
         query($page: Int!, $limit: Int!) {
-          materials(page: $page, limit: $limit) {
-            id
-            name
+          materialWrap: materials(page: $page, limit: $limit) {
+            total
+            materials {
+              id
+              name
+            }
           }
         }
       `,
@@ -102,9 +117,12 @@ export default {
       form: {
         materialName: ''
       },
-      limit: 9,
+      limit: 21,
       page: 1,
-      materials: [],
+      materialWrap: {
+        materials: [],
+        total: 0
+      },
       loading: false,
       options: []
     }
@@ -119,9 +137,16 @@ export default {
         .mutate({
           mutation: gql`
             mutation($materialName: String!) {
-              addMaterial(materialName: $materialName) {
-                id
-                name
+              response: addMaterial(materialName: $materialName) {
+                material {
+                  id
+                  name
+                }
+                status {
+                  message
+                  pending
+                  fileIDs
+                }
               }
             }
           `,
@@ -129,11 +154,14 @@ export default {
             materialName: this.form.materialName
           }
         })
-        .then(({ data }) => {
-          this.$message.success('添加料号成功。')
-          var material = data.addMaterial
-          material.pending = true
-          this.materials.push(material)
+        .then(({ data: { response } }) => {
+          this.$message.success(response.status.message)
+          if (response.status && response.status.pending) {
+            var material = response.material
+            material.pending = true
+            material.fileIDs = response.status.fileIDs
+            this.materialWrap.materials.push(material)
+          }
           this.closeDialog()
         })
         .catch((e) => {
@@ -172,5 +200,10 @@ export default {
     color: #333;
     border-color: #333;
   }
+}
+
+.material-pagination {
+  text-align: center;
+  padding: 64px 0;
 }
 </style>
