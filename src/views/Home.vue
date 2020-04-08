@@ -165,6 +165,7 @@ export default {
           this.closeDialog()
         })
         .catch((e) => {
+          console.log(e)
           this.$message.error(e.message.replace('GraphQL error: ', ''))
           this.closeDialog()
         })
