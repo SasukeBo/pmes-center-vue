@@ -6,6 +6,7 @@
           <div ref="chart" class="chart"></div>
         </el-col>
         <el-col :span="9">
+          <div style="font-size: 20px; color: #666">过滤条件</div>
           <el-form
             size="small"
             label-position="left"
@@ -45,13 +46,20 @@
     <el-tabs v-model="activeName">
       <el-tab-pane label="尺寸统计" name="sizes-cpk"
         ><SizeAnalyze
-          :materialID="parseInt(id)"
+          :materialID="id"
           :deviceID="deviceID"
           :beginTime="beginTime"
           :endTime="endTime"
         ></SizeAnalyze
       ></el-tab-pane>
-      <el-tab-pane label="产品数据" name="products-data">产品数据</el-tab-pane>
+      <el-tab-pane lazy label="产品数据" name="products-data">
+        <ProductData
+          :materialID="id"
+          :deviceID="deviceID"
+          :beginTime="beginTime"
+          :endTime="endTime"
+        ></ProductData>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -59,10 +67,11 @@
 import gql from 'graphql-tag'
 import echarts from 'echarts'
 import SizeAnalyze from '@/components/SizeAnalyze.vue'
+import ProductData from '@/components/ProductData.vue'
 export default {
   name: 'MaterialView',
   props: ['id'],
-  components: { SizeAnalyze },
+  components: { SizeAnalyze, ProductData },
   data() {
     return {
       activeName: 'sizes-cpk',
@@ -82,13 +91,12 @@ export default {
           trigger: 'item',
           formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
-        color: ['#91c7ae', '#c23531'],
+        color: ['#409EFF', '#E6A23C'],
         series: [
           {
             radius: '65%',
             center: ['50%', '50%'],
             top: 0,
-            animation: false,
             type: 'pie',
             name: '产量',
             data: []

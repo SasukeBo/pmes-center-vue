@@ -1,22 +1,11 @@
 <template>
   <div class="home">
     <el-row>
-      <el-select
-        v-model="value"
-        filterable
-        remote
-        placeholder="请搜索料号"
-        :remote-method="remoteMethod"
-        :loading="loading"
-      >
-        <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
-        </el-option>
-      </el-select>
+      <el-input
+        v-model="search"
+        style="width: 300px;"
+        placeholder="搜索料号"
+      ></el-input>
     </el-row>
 
     <el-divider></el-divider>
@@ -25,7 +14,9 @@
       <el-col
         :span="6"
         class="display-card"
-        v-for="(material, index) in materialWrap.materials"
+        v-for="(material, index) in materialWrap.materials.filter(m =>
+          m.name.includes(search)
+        )"
         :key="'material_' + index"
         ><MaterialCard
           :materialID="material.id"
@@ -68,9 +59,10 @@
     <div class="material-pagination">
       <el-pagination
         :current-page.sync="page"
-        :page-size="limit"
+        :page-size.sync="limit"
+        :page-sizes="[9, 21, 36, 60]"
         background
-        layout="prev, pager, next"
+        layout="sizes, prev, pager, next"
         :total="materialWrap.total"
       >
       </el-pagination>
@@ -111,7 +103,7 @@ export default {
   },
   data() {
     return {
-      value: '',
+      search: '',
       dialogFormVisible: false,
       formLabelWidth: '100px',
       form: {
@@ -123,14 +115,10 @@ export default {
         materials: [],
         total: 0
       },
-      loading: false,
-      options: []
+      loading: false
     }
   },
   methods: {
-    remoteMethod(val) {
-      console.log(val)
-    },
     addMaterial() {
       this.loading = true
       this.$apollo
@@ -164,7 +152,7 @@ export default {
           }
           this.closeDialog()
         })
-        .catch((e) => {
+        .catch(e => {
           console.log(e)
           this.$message.error(e.message.replace('GraphQL error: ', ''))
           this.closeDialog()

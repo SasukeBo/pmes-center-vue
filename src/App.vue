@@ -1,15 +1,12 @@
 <template>
   <div id="app">
     <div class="a-header">
-      <div class="a-header__inner">普创智控生产数据中心</div>
-    </div>
-    <div class="a-breadcrumb">
-      <el-breadcrumb separator="/">
-        <el-breadcrumb-item>首页</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/' }">料号管理</el-breadcrumb-item>
-        <el-breadcrumb-item>活动列表</el-breadcrumb-item>
-        <el-breadcrumb-item>活动详情</el-breadcrumb-item>
-      </el-breadcrumb>
+      <div class="a-header__inner">
+        <span class="title">普创智控生产数据中心</span>
+        <span class="header-link" @click="$router.push({ path: '/' })"
+          >首页</span
+        >
+      </div>
     </div>
     <div class="page-body">
       <router-view></router-view>
@@ -25,7 +22,7 @@
   color: #333;
   background: #fff;
   height: 100%;
-  padding-top: 120px;
+  padding-top: 80px;
   box-sizing: border-box;
 }
 
@@ -51,36 +48,24 @@
   line-height: 60px;
   background: #222;
   color: #fff;
-  font-size: 22px;
-  padding: 0 60px;
   box-sizing: border-box;
   text-align: left;
 }
 
 .a-header .a-header__inner {
-  max-width: 1000px;
-  margin: auto;
-}
+  .title {
+    font-size: 22px;
+    margin: 0 32px;
+    padding-right: 32px;
+  }
 
-#app .a-breadcrumb {
-  position: fixed;
-  top: 60px;
-  width: 100%;
-  z-index: 1000;
-  background: #fff;
-
-  .el-breadcrumb {
-    max-width: 1000px;
-    margin: auto;
-    height: 60px;
-    font-size: 18px;
-    line-height: 60px;
+  .header-link {
+    cursor: pointer;
   }
 }
 
 .page-body {
-  max-width: 1000px;
-  margin: auto;
+  margin: 0 32px;
   padding-top: 16px;
 }
 </style>

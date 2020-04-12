@@ -9,6 +9,17 @@
         ></SizeCard>
       </el-col>
     </el-row>
+    <el-row>
+      <el-pagination
+        background
+        :page-sizes="[9, 21, 30]"
+        layout="sizes, prev, pager, next"
+        :total="sizeWrap.total"
+        :page-size.sync="limit"
+        :current-page.sync="page"
+      >
+      </el-pagination>
+    </el-row>
   </div>
 </template>
 <script>
@@ -18,21 +29,21 @@ export default {
   name: 'SizeAnalyze',
   components: { SizeCard },
   props: {
-    materialID: Number,
-    deviceID: Number,
+    materialID: [String, Number],
+    deviceID: [String, Number],
     beginTime: {
-      type: String,
+      type: Date,
       default: undefined
     },
     endTime: {
-      type: String,
+      type: Date,
       default: undefined
     }
   },
   data() {
     return {
       page: 1,
-      limit: 21,
+      limit: 9,
       sizeWrap: {
         total: 0,
         sizes: []
@@ -65,3 +76,12 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.material-view .size-analyze {
+  margin-bottom: 32px;
+  .el-pagination {
+    margin-top: 16px;
+    text-align: center;
+  }
+}
+</style>
