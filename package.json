@@ -4,12 +4,9 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "prod": "vue-cli-service serve --port=44761 --mode=production",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "apollo": "vue-cli-service apollo:dev --generate-schema",
-    "apollo:schema:generate": "vue-cli-service apollo:schema:generate",
-    "apollo:schema:publish": "vue-cli-service apollo:schema:publish",
-    "apollo:start": "vue-cli-service apollo:start"
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.6.4",
@@ -43,7 +40,6 @@
     "eslint-plugin-vue": "^6.1.2",
     "graphql": "^15.0.0",
     "graphql-tag": "2.9.0",
-    "vue-cli-plugin-apollo": "^0.21.3",
     "vue-template-compiler": "^2.6.11"
   }
 }
