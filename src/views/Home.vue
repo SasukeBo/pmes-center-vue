@@ -14,7 +14,7 @@
       <el-col
         :span="6"
         class="display-card"
-        v-for="(material, index) in materialWrap.materials.filter(m =>
+        v-for="(material, index) in (materialWrap.materials || []).filter(m =>
           m.name.includes(search)
         )"
         :key="'material_' + index"
@@ -41,7 +41,11 @@
     <el-dialog title="添加料号" :visible.sync="dialogFormVisible" width="500px">
       <el-form :model="form" label-position="left">
         <el-form-item label="料号名称" :label-width="formLabelWidth">
-          <el-input v-model="form.materialName" autocomplete="off"></el-input>
+          <el-input
+            @keydown.native.enter.prevent="addMaterial"
+            v-model="form.materialName"
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -148,6 +152,9 @@ export default {
             var material = response.material
             material.pending = true
             material.fileIDs = response.status.fileIDs
+            if (!this.materialWrap.materials) {
+              this.materialWrap.materials = []
+            }
             this.materialWrap.materials.push(material)
           }
           this.closeDialog()
