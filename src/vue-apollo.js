@@ -13,7 +13,7 @@ const AUTH_TOKEN = 'apollo-token'
 
 // Http endpoint
 const httpEndpoint =
-  process.env.VUE_APP_GRAPHQL_HTTP || 'http://localhost:44761/api'
+  process.env.VUE_APP_GRAPHQL_HTTP || 'http://192.168.13.156/api'
 // Files URL root
 export const filesRoot =
   process.env.VUE_APP_FILES_ROOT ||
