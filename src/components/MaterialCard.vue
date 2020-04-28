@@ -92,7 +92,10 @@ export default {
             animation: false,
             type: 'pie',
             name: '产量',
-            data: []
+            data: [],
+            label: {
+              formatter: '{b}({d}%)'
+            }
           }
         ]
       },

@@ -8,10 +8,10 @@
     <div ref="chart" class="size-chart"></div>
     <div class="summary-data">
       <div class="summary-item">
-        <div><span class="label">总数：</span>{{ analyzeSize.total }}</div>
+        <div><span class="label">Total：</span>{{ analyzeSize.total }}</div>
         <div>
-          <span class="label">Normal：</span
-          >{{ parseFloat(analyzeSize.normal).toFixed(3) }}
+          <span class="label">Average：</span
+          >{{ parseFloat(analyzeSize.avg).toFixed(3) }}
         </div>
       </div>
 
@@ -23,6 +23,17 @@
         <div>
           <span class="label">CPK：</span
           >{{ parseFloat(analyzeSize.cpk).toFixed(3) }}
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div>
+          <span class="label">UpperLimit：</span
+          >{{ parseFloat(size.upperLimit).toFixed(3) }}
+        </div>
+        <div>
+          <span class="label">LowerLimit：</span
+          >{{ parseFloat(size.lowerLimit).toFixed(3) }}
         </div>
       </div>
     </div>
@@ -53,7 +64,7 @@ export default {
             ng
             cp
             cpk
-            normal
+            avg
             dataset
             status {
               message
@@ -77,13 +88,15 @@ export default {
   data() {
     return {
       mychart: undefined,
+      gt: 0,
+      lt: 0,
       analyzeSize: {
         total: 0,
         ok: 0,
         ng: 0,
         cp: 0,
         cpk: 0,
-        normal: 0,
+        avg: 0,
         dataset: {
           values: [],
           freq: []
@@ -100,10 +113,7 @@ export default {
           padding: 24
         },
         color: ['#409EFF', '#E6A23C'],
-        tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b} : {c}'
-        },
+        tooltip: {},
         xAxis: {
           type: 'category'
         },
@@ -113,7 +123,18 @@ export default {
         series: [
           {
             name: '检测值频度',
-            type: 'bar'
+            type: 'bar',
+            markLine: {
+              symbol: ['none', 'none'],
+              label: { show: true, position: 'end' },
+              tooltip: {
+                show: false
+              }
+            },
+            tooltip: {
+              trigger: 'item',
+              formatter: '{a} <br/>{b} : {c}'
+            }
           },
           {
             name: '良率',
@@ -123,6 +144,10 @@ export default {
             z: 100,
             tooltip: {
               formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            animation: false,
+            label: {
+              formatter: '{b}({d}%)'
             }
           }
         ]
@@ -133,12 +158,73 @@ export default {
     analyzeSize: {
       immediate: true,
       handler: function(val) {
+        this.option.title.text = `${
+          this.size.name
+        } (${this.size.norminal.toFixed(2)})`
         this.option.xAxis.data = val.dataset.values
         this.option.series[0].data = val.dataset.freqs
         this.option.series[1].data = [
           { name: 'OK', value: val.ok },
           { name: 'NG', value: val.ng }
         ]
+
+        var size = this.size
+        var markLineData = []
+        var values = val.dataset.values
+        var gt = values.findIndex(i => i >= size.lowerLimit)
+        if (gt < 0 && values[0] >= size.lowerLimit) {
+          gt = 0
+        }
+        if (gt >= 0) {
+          markLineData.push({
+            xAxis: gt,
+            lineStyle: { color: '#333', type: 'dashed', width: 2 },
+            label: {
+              formatter: function() {
+                return size.lowerLimit
+              }
+            }
+          })
+        }
+        this.gt = gt
+        var lt = values.findIndex(i => i > size.upperLimit) - 1
+        if (lt < 0 && values[values.length - 1] <= size.upperLimit) {
+          lt = values.length - 1
+        }
+        if (lt >= 0) {
+          markLineData.push({
+            xAxis: lt,
+            lineStyle: { color: '#333', type: 'dashed', width: 2 },
+            label: {
+              formatter: function() {
+                return size.upperLimit
+              }
+            }
+          })
+        }
+        this.lt = lt
+
+        this.option.series[0].markLine.data = markLineData
+        this.option.series[0].markArea = {
+          itemStyle: {
+            color: 'rgba(0,255,0,0.3)'
+          },
+          data: [
+            [
+              {
+                name: '合格区间',
+                xAxis: gt,
+                label: {
+                  show: false
+                }
+              },
+              {
+                xAxis: lt
+              }
+            ]
+          ]
+        }
+
         if (this.mychart) {
           this.mychart.setOption(this.option)
         }
@@ -178,7 +264,6 @@ export default {
   },
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
-    this.option.title.text = `尺寸 ${this.size.name}`
   }
 }
 </script>

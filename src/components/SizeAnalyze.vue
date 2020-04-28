@@ -17,6 +17,7 @@
         :total="sizeWrap.total"
         :page-size.sync="limit"
         :current-page.sync="page"
+        @current-change="handlePageChange"
       >
       </el-pagination>
     </el-row>
@@ -60,6 +61,7 @@ export default {
               id
               name
               upperLimit
+              norminal
               lowerLimit
             }
           }
@@ -72,6 +74,19 @@ export default {
           materialID: this.materialID
         }
       }
+    }
+  },
+  created() {
+    if (this.$route.query.page) {
+      this.page = parseInt(this.$route.query.page)
+    }
+  },
+  methods: {
+    handlePageChange(val) {
+      console.log(val)
+      this.$router
+        .replace({ path: this.$route.path, query: { page: val } })
+        .catch(() => undefined)
     }
   }
 }
