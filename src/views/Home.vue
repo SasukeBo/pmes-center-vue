@@ -21,7 +21,7 @@
         ><MaterialCard
           :materialID="material.id"
           :pending.sync="material.pending"
-          :fileIDs="material.fileIDs"
+          :fileIDs.sync="material.fileIDs"
         ></MaterialCard
       ></el-col>
 

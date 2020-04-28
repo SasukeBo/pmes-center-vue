@@ -50,9 +50,15 @@ export default {
             }
             ok
             ng
+            status {
+              message
+              pending
+              fileIDs
+            }
           }
         }
       `,
+      fetchPolicy: 'network-only',
       variables() {
         return {
           input: {
@@ -90,56 +96,73 @@ export default {
           }
         ]
       },
-      analyzeMaterial: undefined
+      analyzeMaterial: undefined,
+      needFetch: undefined
     }
   },
   watch: {
-    pending(nv) {
-      if (!nv) {
-        clearInterval(this.interval)
+    pending: {
+      immediate: true,
+      handler: function(nv) {
+        if (!nv) {
+          clearInterval(this.interval)
+          this.needFetch = undefined
+          if (this.$apollo.queries.analyzeMaterial) {
+            console.log('start analyzeMaterial')
+            this.$apollo.queries.analyzeMaterial.start()
+          }
+        } else {
+          this.interval = setInterval(() => {
+            this.$apollo
+              .query({
+                query: gql`
+                  query($fileIDs: [Int]!) {
+                    finished: dataFetchFinishPercent(fileIDs: $fileIDs)
+                  }
+                `,
+                variables: {
+                  fileIDs: this.fileIDs || this.needFetch
+                },
+                fetchPolicy: 'network-only'
+              })
+              .then(({ data }) => {
+                this.finished = data.finished * 100
+                if (data.finished === 1) {
+                  setTimeout(() => {
+                    this.$emit('update:pending', false)
+                  }, 500)
+                }
+              })
+              .catch(e => {
+                console.log(e.message)
+              })
+          }, 500)
+        }
       }
     },
     analyzeMaterial(nv) {
+      if (nv.status && nv.status.pending) {
+        this.needFetch = nv.status.fileIDs
+        this.$emit('update:pending', nv.status.pending)
+        return
+      }
       if (nv) {
-        this.option.series[0].data = [
-          { name: 'OK', value: this.analyzeMaterial.ok },
-          { name: 'NG', value: this.analyzeMaterial.ng }
-        ]
-        this.option.title.text = `料号${nv.material.name}`
-        this.mychart.setOption(this.option)
+        this.renderChart()
       }
     }
   },
   mounted() {
     this.mychart = echarts.init(this.$refs['chart-mount'])
   },
-  created() {
-    if (this.pending) {
-      this.interval = setInterval(() => {
-        this.$apollo
-          .query({
-            query: gql`
-              query($fileIDs: [Int]!) {
-                finished: dataFetchFinishPercent(fileIDs: $fileIDs)
-              }
-            `,
-            variables: {
-              fileIDs: this.fileIDs
-            },
-            fetchPolicy: 'network-only'
-          })
-          .then(({ data }) => {
-            this.finished = data.finished * 100
-            if (data.finished === 1) {
-              setTimeout(() => {
-                this.$emit('update:pending', false)
-              }, 500)
-            }
-          })
-          .catch((e) => {
-            console.log(e.message)
-          })
-      }, 500)
+  methods: {
+    renderChart() {
+      var result = this.analyzeMaterial
+      this.option.series[0].data = [
+        { name: 'OK', value: result.ok },
+        { name: 'NG', value: result.ng }
+      ]
+      this.option.title.text = `料号${result.material.name}`
+      this.mychart.setOption(this.option)
     }
   }
 }
