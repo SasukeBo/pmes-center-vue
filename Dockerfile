@@ -1,10 +1,8 @@
 # Use the official image as a parent image.
 FROM vuejs/ci
-# Copy static file
-COPY . /server
 
-WORKDIR /server
+RUN mkdir /server
 
-RUN yarn install
+RUN npm install -g serve
 
-CMD ["yarn", "prod"]
+CMD ["serve", "-s", "/server"]
