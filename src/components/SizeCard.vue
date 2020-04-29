@@ -11,29 +11,29 @@
         <div><span class="label">Total：</span>{{ analyzeSize.total }}</div>
         <div>
           <span class="label">Average：</span
-          >{{ parseFloat(analyzeSize.avg).toFixed(3) }}
+          >{{ parseFloat(analyzeSize.avg).toFixed(2) }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">CP：</span
-          >{{ parseFloat(analyzeSize.cp).toFixed(3) }}
+          >{{ parseFloat(analyzeSize.cp).toFixed(2) }}
         </div>
         <div>
           <span class="label">CPK：</span
-          >{{ parseFloat(analyzeSize.cpk).toFixed(3) }}
+          >{{ parseFloat(analyzeSize.cpk).toFixed(2) }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">UpperLimit：</span
-          >{{ parseFloat(size.upperLimit).toFixed(3) }}
+          >{{ parseFloat(size.upperLimit).toFixed(2) }}
         </div>
         <div>
           <span class="label">LowerLimit：</span
-          >{{ parseFloat(size.lowerLimit).toFixed(3) }}
+          >{{ parseFloat(size.lowerLimit).toFixed(2) }}
         </div>
       </div>
     </div>
@@ -181,7 +181,7 @@ export default {
             lineStyle: { color: '#333', type: 'dashed', width: 2 },
             label: {
               formatter: function() {
-                return size.lowerLimit
+                return size.lowerLimit.toFixed(2)
               }
             }
           })
@@ -197,7 +197,7 @@ export default {
             lineStyle: { color: '#333', type: 'dashed', width: 2 },
             label: {
               formatter: function() {
-                return size.upperLimit
+                return size.upperLimit.toFixed(2)
               }
             }
           })
