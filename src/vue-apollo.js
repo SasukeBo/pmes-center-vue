@@ -11,9 +11,9 @@ Vue.use(VueApollo)
 // Name of the localStorage item
 const AUTH_TOKEN = 'apollo-token'
 
+const APIHost = process.env.API_HOST || 'localhost'
 // Http endpoint
-const httpEndpoint =
-  process.env.VUE_APP_GRAPHQL_HTTP || 'http://192.168.13.156/api'
+const httpEndpoint = 'http://' + APIHost + '/api'
 // Files URL root
 export const filesRoot =
   process.env.VUE_APP_FILES_ROOT ||

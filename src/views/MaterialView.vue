@@ -146,7 +146,8 @@ export default {
             endTime: this.endTime
           }
         }
-      }
+      },
+      fetchPolicy: 'network-only'
     }
   },
   mounted() {
