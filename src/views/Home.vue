@@ -102,7 +102,8 @@ export default {
           page: this.page,
           limit: this.limit
         }
-      }
+      },
+      fetchPolicy: 'network-only'
     }
   },
   data() {

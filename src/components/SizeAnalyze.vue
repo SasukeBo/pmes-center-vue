@@ -5,7 +5,9 @@
         <SizeCard
           :size="size"
           :beginTime="beginTime"
+          :deviceID="deviceID"
           :endTime="endTime"
+          :disableFetch="disableFetch"
         ></SizeCard>
       </el-col>
     </el-row>
@@ -32,6 +34,7 @@ export default {
   props: {
     materialID: [String, Number],
     deviceID: [String, Number],
+    disableFetch: Boolean,
     beginTime: {
       type: Date,
       default: undefined
@@ -83,7 +86,6 @@ export default {
   },
   methods: {
     handlePageChange(val) {
-      console.log(val)
       this.$router
         .replace({ path: this.$route.path, query: { page: val } })
         .catch(() => undefined)

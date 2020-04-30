@@ -1,5 +1,13 @@
 <template>
-  <div class="material-view">
+  <div
+    class="material-view"
+    v-loading="
+      materialResult.status.pending || $apollo.queries.materialResult.loading
+    "
+    element-loading-text="正在获取数据 ..."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
+  >
     <div class="material-header">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -36,6 +44,7 @@
                 range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
+                @change="handleDateDurationChange"
               >
               </el-date-picker>
             </el-form-item>
@@ -50,6 +59,7 @@
           :deviceID="deviceID"
           :beginTime="beginTime"
           :endTime="endTime"
+          :disableFetch="materialResult.status.pending"
         ></SizeAnalyze
       ></el-tab-pane>
       <el-tab-pane lazy label="产品数据" name="products-data">
@@ -80,11 +90,18 @@ export default {
         material: {},
         ok: 0,
         ng: 0,
-        status: {}
+        status: {
+          message: '',
+          pending: false,
+          fileIDs: []
+        }
       },
+      interval: undefined,
       devices: [],
       deviceID: undefined,
       timeDuration: [],
+      beginTime: undefined,
+      endTime: undefined,
       option: {
         title: {},
         tooltip: {
@@ -134,6 +151,11 @@ export default {
             }
             ok
             ng
+            status {
+              message
+              pending
+              fileIDs
+            }
           }
         }
       `,
@@ -146,36 +168,68 @@ export default {
             endTime: this.endTime
           }
         }
-      },
-      fetchPolicy: 'network-only'
+      }
     }
   },
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
   },
-  computed: {
-    beginTime() {
-      if (this.timeDuration && this.timeDuration.length > 0) {
-        return this.timeDuration[0]
-      }
-      return undefined
-    },
-    endTime() {
-      if (this.timeDuration && this.timeDuration.length > 1) {
-        return this.timeDuration[1]
-      }
-      return undefined
-    }
-  },
   watch: {
+    'materialResult.status.pending': function(pending) {
+      if (!pending) {
+        clearInterval(this.interval)
+        if (this.$apollo.queries.materialResult) {
+          console.log('start analyzeMaterial')
+          this.$apollo.queries.materialResult.start()
+        }
+      } else {
+        this.interval = setInterval(() => {
+          if (!this.materialResult.status.fileIDs) {
+            return
+          }
+          this.$apollo
+            .query({
+              query: gql`
+                query($fileIDs: [Int]!) {
+                  finished: dataFetchFinishPercent(fileIDs: $fileIDs)
+                }
+              `,
+              variables: {
+                fileIDs: this.materialResult.status.fileIDs
+              },
+              fetchPolicy: 'network-only'
+            })
+            .then(({ data }) => {
+              if (data.finished === 1) {
+                this.materialResult.status.pending = false
+              }
+            })
+            .catch(e => {
+              console.log(e.message)
+            })
+        }, 500)
+      }
+    },
     materialResult(nv) {
-      if (nv) {
+      if (nv && !nv.status.pending) {
         this.option.series[0].data = [
           { name: 'OK', value: nv.ok },
           { name: 'NG', value: nv.ng }
         ]
         this.option.title.text = `料号${nv.material.name}`
         this.mychart.setOption(this.option)
+      }
+    }
+  },
+  methods: {
+    handleDateDurationChange() {
+      this.materialResult.status.pending = true
+      if (this.timeDuration && this.timeDuration.length > 0) {
+        this.beginTime = this.timeDuration[0]
+      }
+
+      if (this.timeDuration && this.timeDuration.length > 1) {
+        this.endTime = this.timeDuration[1]
       }
     }
   }
@@ -185,6 +239,10 @@ export default {
 .material-view {
   .chart {
     height: 160px;
+  }
+
+  .el-loading-spinner {
+    top: 10%;
   }
 }
 </style>

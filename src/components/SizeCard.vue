@@ -2,7 +2,7 @@
   <div
     class="size-card"
     v-loading="
-      $apollo.queries.analyzeSize.loading || analyzeSize.status.pending
+      $apollo.queries.analyzeSize.loading
     "
   >
     <div ref="chart" class="size-chart"></div>
@@ -57,6 +57,8 @@ import gql from 'graphql-tag'
 export default {
   props: {
     size: Object,
+    disableFetch: Boolean,
+    deviceID: [Number, String],
     beginTime: {
       type: Date,
       default: undefined
@@ -81,22 +83,21 @@ export default {
             min
             max
             dataset
-            status {
-              message
-              pending
-              fileIDs
-            }
           }
         }
       `,
       variables() {
         return {
           search: {
+            deviceID: this.deviceID,
             sizeID: this.size.id,
             beginTime: this.beginTime,
             endTime: this.endTime
           }
         }
+      },
+      skip() {
+        return this.disableFetch
       }
     }
   },
@@ -118,11 +119,6 @@ export default {
         dataset: {
           values: [],
           freq: []
-        },
-        status: {
-          pending: false,
-          message: '',
-          fileIDs: []
         }
       },
       intervalFetch: undefined,
@@ -311,37 +307,6 @@ export default {
 
         if (this.mychart) {
           this.mychart.setOption(this.option)
-        }
-      }
-    },
-    'analyzeSize.status.pending': {
-      immediate: true,
-      handler: function(val) {
-        if (val) {
-          this.intervalFetch = setInterval(() => {
-            this.$apollo
-              .query({
-                query: gql`
-                  query($fileIDs: [Int]!) {
-                    finished: dataFetchFinishPercent(fileIDs: $fileIDs)
-                  }
-                `,
-                variables: {
-                  fileIDs: this.fileIDs
-                },
-                fetchPolicy: 'network-only'
-              })
-              .then(({ data }) => {
-                this.finished = data.finished * 100
-                if (data.finished === 1) {
-                  clearInterval(this.intervalFetch)
-                  this.$apollo.queries.analyzeSize.refresh()
-                }
-              })
-              .catch(e => {
-                console.log(e.message)
-              })
-          })
         }
       }
     }
