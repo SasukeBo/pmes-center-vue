@@ -13,6 +13,10 @@
           <span class="label">Average：</span
           >{{ parseFloat(analyzeSize.avg).toFixed(2) }}
         </div>
+        <div>
+          <span class="label">Max：</span
+          >{{ parseFloat(analyzeSize.max).toFixed(2) }}
+        </div>
       </div>
 
       <div class="summary-item">
@@ -24,6 +28,10 @@
           <span class="label">CPK：</span
           >{{ parseFloat(analyzeSize.cpk).toFixed(2) }}
         </div>
+        <div>
+          <span class="label">Min：</span
+          >{{ parseFloat(analyzeSize.min).toFixed(2) }}
+        </div>
       </div>
 
       <div class="summary-item">
@@ -34,6 +42,10 @@
         <div>
           <span class="label">LowerLimit：</span
           >{{ parseFloat(size.lowerLimit).toFixed(2) }}
+        </div>
+        <div>
+          <span class="label">SD：</span
+          >{{ parseFloat(analyzeSize.s).toFixed(2) }}
         </div>
       </div>
     </div>
@@ -60,11 +72,14 @@ export default {
         query($search: Search!) {
           analyzeSize(searchInput: $search) {
             total
+            s
             ok
             ng
             cp
             cpk
             avg
+            min
+            max
             dataset
             status {
               message
@@ -92,11 +107,14 @@ export default {
       lt: 0,
       analyzeSize: {
         total: 0,
+        s: 0,
         ok: 0,
         ng: 0,
         cp: 0,
         cpk: 0,
         avg: 0,
+        min: 0,
+        max: 0,
         dataset: {
           values: [],
           freq: []
