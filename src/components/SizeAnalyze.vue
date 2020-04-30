@@ -1,7 +1,7 @@
 <template>
   <div class="size-analyze">
     <el-row :gutter="20">
-      <el-col :span="8" v-for="(size, i) in sizeWrap.sizes" :key="'size_' + i">
+      <el-col :span="12" v-for="(size, i) in sizeWrap.sizes" :key="'size_' + i">
         <SizeCard
           :size="size"
           :beginTime="beginTime"
@@ -12,7 +12,7 @@
     <el-row>
       <el-pagination
         background
-        :page-sizes="[9, 21, 30]"
+        :page-sizes="[10, 20, 30]"
         layout="sizes, prev, pager, next"
         :total="sizeWrap.total"
         :page-size.sync="limit"
@@ -44,7 +44,7 @@ export default {
   data() {
     return {
       page: 1,
-      limit: 9,
+      limit: 10,
       sizeWrap: {
         total: 0,
         sizes: []
