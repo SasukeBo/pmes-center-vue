@@ -148,9 +148,9 @@ export default {
         })
         .then(({ data: { response } }) => {
           this.$message.success(response.status.message)
-          if (response.status && response.status.pending) {
+          if (response.status) {
             var material = response.material
-            material.pending = true
+            material.pending = response.status.pending
             material.fileIDs = response.status.fileIDs
             if (!this.materialWrap.materials) {
               this.materialWrap.materials = []

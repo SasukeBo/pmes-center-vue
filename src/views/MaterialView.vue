@@ -91,7 +91,7 @@ export default {
           trigger: 'item',
           formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
-        color: ['#409EFF', '#E6A23C'],
+        color: ['#409EFF', '#EC1B1B'],
         series: [
           {
             radius: '65%',

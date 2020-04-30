@@ -45,7 +45,7 @@
         </div>
         <div>
           <span class="label">SD：</span
-          >{{ parseFloat(analyzeSize.s).toFixed(2) }}
+          >{{ parseFloat(analyzeSize.s).toFixed(6) }}
         </div>
       </div>
     </div>
@@ -128,27 +128,59 @@ export default {
       intervalFetch: undefined,
       option: {
         title: {
-          padding: 24
+          padding: [0, 24],
+          top: 0
         },
-        color: ['#409EFF', '#E6A23C'],
-        tooltip: {},
+        color: ['#409EFF', '#EC1B1B'],
+        tooltip: {
+          position: function(pt) {
+            return [pt[0], 130]
+          }
+        },
+        grid: {
+          top: 100
+        },
         xAxis: {
-          type: 'category'
+          type: 'category',
+          axisPointer: {
+            show: true,
+            snap: true,
+            lineStyle: {
+              color: '#004E52',
+              opacity: 0.5,
+              width: 2
+            },
+            label: {
+              show: true
+            },
+            handle: {
+              show: true,
+              color: '#004E52',
+              size: 20,
+              margin: 36
+            }
+          }
         },
-        yAxis: {
-          type: 'value'
-        },
+        yAxis: [
+          {
+            type: 'value',
+            boundaryGap: false,
+            splitLine: {
+              show: false
+            }
+          },
+          {
+            type: 'value',
+            boundaryGap: false,
+            splitLine: {
+              show: false
+            }
+          }
+        ],
         series: [
           {
             name: '检测值频度',
             type: 'bar',
-            markLine: {
-              symbol: ['none', 'none'],
-              label: { show: true, position: 'end' },
-              tooltip: {
-                show: false
-              }
-            },
             tooltip: {
               trigger: 'item',
               formatter: '{a} <br/>{b} : {c}'
@@ -157,8 +189,8 @@ export default {
           {
             name: '良率',
             type: 'pie',
-            center: ['80%', '25%'],
-            radius: '28%',
+            center: ['50%', '15%'],
+            radius: '20%',
             z: 100,
             tooltip: {
               formatter: '{a} <br/>{b} : {c} ({d}%)'
@@ -166,6 +198,29 @@ export default {
             animation: false,
             label: {
               formatter: '{b}({d}%)'
+            },
+            labelLine: {
+              length: 5,
+              length2: 5
+            }
+          },
+          {
+            name: '正态分布',
+            type: 'line',
+            yAxisIndex: 1,
+            boundaryGap: false,
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              color: '#ec1b1b',
+              width: 1
+            },
+            markLine: {
+              symbol: ['none', 'none'],
+              label: { show: true, position: 'end' },
+              tooltip: {
+                show: false
+              }
             }
           }
         ]
@@ -185,45 +240,56 @@ export default {
           { name: 'OK', value: val.ok },
           { name: 'NG', value: val.ng }
         ]
+        this.option.series[2].data = val.dataset.distribution
+        this.option.xAxis.axisPointer.label.formatter = function(params) {
+          var i = val.dataset.values.findIndex(i => `${i}` === params.value)
+          if (i >= 0) {
+            return `${params.value}: ${val.dataset.freqs[i]}`
+          }
+
+          return ''
+        }
 
         var size = this.size
         var markLineData = []
         var values = val.dataset.values
-        var gt = values.findIndex(i => i >= size.lowerLimit)
+        var _u3s = val.avg - 3 * val.s
+        var u3s = val.avg + 3 * val.s
+        var gt = values.findIndex(i => i >= _u3s)
         if (gt < 0 && values[0] >= size.lowerLimit) {
           gt = 0
         }
         if (gt >= 0) {
           markLineData.push({
             xAxis: gt,
-            lineStyle: { color: '#333', type: 'dashed', width: 2 },
+            lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
             label: {
               formatter: function() {
-                return size.lowerLimit.toFixed(2)
+                return `μ-3σ (${_u3s.toFixed(3)})`
               }
             }
           })
         }
         this.gt = gt
-        var lt = values.findIndex(i => i > size.upperLimit) - 1
+        var lt = values.findIndex(i => i > u3s) - 1
         if (lt < 0 && values[values.length - 1] <= size.upperLimit) {
           lt = values.length - 1
         }
         if (lt >= 0) {
           markLineData.push({
             xAxis: lt,
-            lineStyle: { color: '#333', type: 'dashed', width: 2 },
+            lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
             label: {
               formatter: function() {
-                return size.upperLimit.toFixed(2)
+                return `μ+3σ (${u3s.toFixed(3)})`
               }
             }
           })
         }
         this.lt = lt
 
-        this.option.series[0].markLine.data = markLineData
-        this.option.series[0].markArea = {
+        this.option.series[2].markLine.data = markLineData
+        this.option.series[2].markArea = {
           itemStyle: {
             color: 'rgba(0,255,0,0.3)'
           },
@@ -293,7 +359,7 @@ export default {
   border-radius: 4px;
 
   .size-chart {
-    height: 250px;
+    height: 300px;
   }
 
   .summary-data {
@@ -307,6 +373,7 @@ export default {
 
       .label {
         color: #333;
+        font-weight: bold;
       }
     }
   }

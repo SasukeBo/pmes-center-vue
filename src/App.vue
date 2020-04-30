@@ -2,7 +2,7 @@
   <div id="app">
     <div class="a-header">
       <div class="a-header__inner">
-        <span class="title">普创智控生产数据中心</span>
+        <span class="title">富诚达生产数据中心</span>
         <span class="header-link" @click="$router.push({ path: '/' })"
           >首页</span
         >

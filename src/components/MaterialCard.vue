@@ -84,7 +84,7 @@ export default {
           trigger: 'item',
           formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
-        color: ['#409EFF', '#E6A23C'],
+        color: ['#409EFF', '#EC1B1B'],
         series: [
           {
             radius: '50%',
@@ -177,6 +177,7 @@ export default {
   padding: 8px;
   box-sizing: border-box;
   position: relative;
+  margin-bottom: 24px;
 
   .loading-data-mask {
     height: 100%;
