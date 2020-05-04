@@ -1,46 +1,49 @@
 <template>
-  <div class="size-card" v-loading="$apollo.queries.analyzeSize.loading">
+  <div class="size-card" v-loading="loading">
     <div ref="chart" class="size-chart"></div>
     <div class="summary-data">
       <div class="summary-item">
-        <div><span class="label">Total：</span>{{ analyzeSize.total }}</div>
+        <div>
+          <span class="label">Total：</span
+          >{{ analyzeSize ? analyzeSize.total : 0 }}
+        </div>
         <div>
           <span class="label">Average：</span
-          >{{ parseFloat(analyzeSize.avg).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.avg).toFixed(2) : 0 }}
         </div>
         <div>
           <span class="label">Max：</span
-          >{{ parseFloat(analyzeSize.max).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.max).toFixed(2) : 0 }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">CP：</span
-          >{{ parseFloat(analyzeSize.cp).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.cp).toFixed(2) : 0 }}
         </div>
         <div>
           <span class="label">CPK：</span
-          >{{ parseFloat(analyzeSize.cpk).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.cpk).toFixed(2) : 0 }}
         </div>
         <div>
           <span class="label">Min：</span
-          >{{ parseFloat(analyzeSize.min).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.min).toFixed(2) : 0 }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">UpperLimit：</span
-          >{{ parseFloat(size.upperLimit).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(size.upperLimit).toFixed(2) : 0 }}
         </div>
         <div>
           <span class="label">LowerLimit：</span
-          >{{ parseFloat(size.lowerLimit).toFixed(2) }}
+          >{{ analyzeSize ? parseFloat(size.lowerLimit).toFixed(2) : 0 }}
         </div>
         <div>
           <span class="label">SD：</span
-          >{{ parseFloat(analyzeSize.s).toFixed(6) }}
+          >{{ analyzeSize ? parseFloat(analyzeSize.s).toFixed(6) : 0 }}
         </div>
       </div>
     </div>
@@ -94,7 +97,15 @@ export default {
       skip() {
         return !this.canFetch
       },
+      error(e) {
+        this.error = '系统错误，加载失败'
+      },
       fetchPolicy: 'network-only'
+    }
+  },
+  computed: {
+    loading() {
+      return this.$apollo.queries.analyzeSize.loading && !this.error
     }
   },
   data() {
@@ -102,21 +113,8 @@ export default {
       mychart: undefined,
       gt: 0,
       lt: 0,
-      analyzeSize: {
-        total: 0,
-        s: 0,
-        ok: 0,
-        ng: 0,
-        cp: 0,
-        cpk: 0,
-        avg: 0,
-        min: 0,
-        max: 0,
-        dataset: {
-          values: [],
-          freq: []
-        }
-      },
+      error: '',
+      analyzeSize: undefined,
       intervalFetch: undefined,
       option: {
         title: {
@@ -223,92 +221,116 @@ export default {
     analyzeSize: {
       immediate: true,
       handler: function(val) {
-        this.option.title.text = `${
-          this.size.name
-        } (${this.size.norminal.toFixed(2)})`
-        this.option.xAxis.data = val.dataset.values
-        this.option.series[0].data = val.dataset.freqs
-        this.option.series[1].data = [
-          { name: 'OK', value: val.ok },
-          { name: 'NG', value: val.ng }
-        ]
-        this.option.series[2].data = val.dataset.distribution
-        this.option.xAxis.axisPointer.label.formatter = function(params) {
-          var i = val.dataset.values.findIndex(i => `${i}` === params.value)
-          if (i >= 0) {
-            return `${params.value}: ${val.dataset.freqs[i]}`
+        if (val) {
+          this.option.title.text = `${
+            this.size.name
+          } (${this.size.norminal.toFixed(2)})`
+          this.option.xAxis.data = val.dataset.values
+          this.option.series[0].data = val.dataset.freqs
+          this.option.series[1].data = [
+            { name: 'OK', value: val.ok },
+            { name: 'NG', value: val.ng }
+          ]
+          this.option.series[2].data = val.dataset.distribution
+          this.option.xAxis.axisPointer.label.formatter = function(params) {
+            var i = val.dataset.values.findIndex(i => `${i}` === params.value)
+            if (i >= 0) {
+              return `${params.value}: ${val.dataset.freqs[i]}`
+            }
+
+            return ''
           }
 
-          return ''
-        }
-
-        var size = this.size
-        var markLineData = []
-        var values = val.dataset.values
-        var _u3s = val.avg - 3 * val.s
-        var u3s = val.avg + 3 * val.s
-        var gt = values.findIndex(i => i >= _u3s)
-        if (gt < 0 && values[0] >= size.lowerLimit) {
-          gt = 0
-        }
-        if (gt >= 0) {
-          markLineData.push({
-            xAxis: gt,
-            lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
-            label: {
-              formatter: function() {
-                return `μ-3σ (${_u3s.toFixed(3)})`
-              }
-            }
-          })
-        }
-        this.gt = gt
-        var lt = values.findIndex(i => i > u3s) - 1
-        if (lt < 0 && values[values.length - 1] <= size.upperLimit) {
-          lt = values.length - 1
-        }
-        if (lt >= 0) {
-          markLineData.push({
-            xAxis: lt,
-            lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
-            label: {
-              formatter: function() {
-                return `μ+3σ (${u3s.toFixed(3)})`
-              }
-            }
-          })
-        }
-        this.lt = lt
-
-        this.option.series[2].markLine.data = markLineData
-        this.option.series[2].markArea = {
-          itemStyle: {
-            color: 'rgba(0,255,0,0.3)'
-          },
-          data: [
-            [
-              {
-                name: '合格区间',
-                xAxis: gt,
-                label: {
-                  show: false
+          var size = this.size
+          var markLineData = []
+          var values = val.dataset.values
+          var _u3s = val.avg - 3 * val.s
+          var u3s = val.avg + 3 * val.s
+          var gt = values.findIndex(i => i >= _u3s)
+          if (gt < 0 && values[0] >= size.lowerLimit) {
+            gt = 0
+          }
+          if (gt >= 0) {
+            markLineData.push({
+              xAxis: gt,
+              lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
+              label: {
+                formatter: function() {
+                  return `μ-3σ (${_u3s.toFixed(3)})`
                 }
-              },
-              {
-                xAxis: lt
               }
-            ]
-          ]
-        }
+            })
+          }
+          this.gt = gt
+          var lt = values.findIndex(i => i > u3s) - 1
+          if (lt < 0 && values[values.length - 1] <= size.upperLimit) {
+            lt = values.length - 1
+          }
+          if (lt >= 0) {
+            markLineData.push({
+              xAxis: lt,
+              lineStyle: { color: '#ec1b1b', type: 'solid', width: 1 },
+              label: {
+                formatter: function() {
+                  return `μ+3σ (${u3s.toFixed(3)})`
+                }
+              }
+            })
+          }
+          this.lt = lt
 
-        if (this.mychart) {
-          this.mychart.setOption(this.option)
+          this.option.series[2].markLine.data = markLineData
+          this.option.series[2].markArea = {
+            itemStyle: {
+              color: 'rgba(0,255,0,0.3)'
+            },
+            data: [
+              [
+                {
+                  name: '合格区间',
+                  xAxis: gt,
+                  label: {
+                    show: false
+                  }
+                },
+                {
+                  xAxis: lt
+                }
+              ]
+            ]
+          }
+
+          if (this.mychart) {
+            this.mychart.setOption(this.option)
+          }
+        }
+      }
+    }
+  },
+  methods: {
+    setAnalyzeSize() {
+      this.analyzeSize = {
+        total: 0,
+        s: 0,
+        ok: 0,
+        ng: 0,
+        cp: 0,
+        cpk: 0,
+        avg: 0,
+        min: 0,
+        max: 0,
+        dataset: {
+          values: [],
+          freq: []
         }
       }
     }
   },
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
+  },
+  created() {
+    this.setAnalyzeSize()
   }
 }
 </script>
