@@ -59,7 +59,7 @@
           :deviceID="deviceID"
           :beginTime="beginTime"
           :endTime="endTime"
-          :disableFetch="materialResult.status.pending"
+          :canFetch="canFetch"
         ></SizeAnalyze
       ></el-tab-pane>
       <el-tab-pane lazy label="产品数据" name="products-data">
@@ -96,10 +96,11 @@ export default {
           fileIDs: []
         }
       },
+      pendingStatus: 0,
       interval: undefined,
+      timeDuration: undefined,
       devices: [],
       deviceID: undefined,
-      timeDuration: [],
       beginTime: undefined,
       endTime: undefined,
       option: {
@@ -168,25 +169,24 @@ export default {
             endTime: this.endTime
           }
         }
-      }
+      },
+      fetchPolicy: 'network-only'
     }
   },
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
   },
+  computed: {
+    canFetch() {
+      return this.pendingStatus === 0
+    }
+  },
   watch: {
-    'materialResult.status.pending': function(pending) {
-      if (!pending) {
-        clearInterval(this.interval)
-        if (this.$apollo.queries.materialResult) {
-          console.log('start analyzeMaterial')
-          this.$apollo.queries.materialResult.start()
-        }
-      } else {
+    pendingStatus: function(status) {
+      if (status === 1) {
         this.interval = setInterval(() => {
-          if (!this.materialResult.status.fileIDs) {
-            return
-          }
+          if (!this.materialResult.status.fileIDs) return
+
           this.$apollo
             .query({
               query: gql`
@@ -201,36 +201,41 @@ export default {
             })
             .then(({ data }) => {
               if (data.finished === 1) {
-                this.materialResult.status.pending = false
+                this.pendingStatus = 0
               }
             })
             .catch(e => {
               console.log(e.message)
             })
         }, 500)
+      } else {
+        clearInterval(this.interval)
+        this.$apollo.queries.materialResult.refresh()
       }
     },
     materialResult(nv) {
-      if (nv && !nv.status.pending) {
-        this.option.series[0].data = [
-          { name: 'OK', value: nv.ok },
-          { name: 'NG', value: nv.ng }
-        ]
-        this.option.title.text = `料号${nv.material.name}`
-        this.mychart.setOption(this.option)
-      }
+      if (!nv) return
+      if (nv.status) this.pendingStatus = nv.status.pending ? 1 : 0
+      this.option.series[0].data = [
+        { name: 'OK', value: nv.ok },
+        { name: 'NG', value: nv.ng }
+      ]
+      if (nv.material) this.option.title.text = `料号${nv.material.name}`
+
+      this.mychart.setOption(this.option)
     }
   },
   methods: {
-    handleDateDurationChange() {
-      this.materialResult.status.pending = true
-      if (this.timeDuration && this.timeDuration.length > 0) {
-        this.beginTime = this.timeDuration[0]
+    handleDateDurationChange(val) {
+      if (val && val.length > 1) {
+        this.pendingStatus = 1
+        this.beginTime = val[0]
+        this.endTime = val[1]
+        return
       }
-
-      if (this.timeDuration && this.timeDuration.length > 1) {
-        this.endTime = this.timeDuration[1]
-      }
+      this.pendingStatus = 0
+      this.beginTime = undefined
+      this.endTime = undefined
     }
   }
 }

@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="size-card"
-    v-loading="
-      $apollo.queries.analyzeSize.loading
-    "
-  >
+  <div class="size-card" v-loading="$apollo.queries.analyzeSize.loading">
     <div ref="chart" class="size-chart"></div>
     <div class="summary-data">
       <div class="summary-item">
@@ -57,7 +52,7 @@ import gql from 'graphql-tag'
 export default {
   props: {
     size: Object,
-    disableFetch: Boolean,
+    canFetch: Boolean,
     deviceID: [Number, String],
     beginTime: {
       type: Date,
@@ -97,8 +92,9 @@ export default {
         }
       },
       skip() {
-        return this.disableFetch
-      }
+        return !this.canFetch
+      },
+      fetchPolicy: 'network-only'
     }
   },
   data() {

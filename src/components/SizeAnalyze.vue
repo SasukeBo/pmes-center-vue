@@ -7,7 +7,7 @@
           :beginTime="beginTime"
           :deviceID="deviceID"
           :endTime="endTime"
-          :disableFetch="disableFetch"
+          :canFetch="canFetch"
         ></SizeCard>
       </el-col>
     </el-row>
@@ -34,7 +34,7 @@ export default {
   props: {
     materialID: [String, Number],
     deviceID: [String, Number],
-    disableFetch: Boolean,
+    canFetch: Boolean,
     beginTime: {
       type: Date,
       default: undefined
