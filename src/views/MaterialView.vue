@@ -24,6 +24,7 @@
             <el-form-item label="选择设备">
               <el-select
                 v-model="deviceID"
+                @change="handleDeviceChange"
                 clearable
                 filterable
                 placeholder="请选择"
@@ -52,7 +53,7 @@
         </el-col>
       </el-row>
     </div>
-    <el-tabs v-model="activeName">
+    <el-tabs v-model="activeName" @tab-click="handleTabClick">
       <el-tab-pane label="尺寸统计" name="sizes-cpk"
         ><SizeAnalyze
           :materialID="id"
@@ -98,7 +99,7 @@ export default {
       },
       pendingStatus: 0,
       interval: undefined,
-      timeDuration: undefined,
+      timeDuration: [],
       devices: [],
       deviceID: undefined,
       beginTime: undefined,
@@ -176,6 +177,23 @@ export default {
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
   },
+  created() {
+    if (this.$route.query.tab) {
+      this.activeName = this.$route.query.tab
+    }
+    if (!this.timeDuration) this.timeDuration = []
+    if (this.$route.query.beginTime) {
+      this.beginTime = new Date(this.$route.query.beginTime)
+      this.timeDuration.push(this.beginTime)
+    }
+    if (this.$route.query.endTime) {
+      this.endTime = new Date(this.$route.query.endTime)
+      this.timeDuration.push(this.endTime)
+    }
+    if (this.$route.query.deviceID) {
+      this.deviceID = parseInt(this.$route.query.deviceID)
+    }
+  },
   computed: {
     canFetch() {
       return this.pendingStatus === 0
@@ -226,16 +244,40 @@ export default {
     }
   },
   methods: {
+    handleTabClick(val) {
+      var query = { ...this.$route.query, tab: val.name }
+      delete query.page
+      this.setRouterQuery(query)
+    },
     handleDateDurationChange(val) {
+      var query = { ...this.$route.query }
       if (val && val.length > 1) {
         this.pendingStatus = 1
         this.beginTime = val[0]
         this.endTime = val[1]
-        return
+        query.beginTime = this.beginTime.toISOString()
+        query.endTime = this.endTime.toISOString()
+      } else {
+        this.pendingStatus = 0
+        this.beginTime = undefined
+        this.endTime = undefined
+        delete query.beginTime
+        delete query.endTime
       }
-      this.pendingStatus = 0
-      this.beginTime = undefined
-      this.endTime = undefined
+
+      this.setRouterQuery(query)
+    },
+    handleDeviceChange(val) {
+      var query = { ...this.$route.query, deviceID: val }
+      if (!val) {
+        delete query.deviceID
+      }
+      this.setRouterQuery(query)
+    },
+    setRouterQuery(query) {
+      this.$router
+        .replace({ path: this.$route.path, query })
+        .catch(() => undefined)
     }
   }
 }

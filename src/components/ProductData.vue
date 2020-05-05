@@ -4,28 +4,29 @@
       :data="productWrap.products"
       stripe
       style="width: 100%"
+      class="clusterize"
       v-loading="$apollo.queries.productWrap.loading"
     >
-      <el-table-column prop="uuid" label="ID" width="180" fixed>
+      <el-table-column prop="id" label="ID" width="180" :fixed="false">
       </el-table-column>
-      <el-table-column label="是否合格" width="80" fixed>
+      <el-table-column label="是否合格" width="80" :fixed="false">
         <template slot-scope="scope">
           {{ scope.row.qualified ? '是' : '否' }}
         </template>
       </el-table-column>
-      <el-table-column label="生产时间" width="180" fixed>
+      <el-table-column label="生产时间" width="180" :fixed="false">
         <template slot-scope="scope">
           {{ timeFormat(scope.row.createdAt) }}
         </template>
       </el-table-column>
       <el-table-column label="尺寸数据">
         <el-table-column
-          v-for="(size, i) in productWrap.tableHeader"
-          :label="size"
+          v-for="(point, i) in productWrap.tableHeader"
+          :label="point"
           :key="'table-size_' + i"
         >
           <template slot-scope="scope">
-            {{ scope.row.sizeValue[size] }}
+            {{ scope.row.pointValue[point] }}
           </template>
         </el-table-column>
       </el-table-column>

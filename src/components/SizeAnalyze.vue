@@ -101,7 +101,7 @@ export default {
   methods: {
     handlePageChange(val) {
       this.$router
-        .replace({ path: this.$route.path, query: { page: val } })
+        .replace({ path: this.$route.path, query: { ...this.$route.query, page: val } })
         .catch(() => undefined)
     }
   }
