@@ -1,49 +1,46 @@
 <template>
-  <div class="size-card" v-loading="loading">
+  <div class="size-card">
     <div ref="chart" class="size-chart"></div>
     <div class="summary-data">
       <div class="summary-item">
-        <div>
-          <span class="label">Total：</span
-          >{{ analyzeSize ? analyzeSize.total : 0 }}
-        </div>
+        <div><span class="label">Total：</span>{{ pointResult.total }}</div>
         <div>
           <span class="label">Average：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.avg).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.avg).toFixed(2) }}
         </div>
         <div>
           <span class="label">Max：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.max).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.max).toFixed(2) }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">CP：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.cp).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.cp).toFixed(2) }}
         </div>
         <div>
           <span class="label">CPK：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.cpk).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.cpk).toFixed(2) }}
         </div>
         <div>
           <span class="label">Min：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.min).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.min).toFixed(2) }}
         </div>
       </div>
 
       <div class="summary-item">
         <div>
           <span class="label">UpperLimit：</span
-          >{{ analyzeSize ? parseFloat(size.upperLimit).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.point.upperLimit).toFixed(2) }}
         </div>
         <div>
           <span class="label">LowerLimit：</span
-          >{{ analyzeSize ? parseFloat(size.lowerLimit).toFixed(2) : 0 }}
+          >{{ parseFloat(pointResult.point.lowerLimit).toFixed(2) }}
         </div>
         <div>
           <span class="label">SD：</span
-          >{{ analyzeSize ? parseFloat(analyzeSize.s).toFixed(6) : 0 }}
+          >{{ parseFloat(pointResult.s).toFixed(6) }}
         </div>
       </div>
     </div>
@@ -51,71 +48,15 @@
 </template>
 <script>
 import echarts from 'echarts'
-import gql from 'graphql-tag'
 export default {
   props: {
-    size: Object,
-    canFetch: Boolean,
-    deviceID: [Number, String],
-    beginTime: {
-      type: Date,
-      default: undefined
-    },
-    endTime: {
-      type: Date,
-      default: undefined
-    }
-  },
-  apollo: {
-    analyzeSize: {
-      query: gql`
-        query($search: Search!) {
-          analyzeSize(searchInput: $search) {
-            total
-            s
-            ok
-            ng
-            cp
-            cpk
-            avg
-            min
-            max
-            dataset
-          }
-        }
-      `,
-      variables() {
-        return {
-          search: {
-            deviceID: this.deviceID,
-            sizeID: this.size.id,
-            beginTime: this.beginTime,
-            endTime: this.endTime
-          }
-        }
-      },
-      skip() {
-        return !this.canFetch
-      },
-      error(e) {
-        this.error = '系统错误，加载失败'
-      },
-      fetchPolicy: 'network-only'
-    }
-  },
-  computed: {
-    loading() {
-      return this.$apollo.queries.analyzeSize.loading && !this.error
-    }
+    pointResult: Object
   },
   data() {
     return {
       mychart: undefined,
       gt: 0,
       lt: 0,
-      error: '',
-      analyzeSize: undefined,
-      intervalFetch: undefined,
       option: {
         title: {
           padding: [0, 24],
@@ -218,13 +159,13 @@ export default {
     }
   },
   watch: {
-    analyzeSize: {
+    pointResult: {
       immediate: true,
       handler: function(val) {
         if (val) {
           this.option.title.text = `${
-            this.size.name
-          } (${this.size.norminal.toFixed(2)})`
+            val.point.name
+          } (${val.point.norminal.toFixed(2)})`
           this.option.xAxis.data = val.dataset.values
           this.option.series[0].data = val.dataset.freqs
           this.option.series[1].data = [
@@ -241,13 +182,13 @@ export default {
             return ''
           }
 
-          var size = this.size
+          var point = val.point
           var markLineData = []
           var values = val.dataset.values
           var _u3s = val.avg - 3 * val.s
           var u3s = val.avg + 3 * val.s
           var gt = values.findIndex(i => i >= _u3s)
-          if (gt < 0 && values[0] >= size.lowerLimit) {
+          if (gt < 0 && values[0] >= point.lowerLimit) {
             gt = 0
           }
           if (gt >= 0) {
@@ -263,7 +204,7 @@ export default {
           }
           this.gt = gt
           var lt = values.findIndex(i => i > u3s) - 1
-          if (lt < 0 && values[values.length - 1] <= size.upperLimit) {
+          if (lt < 0 && values[values.length - 1] <= point.upperLimit) {
             lt = values.length - 1
           }
           if (lt >= 0) {
@@ -307,30 +248,9 @@ export default {
       }
     }
   },
-  methods: {
-    setAnalyzeSize() {
-      this.analyzeSize = {
-        total: 0,
-        s: 0,
-        ok: 0,
-        ng: 0,
-        cp: 0,
-        cpk: 0,
-        avg: 0,
-        min: 0,
-        max: 0,
-        dataset: {
-          values: [],
-          freq: []
-        }
-      }
-    }
-  },
   mounted() {
     this.mychart = echarts.init(this.$refs.chart)
-  },
-  created() {
-    this.setAnalyzeSize()
+    this.mychart.setOption(this.option)
   }
 }
 </script>

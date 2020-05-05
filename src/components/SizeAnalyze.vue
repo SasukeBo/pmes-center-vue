@@ -1,14 +1,8 @@
 <template>
   <div class="size-analyze">
     <el-row :gutter="20">
-      <el-col :span="12" v-for="(size, i) in sizeWrap.sizes" :key="'size_' + i">
-        <SizeCard
-          :size="size"
-          :beginTime="beginTime"
-          :deviceID="deviceID"
-          :endTime="endTime"
-          :canFetch="canFetch"
-        ></SizeCard>
+      <el-col :span="12" v-for="(pResult, i) in pointResultsWrap.pointResults" :key="'pr_' + i">
+        <PointCard :pointResult="pResult"></PointCard>
       </el-col>
     </el-row>
     <el-row>
@@ -16,7 +10,7 @@
         background
         :page-sizes="[10, 20, 30]"
         layout="sizes, prev, pager, next"
-        :total="sizeWrap.total"
+        :total="pointResultsWrap.total"
         :page-size.sync="limit"
         :current-page.sync="page"
         @current-change="handlePageChange"
@@ -27,10 +21,10 @@
 </template>
 <script>
 import gql from 'graphql-tag'
-import SizeCard from '@/components/SizeCard.vue'
+import PointCard from '@/components/PointCard.vue'
 export default {
   name: 'SizeAnalyze',
-  components: { SizeCard },
+  components: { PointCard },
   props: {
     materialID: [String, Number],
     deviceID: [String, Number],
@@ -48,33 +42,53 @@ export default {
     return {
       page: 1,
       limit: 10,
-      sizeWrap: {
-        total: 0,
-        sizes: []
+      pointResultsWrap: {
+        pointResults: [],
+        total: 0
       }
     }
   },
   apollo: {
-    sizeWrap: {
+    pointResultsWrap: {
       query: gql`
-        query($page: Int!, $limit: Int!, $materialID: Int!) {
-          sizeWrap: sizes(page: $page, limit: $limit, materialID: $materialID) {
+        query($search: Search!, $limit: Int!, $offset: Int!) {
+          pointResultsWrap: analyzePoint(
+            searchInput: $search
+            limit: $limit
+            offset: $offset
+          ) {
             total
-            sizes {
-              id
-              name
-              upperLimit
-              norminal
-              lowerLimit
+            pointResults {
+              point {
+                id
+                name
+                upperLimit
+                lowerLimit
+                norminal
+              }
+              total
+              s
+              ok
+              ng
+              cp
+              cpk
+              avg
+              max
+              min
+              dataset
             }
           }
         }
       `,
       variables() {
         return {
-          page: this.page,
-          limit: this.limit,
-          materialID: this.materialID
+          search: {
+            materialID: this.materialID,
+            beginTime: this.beginTime,
+            endTime: this.endTime
+          },
+          offset: (this.page - 1) * this.limit,
+          limit: this.limit
         }
       }
     }

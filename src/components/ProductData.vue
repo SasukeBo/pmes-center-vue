@@ -71,7 +71,7 @@ export default {
               id
               uuid
               qualified
-              sizeValue
+              pointValue
               createdAt
             }
             status {
