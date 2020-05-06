@@ -57,19 +57,13 @@
 </template>
 <script>
 import gql from 'graphql-tag'
+import { pipeToUndefined } from '@/helpers'
+
 export default {
   name: 'ProductData',
   props: {
     materialID: [String, Number],
-    deviceID: [String, Number],
-    beginTime: {
-      type: Date,
-      default: undefined
-    },
-    endTime: {
-      type: Date,
-      default: undefined
-    }
+    searchForm: Object
   },
   apollo: {
     productWrap: {
@@ -103,12 +97,19 @@ export default {
         }
       `,
       variables() {
+        var s = this.searchForm
         return {
           searchInput: {
             materialID: this.materialID,
-            deviceID: this.deviceID ? this.deviceID : undefined,
-            beginTime: this.beginTime,
-            endTime: this.endTime
+            deviceID: pipeToUndefined(s.deviceID),
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
           },
           page: this.page,
           limit: this.limit

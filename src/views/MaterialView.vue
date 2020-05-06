@@ -10,10 +10,10 @@
   >
     <div class="material-header">
       <el-row :gutter="20">
-        <el-col :span="12">
+        <el-col :span="8">
           <div ref="chart" class="chart"></div>
         </el-col>
-        <el-col :span="9">
+        <el-col :span="16">
           <div style="font-size: 20px; color: #666">过滤条件</div>
           <el-form
             size="small"
@@ -21,34 +21,79 @@
             label-width="100px"
             style="padding-top: 16px;"
           >
-            <el-form-item label="选择设备">
-              <el-select
-                v-model="deviceID"
-                @change="handleDeviceChange"
-                clearable
-                filterable
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="item in devices"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                >
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="选择日期范围">
-              <el-date-picker
-                v-model="timeDuration"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                @change="handleDateDurationChange"
-              >
-              </el-date-picker>
-            </el-form-item>
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item label="设备">
+                  <el-select
+                    v-model="searchForm.deviceID"
+                    @change="handleDeviceChange"
+                    clearable
+                    filterable
+                    style="width: 200px;"
+                    placeholder="请选择"
+                  >
+                    <el-option
+                      v-for="item in devices"
+                      :key="item.id"
+                      :label="item.name"
+                      :value="item.id"
+                    >
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="线体号">
+                  <el-input
+                    style="max-width: 200px"
+                    v-model="searchForm.lineID"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item label="冶具号">
+                  <el-input
+                    style="max-width: 200px"
+                    v-model="searchForm.jigID"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="模号">
+                  <el-input
+                    style="max-width: 200px"
+                    v-model="searchForm.mouldID"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item label="班别">
+                  <el-input
+                    style="max-width: 200px"
+                    v-model="searchForm.shiftNumber"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="选择日期范围">
+                  <el-date-picker
+                    v-model="searchForm.timeDuration"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    @change="handleDateDurationChange"
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-form>
         </el-col>
       </el-row>
@@ -58,22 +103,15 @@
       @tab-click="handleTabClick"
       class="cal-height-hidden"
     >
-      <el-tab-pane label="尺寸统计" name="sizes-cpk"
+      <el-tab-pane lazy label="尺寸统计" name="sizes-cpk"
         ><SizeAnalyze
           :materialID="id"
-          :deviceID="deviceID"
-          :beginTime="beginTime"
-          :endTime="endTime"
+          :searchForm="searchForm"
           :canFetch="canFetch"
         ></SizeAnalyze
       ></el-tab-pane>
       <el-tab-pane lazy label="产品数据" name="products-data">
-        <ProductData
-          :materialID="id"
-          :deviceID="deviceID"
-          :beginTime="beginTime"
-          :endTime="endTime"
-        ></ProductData>
+        <ProductData :materialID="id" :searchForm="searchForm"></ProductData>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -83,6 +121,7 @@ import gql from 'graphql-tag'
 import echarts from 'echarts'
 import SizeAnalyze from '@/components/SizeAnalyze.vue'
 import ProductData from '@/components/ProductData.vue'
+import { pipeToUndefined } from '@/helpers'
 export default {
   name: 'MaterialView',
   props: ['id'],
@@ -103,11 +142,17 @@ export default {
       },
       pendingStatus: 0,
       interval: undefined,
-      timeDuration: [],
+      searchForm: {
+        timeDuration: [],
+        deviceID: undefined,
+        lineID: undefined,
+        mouldID: undefined,
+        jigID: undefined,
+        shiftNumber: undefined,
+        beginTime: undefined,
+        endTime: undefined
+      },
       devices: [],
-      deviceID: undefined,
-      beginTime: undefined,
-      endTime: undefined,
       option: {
         title: {},
         tooltip: {
@@ -166,12 +211,20 @@ export default {
         }
       `,
       variables() {
+        var s = this.searchForm
+
         return {
           input: {
             materialID: this.id,
-            deviceID: this.deviceID ? this.deviceID : undefined,
-            beginTime: this.beginTime,
-            endTime: this.endTime
+            deviceID: pipeToUndefined(s.deviceID),
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
           }
         }
       },
@@ -185,17 +238,24 @@ export default {
     if (this.$route.query.tab) {
       this.activeName = this.$route.query.tab
     }
-    if (!this.timeDuration) this.timeDuration = []
-    if (this.$route.query.beginTime) {
-      this.beginTime = new Date(this.$route.query.beginTime)
-      this.timeDuration.push(this.beginTime)
-    }
+    if (!this.searchForm.timeDuration) this.searchForm.timeDuration = []
     if (this.$route.query.endTime) {
-      this.endTime = new Date(this.$route.query.endTime)
-      this.timeDuration.push(this.endTime)
+      this.searchForm.endTime = new Date(this.$route.query.endTime)
+    } else {
+      this.searchForm.endTime = new Date()
     }
+    this.searchForm.timeDuration.unshift(this.searchForm.endTime)
+
+    if (this.$route.query.beginTime) {
+      this.searchForm.beginTime = new Date(this.$route.query.beginTime)
+    } else {
+      var now = new Date()
+      now.setMonth(now.getMonth() - 12)
+      this.searchForm.beginTime = now
+    }
+    this.searchForm.timeDuration.unshift(this.searchForm.beginTime)
     if (this.$route.query.deviceID) {
-      this.deviceID = parseInt(this.$route.query.deviceID)
+      this.searchForm.deviceID = parseInt(this.$route.query.deviceID)
     }
   },
   computed: {
@@ -257,14 +317,14 @@ export default {
       var query = { ...this.$route.query }
       if (val && val.length > 1) {
         this.pendingStatus = 1
-        this.beginTime = val[0]
-        this.endTime = val[1]
-        query.beginTime = this.beginTime.toISOString()
-        query.endTime = this.endTime.toISOString()
+        this.searchForm.beginTime = val[0]
+        this.searchForm.endTime = val[1]
+        query.beginTime = this.searchForm.beginTime.toISOString()
+        query.endTime = this.searchForm.endTime.toISOString()
       } else {
         this.pendingStatus = 0
-        this.beginTime = undefined
-        this.endTime = undefined
+        this.searchForm.beginTime = undefined
+        this.searchForm.endTime = undefined
         delete query.beginTime
         delete query.endTime
       }

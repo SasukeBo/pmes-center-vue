@@ -24,21 +24,14 @@
 <script>
 import gql from 'graphql-tag'
 import PointCard from '@/components/PointCard.vue'
+import { pipeToUndefined } from '@/helpers'
 export default {
   name: 'SizeAnalyze',
   components: { PointCard },
   props: {
     materialID: [String, Number],
-    deviceID: [String, Number],
     canFetch: Boolean,
-    beginTime: {
-      type: Date,
-      default: undefined
-    },
-    endTime: {
-      type: Date,
-      default: undefined
-    }
+    searchForm: Object
   },
   data() {
     return {
@@ -83,11 +76,19 @@ export default {
         }
       `,
       variables() {
+        var s = this.searchForm
         return {
           search: {
             materialID: this.materialID,
-            beginTime: this.beginTime,
-            endTime: this.endTime
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            deviceID: pipeToUndefined(s.deviceID),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
           },
           offset: (this.page - 1) * this.limit,
           limit: this.limit
