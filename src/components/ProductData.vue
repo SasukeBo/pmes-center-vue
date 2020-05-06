@@ -4,7 +4,7 @@
       :data="productWrap.products"
       stripe
       empty-text="暂无数据"
-      style="width: 100%; height: calc(100% - 44px)"
+      style="width: 100%; height: calc(100% - 48px)"
       class="clusterize"
       height="100%"
       v-loading="$apollo.queries.productWrap.loading"
@@ -145,7 +145,7 @@ export default {
 .material-view .product-data {
   height: 100%;
   overflow: hidden;
-  margin-bottom: 32px;
+  margin-bottom: 48px;
 
   .product-data-pagination {
     display: flex;

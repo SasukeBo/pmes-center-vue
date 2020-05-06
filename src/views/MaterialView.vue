@@ -16,20 +16,21 @@
         <el-col :span="16">
           <div style="font-size: 20px; color: #666">过滤条件</div>
           <el-form
-            size="small"
+            size="mini"
             label-position="left"
-            label-width="100px"
+            label-width="60px"
+            class="filter-form"
             style="padding-top: 16px;"
           >
             <el-row :gutter="20">
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="设备">
                   <el-select
                     v-model="searchForm.deviceID"
                     @change="handleDeviceChange"
                     clearable
                     filterable
-                    style="width: 200px;"
+                    style="max-width: 200px;"
                     placeholder="请选择"
                   >
                     <el-option
@@ -42,7 +43,7 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="线体号">
                   <el-input
                     style="max-width: 200px"
@@ -50,10 +51,7 @@
                   ></el-input>
                 </el-form-item>
               </el-col>
-            </el-row>
-
-            <el-row :gutter="20">
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="冶具号">
                   <el-input
                     style="max-width: 200px"
@@ -61,7 +59,7 @@
                   ></el-input>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="模号">
                   <el-input
                     style="max-width: 200px"
@@ -69,10 +67,7 @@
                   ></el-input>
                 </el-form-item>
               </el-col>
-            </el-row>
-
-            <el-row :gutter="20">
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="班别">
                   <el-input
                     style="max-width: 200px"
@@ -80,8 +75,8 @@
                   ></el-input>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
-                <el-form-item label="选择日期范围">
+              <el-col :span="6">
+                <el-form-item label="日期">
                   <el-date-picker
                     v-model="searchForm.timeDuration"
                     type="daterange"
@@ -163,7 +158,7 @@ export default {
         series: [
           {
             radius: '65%',
-            center: ['50%', '50%'],
+            center: ['50%', '65%'],
             top: 0,
             type: 'pie',
             name: '产量',
@@ -349,7 +344,7 @@ export default {
 <style lang="scss">
 .material-view {
   .chart {
-    height: 160px;
+    height: 100px;
   }
 
   .el-loading-spinner {
@@ -357,7 +352,7 @@ export default {
   }
 
   .cal-height-hidden {
-    height: calc(100% - 160px);
+    height: calc(100% - 169px);
     overflow: hidden;
   }
 
@@ -369,6 +364,15 @@ export default {
   .el-tab-pane {
     height: 100%;
     overflow: hidden;
+  }
+
+  .material-header .filter-form {
+    padding-top: 0 !important;
+
+    .el-form-item {
+      margin-top: 18px;
+      margin-bottom: 0;
+    }
   }
 }
 </style>

@@ -257,7 +257,7 @@ export default {
 <style lang="scss">
 .size-card {
   padding: 16px 8px;
-  border: 1px solid #efefef;
+  border: 1px solid rgba(0,0,0,0.2);
   margin-bottom: 16px;
   border-radius: 4px;
 

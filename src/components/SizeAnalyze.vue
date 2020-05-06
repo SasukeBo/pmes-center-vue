@@ -117,6 +117,7 @@ export default {
 .material-view .size-analyze {
   height: calc(100% - 44px);
   overflow-y: auto;
+  overflow-x: hidden;
   margin-bottom: 44px;
 
   .el-pagination {

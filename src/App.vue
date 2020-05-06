@@ -66,7 +66,6 @@
 
 .page-body {
   margin: 0 32px;
-  padding-top: 16px;
   height: 100%;
   box-sizing: border-box;
   overflow: hidden;
