@@ -1,22 +1,24 @@
 <template>
   <div class="size-analyze">
     <el-row :gutter="20">
-      <el-col :span="12" v-for="(pResult, i) in pointResultsWrap.pointResults" :key="'pr_' + i">
+      <el-col
+        :span="12"
+        v-for="(pResult, i) in pointResultsWrap.pointResults"
+        :key="'pr_' + i"
+      >
         <PointCard :pointResult="pResult"></PointCard>
       </el-col>
     </el-row>
-    <el-row>
-      <el-pagination
-        background
-        :page-sizes="[10, 20, 30]"
-        layout="sizes, prev, pager, next"
-        :total="pointResultsWrap.total"
-        :page-size.sync="limit"
-        :current-page.sync="page"
-        @current-change="handlePageChange"
-      >
-      </el-pagination>
-    </el-row>
+    <el-pagination
+      background
+      :page-sizes="[10, 20, 30]"
+      layout="sizes, prev, pager, next"
+      :total="pointResultsWrap.total"
+      :page-size.sync="limit"
+      :current-page.sync="page"
+      @current-change="handlePageChange"
+    >
+    </el-pagination>
   </div>
 </template>
 <script>
@@ -101,7 +103,10 @@ export default {
   methods: {
     handlePageChange(val) {
       this.$router
-        .replace({ path: this.$route.path, query: { ...this.$route.query, page: val } })
+        .replace({
+          path: this.$route.path,
+          query: { ...this.$route.query, page: val }
+        })
         .catch(() => undefined)
     }
   }
@@ -109,10 +114,21 @@ export default {
 </script>
 <style lang="scss">
 .material-view .size-analyze {
-  margin-bottom: 32px;
+  height: calc(100% - 44px);
+  overflow-y: auto;
+  margin-bottom: 44px;
+
   .el-pagination {
-    margin-top: 16px;
     text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    box-sizing: border-box;
+    background: #fff;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
   }
 }
 </style>

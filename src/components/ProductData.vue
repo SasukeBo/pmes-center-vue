@@ -3,8 +3,10 @@
     <el-table
       :data="productWrap.products"
       stripe
-      style="width: 100%"
+      empty-text="暂无数据"
+      style="width: 100%; height: calc(100% - 44px)"
       class="clusterize"
+      height="100%"
       v-loading="$apollo.queries.productWrap.loading"
     >
       <el-table-column prop="id" label="ID" width="180" :fixed="false">
@@ -32,14 +34,20 @@
       </el-table-column>
     </el-table>
 
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="productWrap.total"
-      :page-size="300"
-      :current-page.sync="page"
-    >
-    </el-pagination>
+    <div class="product-data-pagination">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="productWrap.total"
+        :page-size="300"
+        :current-page.sync="page"
+      >
+      </el-pagination>
+
+      <el-button size="small" type="primary" icon="el-icon-download"
+        >导出数据</el-button
+      >
+    </div>
   </div>
 </template>
 <script>
@@ -88,7 +96,7 @@ export default {
         return {
           searchInput: {
             materialID: this.materialID,
-            deviceID: this.deviceID,
+            deviceID: this.deviceID ? this.deviceID : undefined,
             beginTime: this.beginTime,
             endTime: this.endTime
           },
@@ -124,10 +132,26 @@ export default {
 </script>
 <style lang="scss">
 .material-view .product-data {
+  height: 100%;
+  overflow: hidden;
   margin-bottom: 32px;
-  .el-pagination {
-    margin-top: 16px;
+
+  .product-data-pagination {
+    display: flex;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
     text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    box-sizing: border-box;
+    background: #fff;
+    padding: 8px 32px;
+    z-index: 2020;
+
+    .el-pagination {
+      flex: 1;
+    }
   }
 }
 </style>

@@ -53,7 +53,11 @@
         </el-col>
       </el-row>
     </div>
-    <el-tabs v-model="activeName" @tab-click="handleTabClick">
+    <el-tabs
+      v-model="activeName"
+      @tab-click="handleTabClick"
+      class="cal-height-hidden"
+    >
       <el-tab-pane label="尺寸统计" name="sizes-cpk"
         ><SizeAnalyze
           :materialID="id"
@@ -290,6 +294,21 @@ export default {
 
   .el-loading-spinner {
     top: 10%;
+  }
+
+  .cal-height-hidden {
+    height: calc(100% - 160px);
+    overflow: hidden;
+  }
+
+  .el-tabs__content {
+    height: calc(100% - 55px);
+    overflow: hidden;
+  }
+
+  .el-tab-pane {
+    height: 100%;
+    overflow: hidden;
   }
 }
 </style>
