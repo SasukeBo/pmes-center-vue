@@ -60,9 +60,14 @@ export default {
       `,
       fetchPolicy: 'network-only',
       variables() {
+        var end = new Date()
+        var begin = new Date()
+        begin.setMonth(begin.getMonth() - 12)
         return {
           input: {
-            materialID: this.materialID
+            materialID: this.materialID,
+            beginTime: begin,
+            endTime: end
           }
         }
       },
@@ -78,7 +83,7 @@ export default {
       interval: undefined,
       option: {
         title: {
-          subtext: '最近一个月生产数据'
+          subtext: '近一年生产数据'
         },
         tooltip: {
           trigger: 'item',
@@ -172,7 +177,7 @@ export default {
 </script>
 <style lang="scss">
 .material-card {
-  box-shadow: 0 0 3px #999;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   padding: 8px;
   box-sizing: border-box;

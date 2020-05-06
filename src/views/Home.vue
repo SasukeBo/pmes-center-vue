@@ -10,7 +10,7 @@
 
     <el-divider></el-divider>
 
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="overflow-y-scroll">
       <el-col
         :span="6"
         class="display-card"
@@ -24,18 +24,11 @@
           :fileIDs.sync="material.fileIDs"
         ></MaterialCard
       ></el-col>
-
-      <el-col :span="6" class="display-card">
-        <div class="add-material-btn">
-          <el-tooltip
-            effect="dark"
-            content="点击添加料号"
-            placement="top-start"
-          >
-            <i class="el-icon-plus" @click="dialogFormVisible = true"></i>
-          </el-tooltip>
-        </div>
-      </el-col>
+      <el-col
+        :span="24"
+        v-if="!materialWrap.materials || materialWrap.materials.length === 0"
+        ><div class="empty-materials">暂无数据</div></el-col
+      >
     </el-row>
 
     <el-dialog title="添加料号" :visible.sync="dialogFormVisible" width="500px">
@@ -70,6 +63,14 @@
         :total="materialWrap.total"
       >
       </el-pagination>
+
+      <el-button
+        size="small"
+        type="primary"
+        icon="el-icon-plus"
+        @click="dialogFormVisible = true"
+        >新增料号</el-button
+      >
     </div>
   </div>
 </template>
@@ -156,7 +157,7 @@ export default {
             if (!this.materialWrap.materials) {
               this.materialWrap.materials = []
             }
-            this.materialWrap.materials.push(material)
+            this.materialWrap.materials.unshift(material)
           }
           this.closeDialog()
         })
@@ -175,32 +176,40 @@ export default {
 }
 </script>
 <style lang="scss">
-.display-card {
-  min-width: 33%;
-}
-
-.add-material-btn i.el-icon-plus {
-  display: block;
-  text-align: center;
-  font-size: 30px;
-  color: #999;
-  border: 1px dashed #999;
-  border-radius: 4px;
-  height: 300px;
-  line-height: 300px;
-  cursor: pointer;
-  margin: 0 16px;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-
-  &:hover {
-    color: #333;
-    border-color: #333;
+.home {
+  .display-card {
+    min-width: 33%;
   }
-}
 
-.material-pagination {
-  text-align: center;
-  padding: 64px 0;
+  .material-pagination {
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    box-sizing: border-box;
+    background: #fff;
+    padding: 8px 32px;
+    display: flex;
+
+    .el-pagination {
+      flex: 1;
+    }
+  }
+
+  .overflow-y-scroll {
+    height: calc(100% - 137px);
+    overflow-y: scroll;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .empty-materials {
+    text-align: center;
+    font-size: 20px;
+    color: #999;
+    padding: 16px 0;
+  }
 }
 </style>

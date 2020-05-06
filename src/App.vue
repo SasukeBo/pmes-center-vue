@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="page-body">
-      <router-view></router-view>
+      <router-view class="height-fix"></router-view>
     </div>
   </div>
 </template>
@@ -67,5 +67,13 @@
 .page-body {
   margin: 0 32px;
   padding-top: 16px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  .height-fix {
+    height: 100%;
+    overflow: hidden;
+  }
 }
 </style>

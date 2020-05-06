@@ -1,80 +1,97 @@
 <template>
   <div class="size-analyze">
     <el-row :gutter="20">
-      <el-col :span="12" v-for="(size, i) in sizeWrap.sizes" :key="'size_' + i">
-        <SizeCard
-          :size="size"
-          :beginTime="beginTime"
-          :deviceID="deviceID"
-          :endTime="endTime"
-          :canFetch="canFetch"
-        ></SizeCard>
+      <el-col
+        :span="12"
+        v-for="(pResult, i) in pointResultsWrap.pointResults"
+        :key="'pr_' + i"
+      >
+        <PointCard :pointResult="pResult"></PointCard>
       </el-col>
     </el-row>
-    <el-row>
-      <el-pagination
-        background
-        :page-sizes="[10, 20, 30]"
-        layout="sizes, prev, pager, next"
-        :total="sizeWrap.total"
-        :page-size.sync="limit"
-        :current-page.sync="page"
-        @current-change="handlePageChange"
-      >
-      </el-pagination>
-    </el-row>
+    <el-pagination
+      background
+      :page-sizes="[10, 20, 30]"
+      layout="sizes, prev, pager, next"
+      :total="pointResultsWrap.total"
+      :page-size.sync="limit"
+      :current-page.sync="page"
+      @current-change="handlePageChange"
+    >
+    </el-pagination>
   </div>
 </template>
 <script>
 import gql from 'graphql-tag'
-import SizeCard from '@/components/SizeCard.vue'
+import PointCard from '@/components/PointCard.vue'
+import { pipeToUndefined } from '@/helpers'
 export default {
   name: 'SizeAnalyze',
-  components: { SizeCard },
+  components: { PointCard },
   props: {
     materialID: [String, Number],
-    deviceID: [String, Number],
     canFetch: Boolean,
-    beginTime: {
-      type: Date,
-      default: undefined
-    },
-    endTime: {
-      type: Date,
-      default: undefined
-    }
+    searchForm: Object
   },
   data() {
     return {
       page: 1,
       limit: 10,
-      sizeWrap: {
-        total: 0,
-        sizes: []
+      pointResultsWrap: {
+        pointResults: [],
+        total: 0
       }
     }
   },
   apollo: {
-    sizeWrap: {
+    pointResultsWrap: {
       query: gql`
-        query($page: Int!, $limit: Int!, $materialID: Int!) {
-          sizeWrap: sizes(page: $page, limit: $limit, materialID: $materialID) {
+        query($search: Search!, $limit: Int!, $offset: Int!) {
+          pointResultsWrap: analyzePoint(
+            searchInput: $search
+            limit: $limit
+            offset: $offset
+          ) {
             total
-            sizes {
-              id
-              name
-              upperLimit
-              norminal
-              lowerLimit
+            pointResults {
+              point {
+                id
+                name
+                upperLimit
+                lowerLimit
+                norminal
+              }
+              total
+              s
+              ok
+              ng
+              cp
+              cpk
+              avg
+              max
+              min
+              dataset
             }
           }
         }
       `,
       variables() {
+        var s = this.searchForm
         return {
-          page: this.page,
-          limit: this.limit,
-          materialID: this.materialID
+          search: {
+            materialID: this.materialID,
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            deviceID: pipeToUndefined(s.deviceID),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
+          },
+          offset: (this.page - 1) * this.limit,
+          limit: this.limit
         }
       }
     }
@@ -87,7 +104,10 @@ export default {
   methods: {
     handlePageChange(val) {
       this.$router
-        .replace({ path: this.$route.path, query: { page: val } })
+        .replace({
+          path: this.$route.path,
+          query: { ...this.$route.query, page: val }
+        })
         .catch(() => undefined)
     }
   }
@@ -95,10 +115,21 @@ export default {
 </script>
 <style lang="scss">
 .material-view .size-analyze {
-  margin-bottom: 32px;
+  height: calc(100% - 44px);
+  overflow-y: auto;
+  margin-bottom: 44px;
+
   .el-pagination {
-    margin-top: 16px;
     text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    box-sizing: border-box;
+    background: #fff;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
   }
 }
 </style>
