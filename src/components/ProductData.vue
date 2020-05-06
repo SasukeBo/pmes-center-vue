@@ -9,18 +9,23 @@
       height="100%"
       v-loading="$apollo.queries.productWrap.loading"
     >
-      <el-table-column prop="id" label="ID" width="180" :fixed="false">
-      </el-table-column>
-      <el-table-column label="是否合格" width="80" :fixed="false">
+      <el-table-column prop="id" label="ID" width="180"> </el-table-column>
+      <el-table-column label="是否合格" width="80">
         <template slot-scope="scope">
           {{ scope.row.qualified ? '是' : '否' }}
         </template>
       </el-table-column>
-      <el-table-column label="生产时间" width="180" :fixed="false">
+      <el-table-column label="生产时间" width="180">
         <template slot-scope="scope">
           {{ timeFormat(scope.row.createdAt) }}
         </template>
       </el-table-column>
+      <el-table-column label="2D条码" min-width="250" prop="d2code">
+      </el-table-column>
+      <el-table-column label="线体号" prop="lineID"> </el-table-column>
+      <el-table-column label="冶具号" prop="jigID"> </el-table-column>
+      <el-table-column label="模号" prop="mouldID"> </el-table-column>
+      <el-table-column label="班别" prop="shiftNumber"> </el-table-column>
       <el-table-column label="尺寸数据">
         <el-table-column
           v-for="(point, i) in productWrap.tableHeader"
@@ -82,6 +87,11 @@ export default {
               qualified
               pointValue
               createdAt
+              d2code
+              lineID
+              jigID
+              mouldID
+              shiftNumber
             }
             status {
               pending
