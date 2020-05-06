@@ -177,7 +177,7 @@ export default {
 </script>
 <style lang="scss">
 .material-card {
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0,0,0,0.2);
   border-radius: 4px;
   padding: 8px;
   box-sizing: border-box;

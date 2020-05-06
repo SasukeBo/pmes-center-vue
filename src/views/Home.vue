@@ -201,7 +201,6 @@ export default {
   .overflow-y-scroll {
     height: calc(100% - 137px);
     overflow-y: scroll;
-    padding: 16px;
     box-sizing: border-box;
   }
 
