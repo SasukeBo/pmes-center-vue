@@ -14,14 +14,11 @@
     </div>
     <div v-show="pending" class="loading-data-mask">
       <div class="pending-title">正在加载FTP文件数据，请稍后</div>
-      <div class="pending-icon">
-        <i class="el-icon-loading" />
-      </div>
       <el-progress
-        :text-inside="true"
-        :stroke-width="15"
-        :percentage="finished"
-        status="success"
+        type="circle"
+        :width="150"
+        :stroke-width="5"
+        :percentage="parseInt(finished.toFixed())"
       ></el-progress>
     </div>
   </div>
@@ -177,7 +174,7 @@ export default {
 </script>
 <style lang="scss">
 .material-card {
-  border: 1px solid rgba(0,0,0,0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   padding: 8px;
   box-sizing: border-box;
@@ -197,16 +194,11 @@ export default {
     z-index: 1000;
   }
 
-  .pending-icon {
-    height: 64px;
-    font-size: 29px;
-  }
-
   .pending-title {
     text-align: center;
     color: #666;
-    padding-top: 64px;
-    padding-bottom: 48px;
+    padding-top: 36px;
+    padding-bottom: 24px;
   }
 
   .total-summary {
