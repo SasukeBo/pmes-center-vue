@@ -1,5 +1,8 @@
 <template>
-  <div class="size-analyze">
+  <div
+    class="size-analyze"
+    v-loading="$apollo.queries.pointResultsWrap.loading"
+  >
     <el-row :gutter="20">
       <el-col
         :span="12"
