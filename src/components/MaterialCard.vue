@@ -13,7 +13,7 @@
       >
     </div>
     <div v-show="pending" class="loading-data-mask">
-      <div class="pending-title">正在加载FTP文件数据，请稍后</div>
+      <div class="pending-title">正在加载FTP文件数据，请稍候</div>
       <el-progress
         type="circle"
         :width="150"

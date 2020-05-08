@@ -1,13 +1,5 @@
 <template>
-  <div
-    class="material-view"
-    v-loading="
-      materialResult.status.pending || $apollo.queries.materialResult.loading
-    "
-    element-loading-text="正在获取数据 ..."
-    element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)"
-  >
+  <div class="material-view" >
     <div class="material-header">
       <el-row :gutter="20">
         <el-col :span="8">
