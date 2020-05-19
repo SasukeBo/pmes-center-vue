@@ -69,7 +69,7 @@ export default {
           }
         },
         grid: {
-          top: 100
+          top: 60
         },
         xAxis: {
           type: 'category',
@@ -118,24 +118,6 @@ export default {
             }
           },
           {
-            name: '良率',
-            type: 'pie',
-            center: ['50%', '15%'],
-            radius: '20%',
-            z: 100,
-            tooltip: {
-              formatter: '{a} <br/>{b} : {c} ({d}%)'
-            },
-            animation: false,
-            label: {
-              formatter: '{b}({d}%)'
-            },
-            labelLine: {
-              length: 5,
-              length2: 5
-            }
-          },
-          {
             name: '正态分布',
             type: 'line',
             yAxisIndex: 1,
@@ -165,16 +147,15 @@ export default {
         if (val) {
           this.option.title.text = `${
             val.point.name
-          } (${val.point.norminal.toFixed(2)})`
+          } (${val.point.norminal.toFixed(2)})      Yield（${(
+            (100 * val.ok) /
+            val.total
+          ).toFixed(2)}%）`
           this.option.xAxis.data = val.dataset.values
           this.option.series[0].data = val.dataset.freqs
-          this.option.series[1].data = [
-            { name: 'OK', value: val.ok },
-            { name: 'NG', value: val.ng }
-          ]
-          this.option.series[2].data = val.dataset.distribution
+          this.option.series[1].data = val.dataset.distribution
           this.option.xAxis.axisPointer.label.formatter = function(params) {
-            var i = val.dataset.values.findIndex(i => `${i}` === params.value)
+            var i = val.dataset.values.findIndex((i) => `${i}` === params.value)
             if (i >= 0) {
               return `${params.value}: ${val.dataset.freqs[i]}`
             }
@@ -187,7 +168,7 @@ export default {
           var values = val.dataset.values
           var _u3s = val.avg - 3 * val.s
           var u3s = val.avg + 3 * val.s
-          var gt = values.findIndex(i => i >= _u3s)
+          var gt = values.findIndex((i) => i >= _u3s)
           if (gt < 0 && values[0] >= point.lowerLimit) {
             gt = 0
           }
@@ -203,7 +184,7 @@ export default {
             })
           }
           this.gt = gt
-          var lt = values.findIndex(i => i > u3s) - 1
+          var lt = values.findIndex((i) => i > u3s) - 1
           if (lt < 0 && values[values.length - 1] <= point.upperLimit) {
             lt = values.length - 1
           }
@@ -220,8 +201,8 @@ export default {
           }
           this.lt = lt
 
-          this.option.series[2].markLine.data = markLineData
-          this.option.series[2].markArea = {
+          this.option.series[1].markLine.data = markLineData
+          this.option.series[1].markArea = {
             itemStyle: {
               color: 'rgba(0,255,0,0.3)'
             },
@@ -257,7 +238,7 @@ export default {
 <style lang="scss">
 .size-card {
   padding: 16px 8px;
-  border: 1px solid rgba(0,0,0,0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   margin-bottom: 16px;
   border-radius: 4px;
 

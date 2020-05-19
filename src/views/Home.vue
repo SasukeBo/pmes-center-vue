@@ -14,29 +14,49 @@
       <el-col
         :span="6"
         class="display-card"
-        v-for="(material, index) in (materialWrap.materials || []).filter(m =>
+        v-for="(material, index) in (materialWrap.materials || []).filter((m) =>
           m.name.includes(search)
         )"
         :key="'material_' + index"
-        ><MaterialCard
+      >
+        <MaterialCard
           :materialID="material.id"
           :pending.sync="material.pending"
           :fileIDs.sync="material.fileIDs"
-        ></MaterialCard
-      ></el-col>
+        ></MaterialCard>
+      </el-col>
       <el-col
         :span="24"
         v-if="!materialWrap.materials || materialWrap.materials.length === 0"
-        ><div class="empty-materials">暂无数据</div></el-col
       >
+        <div class="empty-materials">暂无数据</div>
+      </el-col>
     </el-row>
 
     <el-dialog title="添加料号" :visible.sync="dialogFormVisible" width="500px">
-      <el-form :model="form" label-position="left">
-        <el-form-item label="料号名称" :label-width="formLabelWidth">
+      <el-form :model="form" label-position="left" :rules="rules" ref="form">
+        <el-form-item
+          label="厂内料号"
+          :label-width="formLabelWidth"
+          prop="name"
+        >
           <el-input
             @keydown.native.enter.prevent="addMaterial"
-            v-model="form.materialName"
+            v-model="form.name"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="客户料号" :label-width="formLabelWidth">
+          <el-input
+            @keydown.native.enter.prevent="addMaterial"
+            v-model="form.customerCode"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="专案描述" :label-width="formLabelWidth">
+          <el-input
+            @keydown.native.enter.prevent="addMaterial"
+            v-model="form.projectRemark"
             autocomplete="off"
           ></el-input>
         </el-form-item>
@@ -61,8 +81,7 @@
         background
         layout="sizes, prev, pager, next"
         :total="materialWrap.total"
-      >
-      </el-pagination>
+      ></el-pagination>
 
       <el-button
         size="small"
@@ -94,6 +113,8 @@ export default {
             materials {
               id
               name
+              customerCode
+              projectRemark
             }
           }
         }
@@ -112,8 +133,13 @@ export default {
       search: '',
       dialogFormVisible: false,
       formLabelWidth: '100px',
+      rules: {
+        name: [{ required: true, message: '厂内料号必须填写', trigger: 'blur' }]
+      },
       form: {
-        materialName: ''
+        name: '',
+        customerCode: '',
+        projectRemark: ''
       },
       limit: 21,
       page: 1,
@@ -127,50 +153,61 @@ export default {
   methods: {
     addMaterial() {
       this.loading = true
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($materialName: String!) {
-              response: addMaterial(materialName: $materialName) {
-                material {
-                  id
-                  name
+
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($input: MaterialCreateInput!) {
+                  response: addMaterial(input: $input) {
+                    material {
+                      id
+                      name
+                      customerCode
+                      projectRemark
+                    }
+                    status {
+                      message
+                      pending
+                      fileIDs
+                    }
+                  }
                 }
-                status {
-                  message
-                  pending
-                  fileIDs
-                }
+              `,
+              variables: {
+                input: this.form
               }
-            }
-          `,
-          variables: {
-            materialName: this.form.materialName
-          }
-        })
-        .then(({ data: { response } }) => {
-          this.$message.success(response.status.message)
-          if (response.status) {
-            var material = response.material
-            material.pending = response.status.pending
-            material.fileIDs = response.status.fileIDs
-            if (!this.materialWrap.materials) {
-              this.materialWrap.materials = []
-            }
-            this.materialWrap.materials.unshift(material)
-          }
-          this.closeDialog()
-        })
-        .catch(e => {
-          console.log(e)
-          this.$message.error(e.message.replace('GraphQL error: ', ''))
-          this.closeDialog()
-        })
+            })
+            .then(({ data: { response } }) => {
+              this.$message.success(response.status.message)
+              if (response.status) {
+                var material = response.material
+                material.pending = response.status.pending
+                material.fileIDs = response.status.fileIDs
+                if (!this.materialWrap.materials) {
+                  this.materialWrap.materials = []
+                }
+                this.materialWrap.materials.unshift(material)
+              }
+              this.closeDialog()
+            })
+            .catch((e) => {
+              console.log(e)
+              this.$message.error(e.message.replace('GraphQL error: ', ''))
+              this.closeDialog()
+            })
+        } else {
+          this.loading = false
+        }
+      })
     },
     closeDialog() {
       this.loading = false
       this.dialogFormVisible = false
-      this.form.materialName = ''
+      this.form.name = ''
+      this.form.customerCode = ''
+      this.form.projectRemark = ''
     }
   }
 }
