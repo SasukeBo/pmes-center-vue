@@ -205,7 +205,9 @@ export default {
     closeDialog() {
       this.loading = false
       this.dialogFormVisible = false
-      this.form.materialName = ''
+      this.form.name = ''
+      this.form.customerCode = ''
+      this.form.projectRemark = ''
     }
   }
 }
