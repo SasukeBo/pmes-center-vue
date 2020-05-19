@@ -1,5 +1,5 @@
 <template>
-  <div class="material-view" >
+  <div class="material-view">
     <div class="material-header">
       <el-row :gutter="20">
         <el-col :span="8">
@@ -141,7 +141,11 @@ export default {
       },
       devices: [],
       option: {
-        title: {},
+        title: {
+          subtextStyle: {
+            fontSize: 14
+          }
+        },
         tooltip: {
           trigger: 'item',
           formatter: '{a} <br/>{b} : {c} ({d}%)'
@@ -150,7 +154,7 @@ export default {
         series: [
           {
             radius: '65%',
-            center: ['50%', '65%'],
+            center: ['60%', '65%'],
             top: 0,
             type: 'pie',
             name: '产量',
@@ -186,6 +190,8 @@ export default {
             material {
               id
               name
+              customerCode
+              projectRemark
             }
             ok
             ng
@@ -214,8 +220,7 @@ export default {
             }
           }
         }
-      },
-      fetchPolicy: 'network-only'
+      }
     }
   },
   mounted() {
@@ -273,7 +278,7 @@ export default {
                 this.pendingStatus = 0
               }
             })
-            .catch(e => {
+            .catch((e) => {
               console.log(e.message)
             })
         }, 500)
@@ -289,7 +294,10 @@ export default {
         { name: 'OK', value: nv.ok },
         { name: 'NG', value: nv.ng }
       ]
-      if (nv.material) this.option.title.text = `料号${nv.material.name}`
+      if (nv.material) {
+        this.option.title.text = `${nv.material.customerCode}（${nv.material.name}）`
+        this.option.title.subtext = `${nv.material.projectRemark}`
+      }
 
       this.mychart.setOption(this.option)
     }

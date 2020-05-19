@@ -44,6 +44,8 @@ export default {
             material {
               id
               name
+              customerCode
+              projectRemark
             }
             ok
             ng
@@ -55,7 +57,6 @@ export default {
           }
         }
       `,
-      fetchPolicy: 'network-only',
       variables() {
         var end = new Date()
         var begin = new Date()
@@ -80,7 +81,10 @@ export default {
       interval: undefined,
       option: {
         title: {
-          subtext: '近一年生产数据'
+          subtextStyle: {
+            fontSize: 14,
+            lineHeight: 20
+          }
         },
         tooltip: {
           trigger: 'item',
@@ -138,7 +142,7 @@ export default {
                   }, 500)
                 }
               })
-              .catch(e => {
+              .catch((e) => {
                 console.log(e.message)
               })
           }, 500)
@@ -166,7 +170,8 @@ export default {
         { name: 'OK', value: result.ok },
         { name: 'NG', value: result.ng }
       ]
-      this.option.title.text = `料号${result.material.name}`
+      this.option.title.text = `${result.material.customerCode}（${result.material.name}）`
+      this.option.title.subtext = `${result.material.projectRemark}\n近一年生产数据`
       this.mychart.setOption(this.option)
     }
   }
