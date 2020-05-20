@@ -1,7 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
-import MaterialView from '../views/MaterialView.vue'
+// import Home from '../views/Home.vue'
+import Home from '@/theme1/pages/home.vue'
+// import MaterialView from '../views/MaterialView.vue'
+import MaterialView from '@/theme1/pages/material/index.vue'
+import SizeAnalyze from '@/theme1/pages/material/sizeAnalyze.vue'
 
 Vue.use(VueRouter)
 
@@ -29,7 +32,16 @@ const routes = [
     path: '/material/:id/view',
     name: 'MaterialView',
     props: true,
-    component: MaterialView
+    component: MaterialView,
+    redirect: { name: 'SizeAnalyze' },
+    children: [
+      {
+        path: 'size-analyze',
+        name: 'SizeAnalyze',
+        props: true,
+        component: SizeAnalyze
+      }
+    ]
   }
 ]
 

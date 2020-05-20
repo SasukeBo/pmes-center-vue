@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import App from './App.vue'
+// import App from './App.vue'
+import Theme1 from './theme1/index.vue'
 import router from './router'
 import store from './store'
 import 'element-ui/lib/theme-chalk/index.css'
@@ -13,5 +14,5 @@ new Vue({
   router,
   store,
   apolloProvider: createProvider(),
-  render: h => h(App)
+  render: (h) => h(Theme1)
 }).$mount('#app')
