@@ -5,9 +5,14 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    currentUser: undefined
+    currentUser: undefined,
+    loginDialogVisible: false
   },
-  mutations: {},
+  mutations: {
+    SET_LOGIN_DIALOG_VISIBLE(state, payload) {
+      state.loginDialogVisible = payload
+    }
+  },
   actions: {},
   modules: {}
 })

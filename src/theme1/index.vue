@@ -2,13 +2,28 @@
   <div class="theme_1-app">
     <div class="app-header">
       <img src="~@/assets/fortunta-logo.png" class="company-logo" />
+      <el-button
+        size="small"
+        type="primary"
+        @click="$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)"
+        >登录</el-button
+      >
     </div>
 
     <div class="app-body">
       <router-view></router-view>
     </div>
+
+    <LoginDialog></LoginDialog>
   </div>
 </template>
+<script>
+import LoginDialog from '@/theme1/components/LoginDialog.vue'
+
+export default {
+  components: { LoginDialog }
+}
+</script>
 <style lang="scss">
 .theme_1-app {
   height: 100%;
@@ -32,6 +47,11 @@
       height: 48px;
       margin: 8px 0;
       display: inline-block;
+    }
+
+    .el-button {
+      float: right;
+      margin: 16px 0px;
     }
   }
 

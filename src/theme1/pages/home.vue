@@ -10,18 +10,20 @@
       </el-input>
     </div>
 
-    <div class="header-block">
+    <div class="header-block" v-if="materialWrap.materials.length">
       <el-row :gutter="24">
-        <el-col :span="18">
+        <el-col :span="18" v-if="recent">
           <div>
             <div class="col-title">最近预览</div>
-            <div class="col-card"></div>
+            <div class="col-card">
+              <RecentMaterial :materialID="recent"></RecentMaterial>
+            </div>
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="recent ? 6 : 24">
           <div>
             <div class="col-title">添加料号</div>
-            <div class="col-card create-material-panel">
+            <div class="col-card create-material-panel" @click="handleAdd">
               <img src="~@/assets/icon-plus@2x.png" />
               <span>添加料号</span>
             </div>
@@ -30,7 +32,7 @@
       </el-row>
     </div>
 
-    <div class="materials-block">
+    <div class="materials-block" v-if="materialWrap.materials.length">
       <div class="block-title">最近一年数据</div>
 
       <div class="block-body">
@@ -46,17 +48,37 @@
       </div>
     </div>
 
+    <div class="empty-block" v-if="!materialWrap.materials.length">
+      <img src="~@/assets/empty-material@2x.png" />
+      <div class="information">
+        暂无料号
+      </div>
+      <el-button type="primary" size="small" @click="handleAdd"
+        >添加料号</el-button
+      >
+    </div>
+
     <div class="footer">
       <el-button type="primary" icon="el-icon-top"></el-button>
     </div>
+
+    <NotifyDialog
+      :visible.sync="notifyDialogVisible"
+      @confirm="openLoginDialog"
+    ></NotifyDialog>
+
+    <MaterialDialog :visible.sync="createDialogVisible"></MaterialDialog>
   </div>
 </template>
 <script>
 import MaterialCard from '@/theme1/components/MaterialCard.vue'
+import RecentMaterial from '@/theme1/components/RecentMaterial.vue'
+import NotifyDialog from '@/theme1/components/NotifyDialog.vue'
+import MaterialDialog from '@/theme1/components/MaterialDialog.vue'
 import gql from 'graphql-tag'
 export default {
   name: 'Home',
-  components: { MaterialCard },
+  components: { MaterialCard, RecentMaterial, NotifyDialog, MaterialDialog },
   apollo: {
     materialWrap: {
       query: gql`
@@ -89,6 +111,23 @@ export default {
       materialWrap: {
         materials: [],
         total: 0
+      },
+      createDialogVisible: false,
+      notifyDialogVisible: false
+    }
+  },
+  created() {
+    this.recent = localStorage.getItem('recent_view_material_id')
+  },
+  methods: {
+    openLoginDialog() {
+      this.$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)
+    },
+    handleAdd() {
+      if (this.$store.currentUser) {
+        this.createDialogVisible = true
+      } else {
+        this.notifyDialogVisible = true
       }
     }
   }
@@ -97,8 +136,39 @@ export default {
 <style lang="scss">
 .theme_1-app .app-body .app-body-home {
   padding-top: 32px;
+  margin-bottom: 70px;
+
+  .empty-block {
+    text-align: center;
+    padding: 48px 0;
+
+    img {
+      width: 172.5px;
+      height: 125.42px;
+      padding-top: 90px;
+    }
+
+    .information {
+      font-size: 12px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .el-button {
+      margin-top: 24px;
+      background: linear-gradient(
+        218deg,
+        rgba(63, 227, 211, 1) 0%,
+        rgba(94, 131, 242, 1) 100%
+      );
+      border: none;
+      box-shadow: 0px 3px 20px rgba(94, 131, 242, 0.48);
+      border-radius: 900px;
+    }
+  }
 
   .footer {
+    z-index: 2000;
     height: 70px;
     background: #1c1c1c;
     position: fixed;

@@ -3,7 +3,23 @@
     <div class="header-block">
       <el-row :gutter="24">
         <el-col :span="14">
-          <div class="block-card"></div>
+          <div class="block-card chart-panel">
+            <div class="data-block" v-if="materialResult">
+              <div class="title">
+                {{ materialResult.material.customerCode }} ({{
+                  materialResult.material.name
+                }})
+              </div>
+              <div class="subtitle">
+                {{ materialResult.material.projectRemark }}
+              </div>
+              <div class="subtitle">
+                总产量：{{ materialResult.ok + materialResult.ng }}
+              </div>
+            </div>
+            <div class="chart-block" ref="chart"></div>
+            <MoreOptionPopover></MoreOptionPopover>
+          </div>
         </el-col>
         <el-col :span="10">
           <div class="block-card filter-form">
@@ -17,6 +33,7 @@
                 >
                   <el-option
                     v-for="d in devices"
+                    :label="d.name"
                     :value="d.id"
                     :key="'device_' + d.id"
                     >{{ d.name }}</el-option
@@ -80,15 +97,23 @@
         </el-tabs>
       </div>
 
-      <router-view></router-view>
+      <router-view :searchForm="searchForm"></router-view>
+    </div>
+
+    <div class="footer">
+      <el-button type="primary" icon="el-icon-top"></el-button>
     </div>
   </div>
 </template>
 <script>
 import gql from 'graphql-tag'
+import echarts from 'echarts'
+import { pipeToUndefined } from '@/helpers'
+import MoreOptionPopover from '@/theme1/components/MoreOptionPopover.vue'
 export default {
   name: 'Material',
   props: ['id'],
+  components: { MoreOptionPopover },
   apollo: {
     devices: {
       query: gql`
@@ -104,11 +129,52 @@ export default {
           materialID: this.id
         }
       }
+    },
+    materialResult: {
+      query: gql`
+        query($input: Search!) {
+          materialResult: analyzeMaterial(searchInput: $input) {
+            material {
+              id
+              name
+              customerCode
+              projectRemark
+            }
+            ok
+            ng
+            status {
+              message
+              pending
+              fileIDs
+            }
+          }
+        }
+      `,
+      variables() {
+        var s = this.searchForm
+
+        return {
+          input: {
+            materialID: this.id,
+            deviceID: pipeToUndefined(s.deviceID),
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
+          }
+        }
+      }
     }
   },
   data() {
     return {
+      mychart: undefined,
       devices: [],
+      materialResult: undefined,
       activePanel: 'size-analyze',
       searchForm: {
         deviceID: undefined,
@@ -119,6 +185,54 @@ export default {
         shiftNumber: undefined,
         beginTime: undefined,
         endTime: undefined
+      },
+      option: {
+        color: ['#3FE3D3', '#E04660'],
+        series: [
+          {
+            name: '产量',
+            type: 'pie',
+            radius: ['35%', '60%'],
+            center: ['55%', '50%'],
+            label: {
+              fontSize: 24,
+              fontWeight: 'bold',
+              formatter: '{b}: {d}%'
+            },
+            labelLine: {
+              show: false
+            },
+            itemStyle: {
+              shadowColor: 'rgba(0,0,0,0.2)',
+              shadowBlur: 10
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 24,
+                fontWeight: 'bold'
+              }
+            },
+            data: []
+          }
+        ]
+      }
+    }
+  },
+  mounted() {
+    this.mychart = echarts.init(this.$refs.chart)
+  },
+  watch: {
+    materialResult: {
+      immediate: true,
+      handler: function(nv) {
+        console.log('hello')
+        if (!nv) return
+        this.option.series[0].data = [
+          { name: 'OK', value: nv.ok },
+          { name: 'NG', value: nv.ng }
+        ]
+        this.mychart.setOption(this.option)
       }
     }
   },
@@ -131,8 +245,32 @@ export default {
 </script>
 <style lang="scss">
 .theme_1-app .material-view {
+  .footer {
+    z-index: 2000;
+    height: 70px;
+    background: #1c1c1c;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+
+    .el-button {
+      float: right;
+      border: none;
+      border-radius: 0;
+      height: 100%;
+      width: 120px;
+      background: #478ded;
+
+      .el-icon-top {
+        font-weight: bold;
+        font-size: 20px;
+      }
+    }
+  }
   .tab-panels {
     margin-top: 32px;
+    margin-bottom: 70px;
 
     .tab-panels-header {
       background: #fff;
@@ -170,6 +308,41 @@ export default {
 
   .header-block {
     padding-top: 32px;
+
+    .chart-panel {
+      position: relative;
+
+      .data-block {
+        position: absolute;
+        left: 24px;
+        top: 18px;
+
+        .title {
+          font-size: 20px;
+          color: #333;
+          font-weight: bold;
+          line-height: 20px;
+          padding-bottom: 16px;
+        }
+
+        .subtitle {
+          font-size: 12px;
+          color: #999;
+          line-height: 12px;
+          padding-bottom: 8px;
+        }
+      }
+
+      .chart-block {
+        height: 100%;
+        width: 100%;
+      }
+
+      .more-options {
+        top: 20px;
+        right: 28px;
+      }
+    }
 
     .block-card {
       background: #fff;

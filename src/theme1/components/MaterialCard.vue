@@ -3,15 +3,48 @@
     class="material-card"
     v-loading="$apollo.queries.analyzeMaterial.loading"
   >
-    <div ref="chart-mount" class="percent-pie-chart"></div>
-    <div v-if="analyzeMaterial" class="total-summary">
-      总产出：{{ analyzeMaterial.ok + analyzeMaterial.ng }}
-      <router-link
-        class="material-detail"
-        :to="{ name: 'MaterialView', params: { id: material.id } }"
-        >查看详情</router-link
+    <MoreOptionPopover></MoreOptionPopover>
+
+    <div class="card-title">
+      {{ material.customerCode }} ({{ material.name }})
+    </div>
+    <div class="card-sub-title">
+      {{ material.projectRemark }}
+      <span v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+        >总产出：{{ analyzeMaterial.ok + analyzeMaterial.ng }}</span
       >
     </div>
+
+    <div ref="chart-mount" class="percent-pie-chart"></div>
+    <div
+      class="yield-rate"
+      v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+    >
+      <span class="rate ng-rate"
+        >NG:{{
+          (
+            (analyzeMaterial.ng * 100) /
+            (analyzeMaterial.ok + analyzeMaterial.ng)
+          ).toFixed(2)
+        }}%</span
+      >
+
+      <span class="rate ok-rate"
+        >OK:{{
+          (
+            (analyzeMaterial.ok * 100) /
+            (analyzeMaterial.ok + analyzeMaterial.ng)
+          ).toFixed(2)
+        }}%</span
+      >
+    </div>
+
+    <div class="detail-btn">
+      <el-button type="primary" size="mini" @click="goToDetail()"
+        >查看详情</el-button
+      >
+    </div>
+
     <div v-show="pending" class="loading-data-mask">
       <div class="pending-title">正在加载FTP文件数据，请稍候</div>
       <el-progress
@@ -26,8 +59,10 @@
 <script>
 import echarts from 'echarts'
 import gql from 'graphql-tag'
+import MoreOptionPopover from '@/theme1/components/MoreOptionPopover.vue'
 export default {
   name: 'MaterialCard',
+  components: { MoreOptionPopover },
   props: {
     material: Object,
     pending: {
@@ -89,7 +124,7 @@ export default {
             center: ['50%', '50%'],
             label: {
               show: false,
-              formatter: '{b}({d}%)',
+              formatter: '{b}',
               position: 'center'
             },
             itemStyle: {
@@ -173,6 +208,13 @@ export default {
         { name: 'NG', value: result.ng }
       ]
       this.mychart.setOption(this.option)
+    },
+    goToDetail() {
+      localStorage.setItem('recent_view_material_id', this.material.id)
+      this.$router.push({
+        name: 'MaterialView',
+        params: { id: this.material.id }
+      })
     }
   }
 }
@@ -182,15 +224,54 @@ export default {
   height: 376px;
   border-radius: 4px;
   background: #fff;
-  padding: 8px;
   box-sizing: border-box;
   position: relative;
   margin-bottom: 20px;
+  text-align: center;
+
+  .card-title {
+    font-size: 20px;
+    color: #666;
+    font-weight: bold;
+    padding-top: 26px;
+    line-height: 20px;
+  }
+
+  .card-sub-title {
+    font-size: 14px;
+    color: #999;
+    padding-top: 16px;
+  }
 
   .percent-pie-chart {
     height: 158px;
     width: 158px;
     margin: auto;
+    padding-top: 16px;
+  }
+
+  .yield-rate {
+    font-size: 12px;
+    display: flex;
+    padding: 0 62px;
+
+    .rate {
+      flex: 1;
+    }
+
+    .ng-rate {
+      text-align: left;
+      color: #e04660;
+    }
+
+    .ok-rate {
+      text-align: right;
+      color: #3fe3d3;
+    }
+  }
+
+  .detail-btn {
+    padding-top: 32px;
   }
 
   .loading-data-mask {
@@ -211,20 +292,6 @@ export default {
     color: #666;
     padding-top: 36px;
     padding-bottom: 24px;
-  }
-
-  .total-summary {
-    position: absolute;
-    bottom: 8px;
-    width: 100%;
-    left: 0;
-    right: 0;
-    padding: 0 8px;
-    box-sizing: border-box;
-
-    a.material-detail {
-      float: right;
-    }
   }
 }
 </style>
