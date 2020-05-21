@@ -42,6 +42,7 @@
 </template>
 <script>
 import { mapState } from 'vuex'
+import gql from 'graphql-tag'
 export default {
   data() {
     return {
@@ -64,7 +65,39 @@ export default {
     login() {
       this.$refs.login.validate((valid) => {
         if (valid) {
-          console.log('login....')
+          this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($input: LoginInput!) {
+                  login(loginInput: $input) {
+                    id
+                    account
+                    admin
+                  }
+                }
+              `,
+              variables: {
+                input: {
+                  account: this.form.account,
+                  password: this.form.password
+                }
+              }
+            })
+            .then(({ data: { login } }) => {
+              this.$store.commit('LOGIN', login)
+              this.closeDialog()
+              this.$message({
+                type: 'success',
+                message: '登录成功'
+              })
+            })
+            .catch(() => {
+              this.closeDialog()
+              this.$message({
+                type: 'error',
+                message: '登录失败'
+              })
+            })
         }
       })
     },

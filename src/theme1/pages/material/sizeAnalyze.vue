@@ -1,21 +1,20 @@
 <template>
-  <div
-    class="size-analyze"
-    v-loading="$apollo.queries.pointResultsWrap.loading"
-  >
+  <div class="size-analyze">
     <div class="search-point" v-if="false">
       <el-input v-model="searchPointName" placeholder="搜索点位"></el-input>
     </div>
 
     <el-row :gutter="20">
-      <el-col
-        :span="24"
-        v-for="(pResult, i) in pointResultsWrap.pointResults"
-        :key="'pr_' + i"
-      >
+      <el-col :span="24" v-for="(pResult, i) in results" :key="'pr_' + i">
         <PointCard :pointResult="pResult"></PointCard>
       </el-col>
     </el-row>
+
+    <div
+      class="loading"
+      v-show="$apollo.queries.pointResultsWrap.loading"
+      v-loading="$apollo.queries.pointResultsWrap.loading"
+    ></div>
   </div>
 </template>
 <script>
@@ -32,12 +31,13 @@ export default {
   },
   data() {
     return {
-      page: 1,
+      offset: 0,
       limit: 10,
       pointResultsWrap: {
         pointResults: [],
         total: 0
       },
+      results: [],
       searchPointName: ''
     }
   },
@@ -88,18 +88,63 @@ export default {
               shiftNumber: pipeToUndefined(s.shiftNumber)
             }
           },
-          offset: (this.page - 1) * this.limit,
+          offset: this.offset,
           limit: this.limit
         }
       }
+    }
+  },
+  watch: {
+    pointResultsWrap(nv) {
+      if (nv) {
+        this.results = this.results.concat(nv.pointResults)
+      }
+    },
+    'searchForm.jigID': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.shiftNumber': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.mouldID': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.lineID': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.endTime': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.deviceID': function(val) {
+      this.refetchResult()
+    },
+    'searchForm.beginTime': function(val) {
+      this.refetchResult()
     }
   },
   created() {
     if (this.$route.query.page) {
       this.page = parseInt(this.$route.query.page)
     }
+
+    var _this = this
+    window.onscroll = function() {
+      var scrollTop = document.documentElement.scrollTop
+      var clientHeight = document.body.clientHeight
+      var scrollHeight = document.body.scrollHeight
+
+      if (scrollTop + clientHeight >= scrollHeight - 10) {
+        if (_this.results.length < _this.pointResultsWrap.total) {
+          _this.offset = _this.results.length - 1
+        }
+      }
+    }
   },
   methods: {
+    refetchResult() {
+      this.offset = 0
+      this.results = []
+    },
     handlePageChange(val) {
       this.$router
         .replace({
@@ -117,6 +162,14 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   margin-bottom: 44px;
+
+  .loading {
+    height: 100px;
+
+    .el-loading-mask {
+      background: transparent;
+    }
+  }
 
   .el-pagination {
     text-align: center;

@@ -11,6 +11,9 @@ export default new Vuex.Store({
   mutations: {
     SET_LOGIN_DIALOG_VISIBLE(state, payload) {
       state.loginDialogVisible = payload
+    },
+    LOGIN(state, payload) {
+      state.currentUser = payload
     }
   },
   actions: {},

@@ -37,15 +37,17 @@
 
       <div class="block-body">
         <el-row :gutter="24">
-          <el-col
-            :span="6"
-            v-for="m in materialWrap.materials"
-            :key="'material_' + m.id"
-          >
+          <el-col :span="6" v-for="m in materials" :key="'material_' + m.id">
             <MaterialCard :material="m"></MaterialCard>
           </el-col>
         </el-row>
       </div>
+
+      <div
+        class="loading"
+        v-show="$apollo.queries.materialWrap.loading"
+        v-loading="$apollo.queries.materialWrap.loading"
+      ></div>
     </div>
 
     <div class="empty-block" v-if="!materialWrap.materials.length">
@@ -59,7 +61,11 @@
     </div>
 
     <div class="footer">
-      <el-button type="primary" icon="el-icon-top"></el-button>
+      <el-button
+        type="primary"
+        icon="el-icon-top"
+        @click="scrollTop"
+      ></el-button>
     </div>
 
     <NotifyDialog
@@ -96,7 +102,7 @@ export default {
       `,
       variables() {
         return {
-          page: this.page,
+          page: this.offset / this.limit + 1,
           limit: this.limit
         }
       },
@@ -105,30 +111,63 @@ export default {
   },
   data() {
     return {
-      page: 1,
+      offset: 0,
       limit: 20,
       materialSearch: '',
       materialWrap: {
         materials: [],
         total: 0
       },
+      materials: [],
       createDialogVisible: false,
       notifyDialogVisible: false
     }
   },
+  watch: {
+    materialWrap(nv) {
+      if (nv) {
+        this.materials = nv.materials
+      }
+    }
+  },
   created() {
     this.recent = localStorage.getItem('recent_view_material_id')
+    var _this = this
+    window.onscroll = function() {
+      var scrollTop = document.documentElement.scrollTop
+      var clientHeight = document.body.clientHeight
+      var scrollHeight = document.body.scrollHeight
+
+      if (scrollTop + clientHeight >= scrollHeight - 10) {
+        if (_this.materials.length < _this.materialWrap.total) {
+          _this.offset = _this.materials.length - 1
+        }
+      }
+    }
   },
   methods: {
     openLoginDialog() {
       this.$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)
     },
     handleAdd() {
-      if (this.$store.currentUser) {
+      if (this.$store.state.currentUser) {
         this.createDialogVisible = true
       } else {
         this.notifyDialogVisible = true
       }
+    },
+    scrollTop() {
+      var timer = setInterval(function() {
+        var osTop =
+          document.documentElement.scrollTop || document.body.scrollTop
+        var isSpeed = Math.floor(-osTop / 6)
+
+        document.documentElement.scrollTop = document.body.scrollTop =
+          osTop + isSpeed
+        if (osTop === 0) {
+          clearInterval(timer)
+        }
+      }, 30)
     }
   }
 }
@@ -137,6 +176,14 @@ export default {
 .theme_1-app .app-body .app-body-home {
   padding-top: 32px;
   margin-bottom: 70px;
+
+  .loading {
+    height: 100px;
+
+    .el-loading-mask {
+      background: transparent;
+    }
+  }
 
   .empty-block {
     text-align: center;

@@ -37,7 +37,7 @@ const routes = [
     children: [
       {
         path: 'size-analyze',
-        name: 'SizeAnalyze',
+        name: 'size-analyze',
         props: true,
         component: SizeAnalyze
       }

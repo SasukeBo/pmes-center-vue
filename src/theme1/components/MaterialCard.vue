@@ -20,17 +20,9 @@
       class="yield-rate"
       v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
     >
-      <span class="rate ng-rate"
-        >NG:{{
-          (
-            (analyzeMaterial.ng * 100) /
-            (analyzeMaterial.ok + analyzeMaterial.ng)
-          ).toFixed(2)
-        }}%</span
-      >
-
-      <span class="rate ok-rate"
-        >OK:{{
+      <span class="rate yield"
+        >Yield:
+        {{
           (
             (analyzeMaterial.ok * 100) /
             (analyzeMaterial.ok + analyzeMaterial.ng)
@@ -252,20 +244,10 @@ export default {
 
   .yield-rate {
     font-size: 12px;
-    display: flex;
     padding: 0 62px;
 
-    .rate {
-      flex: 1;
-    }
-
-    .ng-rate {
-      text-align: left;
-      color: #e04660;
-    }
-
-    .ok-rate {
-      text-align: right;
+    .yield {
+      text-align: center;
       color: #3fe3d3;
     }
   }

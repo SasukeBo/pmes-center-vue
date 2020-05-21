@@ -25,12 +25,11 @@ export default {
 }
 </script>
 <style lang="scss">
-.theme_1-app {
-  height: 100%;
+html {
   background: #ececef;
-  overflow-y: auto;
-  overflow-x: hidden;
+}
 
+.theme_1-app {
   .app-header {
     z-index: 1000;
     height: 64px;

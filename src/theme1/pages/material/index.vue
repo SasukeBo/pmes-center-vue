@@ -4,6 +4,7 @@
       <el-row :gutter="24">
         <el-col :span="14">
           <div class="block-card chart-panel">
+            <div class="chart-block" ref="chart-mount"></div>
             <div class="data-block" v-if="materialResult">
               <div class="title">
                 {{ materialResult.material.customerCode }} ({{
@@ -17,7 +18,15 @@
                 总产量：{{ materialResult.ok + materialResult.ng }}
               </div>
             </div>
-            <div class="chart-block" ref="chart"></div>
+            <div class="yield" v-if="materialResult && materialResult.ok">
+              Yield:
+              {{
+                (
+                  (materialResult.ok * 100) /
+                  (materialResult.ok + materialResult.ng)
+                ).toFixed(2)
+              }}%
+            </div>
             <MoreOptionPopover></MoreOptionPopover>
           </div>
         </el-col>
@@ -50,7 +59,7 @@
               <el-form-item label="班别：">
                 <el-input
                   placeholder="请输入班别"
-                  v-model="searchForm.jigID"
+                  v-model="searchForm.shiftNumber"
                 ></el-input>
               </el-form-item>
 
@@ -101,7 +110,11 @@
     </div>
 
     <div class="footer">
-      <el-button type="primary" icon="el-icon-top"></el-button>
+      <el-button
+        type="primary"
+        icon="el-icon-top"
+        @click="scrollTop"
+      ></el-button>
     </div>
   </div>
 </template>
@@ -195,11 +208,6 @@ export default {
             radius: ['35%', '60%'],
             center: ['55%', '50%'],
             label: {
-              fontSize: 24,
-              fontWeight: 'bold',
-              formatter: '{b}: {d}%'
-            },
-            labelLine: {
               show: false
             },
             itemStyle: {
@@ -220,13 +228,12 @@ export default {
     }
   },
   mounted() {
-    this.mychart = echarts.init(this.$refs.chart)
+    this.mychart = echarts.init(this.$refs['chart-mount'])
   },
   watch: {
     materialResult: {
       immediate: true,
       handler: function(nv) {
-        console.log('hello')
         if (!nv) return
         this.option.series[0].data = [
           { name: 'OK', value: nv.ok },
@@ -238,7 +245,20 @@ export default {
   },
   methods: {
     handlePanelChange(val) {
-      console.log(val.name)
+      this.$router.push({ name: val.name, params: { id: this.id } })
+    },
+    scrollTop() {
+      var timer = setInterval(function() {
+        var osTop =
+          document.documentElement.scrollTop || document.body.scrollTop
+        var isSpeed = Math.floor(-osTop / 6)
+
+        document.documentElement.scrollTop = document.body.scrollTop =
+          osTop + isSpeed
+        if (osTop === 0) {
+          clearInterval(timer)
+        }
+      }, 30)
     }
   }
 }
@@ -336,6 +356,15 @@ export default {
       .chart-block {
         height: 100%;
         width: 100%;
+      }
+
+      .yield {
+        position: absolute;
+        font-size: 24px;
+        font-weight: bold;
+        color: #3fe3d3;
+        right: 68px;
+        bottom: 32px;
       }
 
       .more-options {

@@ -1,6 +1,18 @@
 <template>
   <div class="recent-material">
     <div ref="chart" class="pie-chart"></div>
+    <div
+      class="yield"
+      v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+    >
+      Yield:
+      {{
+        (
+          (analyzeMaterial.ok * 100) /
+          (analyzeMaterial.ok + analyzeMaterial.ng)
+        ).toFixed(2)
+      }}%
+    </div>
     <div class="data-block" v-if="analyzeMaterial">
       <div class="title">
         {{ analyzeMaterial.material.customerCode }} ({{
@@ -82,11 +94,6 @@ export default {
             radius: ['30%', '55%'],
             center: ['50%', '50%'],
             label: {
-              fontSize: 24,
-              fontWeight: 'bold',
-              formatter: '{b}: {d}%'
-            },
-            labelLine: {
               show: false
             },
             itemStyle: {
@@ -129,6 +136,15 @@ export default {
 .theme_1-app .recent-material {
   height: 100%;
   display: flex;
+  position: relative;
+
+  .yield {
+    position: absolute;
+    font-size: 24px;
+    color: #3fe3d3;
+    top: 32px;
+    left: 32px;
+  }
 
   .pie-chart {
     flex: 2;
