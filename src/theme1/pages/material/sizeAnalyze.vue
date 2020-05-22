@@ -33,6 +33,7 @@ export default {
     return {
       offset: 0,
       limit: 10,
+      isFetchMore: false,
       pointResultsWrap: {
         pointResults: [],
         total: 0
@@ -97,29 +98,13 @@ export default {
   watch: {
     pointResultsWrap(nv) {
       if (nv) {
-        this.results = this.results.concat(nv.pointResults)
+        if (this.isFetchMore) {
+          this.results = this.results.concat(nv.pointResults)
+          this.isFetchMore = false
+        } else {
+          this.results = nv.pointResults
+        }
       }
-    },
-    'searchForm.jigID': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.shiftNumber': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.mouldID': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.lineID': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.endTime': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.deviceID': function(val) {
-      this.refetchResult()
-    },
-    'searchForm.beginTime': function(val) {
-      this.refetchResult()
     }
   },
   created() {
@@ -133,18 +118,15 @@ export default {
       var clientHeight = document.body.clientHeight
       var scrollHeight = document.body.scrollHeight
 
-      if (scrollTop + clientHeight >= scrollHeight - 10) {
+      if (scrollTop + clientHeight >= scrollHeight - 300) {
         if (_this.results.length < _this.pointResultsWrap.total) {
           _this.offset = _this.results.length - 1
+          _this.isFetchMore = true
         }
       }
     }
   },
   methods: {
-    refetchResult() {
-      this.offset = 0
-      this.results = []
-    },
     handlePageChange(val) {
       this.$router
         .replace({

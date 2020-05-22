@@ -5,12 +5,21 @@
     </div>
 
     <div class="search-form">
-      <el-input placeholder="请输入产品料号" v-model="materialSearch">
-        <el-button slot="append" type="primary">搜索</el-button>
+      <el-input
+        placeholder="请输入产品料号"
+        v-model="inputValue"
+        @keydown.native.enter.prevent="materialSearch = inputValue"
+      >
+        <el-button
+          slot="append"
+          type="primary"
+          @click="materialSearch = inputValue"
+          >搜索</el-button
+        >
       </el-input>
     </div>
 
-    <div class="header-block" v-if="materialWrap.materials.length">
+    <div class="header-block" v-if="materials.length">
       <el-row :gutter="24">
         <el-col :span="18" v-if="recent">
           <div>
@@ -32,13 +41,19 @@
       </el-row>
     </div>
 
-    <div class="materials-block" v-if="materialWrap.materials.length">
+    <div class="materials-block" v-if="materials.length">
       <div class="block-title">最近一年数据</div>
 
       <div class="block-body">
         <el-row :gutter="24">
           <el-col :span="6" v-for="m in materials" :key="'material_' + m.id">
-            <MaterialCard :material="m"></MaterialCard>
+            <MaterialCard
+              :materialID="m.id"
+              :pending.sync="m.pending"
+              :fileIDs.sync="m.fileIDs"
+              @edit="editMaterial"
+              @delete="deleteMaterial"
+            ></MaterialCard>
           </el-col>
         </el-row>
       </div>
@@ -50,7 +65,7 @@
       ></div>
     </div>
 
-    <div class="empty-block" v-if="!materialWrap.materials.length">
+    <div class="empty-block" v-if="!materials.length">
       <img src="~@/assets/empty-material@2x.png" />
       <div class="information">
         暂无料号
@@ -73,7 +88,12 @@
       @confirm="openLoginDialog"
     ></NotifyDialog>
 
-    <MaterialDialog :visible.sync="createDialogVisible"></MaterialDialog>
+    <MaterialDialog
+      :visible.sync="materialDialogVisible"
+      :isEdit.sync="isEdit"
+      :material="materialForm"
+      @after-create="addMaterial"
+    ></MaterialDialog>
   </div>
 </template>
 <script>
@@ -88,8 +108,12 @@ export default {
   apollo: {
     materialWrap: {
       query: gql`
-        query($page: Int!, $limit: Int!) {
-          materialWrap: materials(page: $page, limit: $limit) {
+        query($page: Int!, $limit: Int!, $search: String) {
+          materialWrap: materialsWithSearch(
+            page: $page
+            limit: $limit
+            search: $search
+          ) {
             total
             materials {
               id
@@ -102,6 +126,7 @@ export default {
       `,
       variables() {
         return {
+          search: this.materialSearch,
           page: this.offset / this.limit + 1,
           limit: this.limit
         }
@@ -113,20 +138,28 @@ export default {
     return {
       offset: 0,
       limit: 20,
-      materialSearch: '',
+      isEdit: false,
+      materialForm: undefined,
+      materialSearch: undefined,
+      inputValue: undefined,
       materialWrap: {
         materials: [],
         total: 0
       },
       materials: [],
-      createDialogVisible: false,
+      materialDialogVisible: false,
       notifyDialogVisible: false
     }
   },
   watch: {
     materialWrap(nv) {
       if (nv) {
-        this.materials = nv.materials
+        this.materials = nv.materials || []
+      }
+    },
+    inputValue(nv) {
+      if (nv === '') {
+        this.materialSearch = undefined
       }
     }
   },
@@ -140,18 +173,62 @@ export default {
 
       if (scrollTop + clientHeight >= scrollHeight - 10) {
         if (_this.materials.length < _this.materialWrap.total) {
-          _this.offset = _this.materials.length - 1
+          if (_this.materials.length > 0) {
+            _this.offset = _this.materials.length - 1
+          }
+          _this.offset = 0
         }
       }
     }
   },
   methods: {
+    editMaterial(material) {
+      if (this.$store.state.currentUser) {
+        this.isEdit = true
+        this.materialForm = material
+        this.materialDialogVisible = true
+      } else {
+        this.notifyDialogVisible = true
+      }
+    },
+    deleteMaterial(id) {
+      if (this.$store.state.currentUser) {
+        this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation($id: Int!) {
+                result: deleteMaterial(id: $id)
+              }
+            `,
+            variables: { id }
+          })
+          .then(({ data: { result } }) => {
+            if (parseInt(this.recent) === parseInt(id)) {
+              localStorage.setItem('recent_view_material_id', '')
+            }
+            var index = this.materials.findIndex((m) => m.id === id)
+            this.materials.splice(index, 1)
+            this.$message({ type: 'success', message: result })
+          })
+          .catch((e) => {
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      } else {
+        this.notifyDialogVisible = true
+      }
+    },
+    addMaterial(material) {
+      this.materials.unshift(material)
+    },
     openLoginDialog() {
       this.$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)
     },
     handleAdd() {
       if (this.$store.state.currentUser) {
-        this.createDialogVisible = true
+        this.materialDialogVisible = true
       } else {
         this.notifyDialogVisible = true
       }

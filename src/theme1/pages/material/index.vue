@@ -27,7 +27,10 @@
                 ).toFixed(2)
               }}%
             </div>
-            <MoreOptionPopover></MoreOptionPopover>
+            <MoreOptionPopover
+              @edit="editMaterial"
+              @delete="deleteMaterial"
+            ></MoreOptionPopover>
           </div>
         </el-col>
         <el-col :span="10">
@@ -116,6 +119,12 @@
         @click="scrollTop"
       ></el-button>
     </div>
+
+    <MaterialDialog
+      :visible.sync="materialDialogVisible"
+      :isEdit.sync="isEdit"
+      :material="materialForm"
+    ></MaterialDialog>
   </div>
 </template>
 <script>
@@ -123,10 +132,11 @@ import gql from 'graphql-tag'
 import echarts from 'echarts'
 import { pipeToUndefined } from '@/helpers'
 import MoreOptionPopover from '@/theme1/components/MoreOptionPopover.vue'
+import MaterialDialog from '@/theme1/components/MaterialDialog.vue'
 export default {
   name: 'Material',
   props: ['id'],
-  components: { MoreOptionPopover },
+  components: { MoreOptionPopover, MaterialDialog },
   apollo: {
     devices: {
       query: gql`
@@ -164,7 +174,7 @@ export default {
         }
       `,
       variables() {
-        var s = this.searchForm
+        var s = this.searchParams
 
         return {
           input: {
@@ -186,8 +196,11 @@ export default {
   data() {
     return {
       mychart: undefined,
+      isEdit: false,
       devices: [],
+      materialForm: {},
       materialResult: undefined,
+      materialDialogVisible: false,
       activePanel: 'size-analyze',
       searchForm: {
         deviceID: undefined,
@@ -199,6 +212,7 @@ export default {
         beginTime: undefined,
         endTime: undefined
       },
+      searchParams: {},
       option: {
         color: ['#3FE3D3', '#E04660'],
         series: [
@@ -212,11 +226,11 @@ export default {
             },
             itemStyle: {
               shadowColor: 'rgba(0,0,0,0.2)',
-              shadowBlur: 10
+              shadowBlur: 20
             },
             emphasis: {
               label: {
-                show: true,
+                show: false,
                 fontSize: 24,
                 fontWeight: 'bold'
               }
@@ -231,6 +245,11 @@ export default {
     this.mychart = echarts.init(this.$refs['chart-mount'])
   },
   watch: {
+    searchForm(nv) {
+      setTimeout(() => {
+        this.searchParams = this.searchForm
+      }, 200)
+    },
     materialResult: {
       immediate: true,
       handler: function(nv) {
@@ -244,6 +263,47 @@ export default {
     }
   },
   methods: {
+    editMaterial() {
+      if (this.$store.state.currentUser) {
+        this.materialForm = this.materialResult.material
+        this.isEdit = true
+        this.materialDialogVisible = true
+        return
+      }
+
+      this.$message({ type: 'warning', message: '此操作需要先登录您的账号' })
+    },
+    deleteMaterial() {
+      var id = this.id
+      if (this.$store.state.currentUser) {
+        this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation($id: Int!) {
+                result: deleteMaterial(id: $id)
+              }
+            `,
+            variables: { id }
+          })
+          .then(({ data: { result } }) => {
+            var recent = localStorage.getItem('recent_view_material_id')
+            if (parseInt(recent) === parseInt(id)) {
+              localStorage.setItem('recent_view_material_id', '')
+            }
+
+            this.$router.push({ path: '/' })
+            this.$message({ type: 'success', message: result })
+          })
+          .catch((e) => {
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      } else {
+        this.$message({ type: 'warning', message: '此操作需要先登录您的账号' })
+      }
+    },
     handlePanelChange(val) {
       this.$router.push({ name: val.name, params: { id: this.id } })
     },

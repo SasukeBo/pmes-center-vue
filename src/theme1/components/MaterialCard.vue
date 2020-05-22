@@ -3,13 +3,18 @@
     class="material-card"
     v-loading="$apollo.queries.analyzeMaterial.loading"
   >
-    <MoreOptionPopover></MoreOptionPopover>
+    <MoreOptionPopover
+      @edit="editMaterial"
+      @delete="deleteMaterial"
+    ></MoreOptionPopover>
 
     <div class="card-title">
-      {{ material.customerCode }} ({{ material.name }})
+      {{ analyzeMaterial.material.customerCode }} ({{
+        analyzeMaterial.material.name
+      }})
     </div>
     <div class="card-sub-title">
-      {{ material.projectRemark }}
+      {{ analyzeMaterial.material.projectRemark }}
       <span v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
         >总产出：{{ analyzeMaterial.ok + analyzeMaterial.ng }}</span
       >
@@ -32,17 +37,18 @@
     </div>
 
     <div class="detail-btn">
-      <el-button type="primary" size="mini" @click="goToDetail()"
+      <el-button type="primary" size="mini" @click="goToDetail"
         >查看详情</el-button
       >
     </div>
 
     <div v-show="pending" class="loading-data-mask">
-      <div class="pending-title">正在加载FTP文件数据，请稍候</div>
+      <div class="pending-title">正在加载FTP文件数据</div>
+      <div class="pending-subtitle">请稍候 ...</div>
       <el-progress
         type="circle"
         :width="150"
-        :stroke-width="5"
+        :stroke-width="10"
         :percentage="parseInt(finished.toFixed())"
       ></el-progress>
     </div>
@@ -56,7 +62,7 @@ export default {
   name: 'MaterialCard',
   components: { MoreOptionPopover },
   props: {
-    material: Object,
+    materialID: [Number, String],
     pending: {
       type: Boolean,
       default: false
@@ -90,7 +96,7 @@ export default {
         begin.setMonth(begin.getMonth() - 12)
         return {
           input: {
-            materialID: this.material.id,
+            materialID: this.materialID,
             beginTime: begin,
             endTime: end
           }
@@ -134,7 +140,9 @@ export default {
           }
         ]
       },
-      analyzeMaterial: undefined,
+      analyzeMaterial: {
+        material: {}
+      },
       needFetch: undefined
     }
   },
@@ -193,6 +201,12 @@ export default {
     this.mychart = echarts.init(this.$refs['chart-mount'])
   },
   methods: {
+    editMaterial() {
+      this.$emit('edit', this.analyzeMaterial.material)
+    },
+    deleteMaterial() {
+      this.$emit('delete', this.materialID)
+    },
     renderChart() {
       var result = this.analyzeMaterial
       this.option.series[0].data = [
@@ -202,10 +216,10 @@ export default {
       this.mychart.setOption(this.option)
     },
     goToDetail() {
-      localStorage.setItem('recent_view_material_id', this.material.id)
+      localStorage.setItem('recent_view_material_id', this.materialID)
       this.$router.push({
         name: 'MaterialView',
-        params: { id: this.material.id }
+        params: { id: this.materialID }
       })
     }
   }
@@ -270,9 +284,17 @@ export default {
   }
 
   .pending-title {
+    font-size: 16px;
     text-align: center;
     color: #666;
     padding-top: 36px;
+    padding-bottom: 24px;
+  }
+
+  .pending-subtitle {
+    font-size: 16px;
+    text-align: center;
+    color: #999;
     padding-bottom: 24px;
   }
 }

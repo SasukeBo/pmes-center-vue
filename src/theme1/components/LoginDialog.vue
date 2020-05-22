@@ -91,11 +91,10 @@ export default {
                 message: '登录成功'
               })
             })
-            .catch(() => {
-              this.closeDialog()
+            .catch((e) => {
               this.$message({
                 type: 'error',
-                message: '登录失败'
+                message: e.message.replace('GraphQL error:', '')
               })
             })
         }

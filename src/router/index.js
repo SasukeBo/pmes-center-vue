@@ -33,7 +33,7 @@ const routes = [
     name: 'MaterialView',
     props: true,
     component: MaterialView,
-    redirect: { name: 'SizeAnalyze' },
+    redirect: { name: 'size-analyze' },
     children: [
       {
         path: 'size-analyze',

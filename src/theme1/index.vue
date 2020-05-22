@@ -1,8 +1,18 @@
 <template>
   <div class="theme_1-app">
     <div class="app-header">
-      <img src="~@/assets/fortunta-logo.png" class="company-logo" />
+      <img
+        src="~@/assets/fortunta-logo.png"
+        class="company-logo"
+        @click="$router.push({ path: '/' })"
+      />
+      <div v-if="$store.state.currentUser" class="float-right user-account">
+        <i class="el-icon-user-solid"></i>
+        {{ $store.state.currentUser.account }}
+      </div>
       <el-button
+        v-if="!$store.state.currentUser"
+        class="float-right"
         size="small"
         type="primary"
         @click="$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)"
@@ -19,9 +29,35 @@
 </template>
 <script>
 import LoginDialog from '@/theme1/components/LoginDialog.vue'
+import gql from 'graphql-tag'
 
 export default {
-  components: { LoginDialog }
+  components: { LoginDialog },
+  apollo: {
+    currentUser: {
+      query: gql`
+        query {
+          currentUser {
+            id
+            account
+            admin
+          }
+        }
+      `
+    }
+  },
+  data() {
+    return {
+      currentUser: undefined
+    }
+  },
+  watch: {
+    currentUser(nv) {
+      if (nv) {
+        this.$store.commit('LOGIN', nv)
+      }
+    }
+  }
 }
 </script>
 <style lang="scss">
@@ -46,11 +82,21 @@ html {
       height: 48px;
       margin: 8px 0;
       display: inline-block;
+      cursor: pointer;
     }
 
-    .el-button {
+    .float-right {
       float: right;
       margin: 16px 0px;
+    }
+
+    .user-account {
+      float: right;
+      height: 100%;
+      line-height: 64px;
+      margin: 0;
+      padding: 0 8px;
+      cursor: default;
     }
   }
 
