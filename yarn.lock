@@ -10831,6 +10831,11 @@ vuex@^3.1.2:
   resolved "https://registry.npm.taobao.org/vuex/download/vuex-3.1.3.tgz#f2ad73e3fb73691698b38c93f66e58e267947180"
   integrity sha1-8q1z4/tzaRaYs4yT9m5Y4meUcYA=
 
+vxe-table@^2.9.8:
+  version "2.9.8"
+  resolved "https://registry.yarnpkg.com/vxe-table/-/vxe-table-2.9.8.tgz#5fbbef6f85ec239c1bdc7157de2a552889e33d3f"
+  integrity sha512-XSLbX/6KarGX95CtfIVraxxOhM3WTUU4kBx1hTvyJvnJGfAxhP0Eml4mVfSq5JxzGxUjoRJVN4ShU+ge7BuseQ==
+
 watchpack@^1.6.0:
   version "1.6.1"
   resolved "https://registry.npm.taobao.org/watchpack/download/watchpack-1.6.1.tgz#280da0a8718592174010c078c7585a74cd8cd0e2"
@@ -11120,6 +11125,11 @@ xdg-basedir@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/xdg-basedir/-/xdg-basedir-3.0.0.tgz#496b2cc109eca8dbacfe2dc72b603c17c5870ad4"
   integrity sha1-SWsswQnsqNus/i3HK2A8F8WHCtQ=
+
+xe-utils@^2.4.5:
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/xe-utils/-/xe-utils-2.4.5.tgz#e549e4c682f69fc611e2a8cbf676fe32e4266c6e"
+  integrity sha512-zhj98p1Wc0vaiBlWV/ChtwbQOoTEadJSVRsH5JxEh69p8fdznoBT66U3RqKbntEZQEye1GHeTrFTH4OQ+/VGqg==
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.2"

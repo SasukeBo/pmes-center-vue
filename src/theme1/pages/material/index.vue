@@ -105,7 +105,7 @@
       <div class="tab-panels-header">
         <el-tabs v-model="activePanel" @tab-click="handlePanelChange" stretch>
           <el-tab-pane label="尺寸分析" name="size-analyze"></el-tab-pane>
-          <el-tab-pane label="生产数据" name="product-data"></el-tab-pane>
+          <el-tab-pane label="产品列表" name="product-data"></el-tab-pane>
         </el-tabs>
       </div>
 
@@ -240,6 +240,9 @@ export default {
         ]
       }
     }
+  },
+  created() {
+    this.activePanel = this.$route.name
   },
   mounted() {
     this.mychart = echarts.init(this.$refs['chart-mount'])

@@ -118,7 +118,7 @@ export default {
       var clientHeight = document.body.clientHeight
       var scrollHeight = document.body.scrollHeight
 
-      if (scrollTop + clientHeight >= scrollHeight - 300) {
+      if (scrollTop + clientHeight >= scrollHeight - 1200) {
         if (_this.results.length < _this.pointResultsWrap.total) {
           _this.offset = _this.results.length - 1
           _this.isFetchMore = true

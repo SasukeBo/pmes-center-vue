@@ -113,9 +113,9 @@ export default {
   apollo: {
     materialWrap: {
       query: gql`
-        query($page: Int!, $limit: Int!, $search: String) {
+        query($offset: Int!, $limit: Int!, $search: String) {
           materialWrap: materialsWithSearch(
-            page: $page
+            offset: $offset
             limit: $limit
             search: $search
           ) {
@@ -132,7 +132,7 @@ export default {
       variables() {
         return {
           search: this.materialSearch,
-          page: this.offset / this.limit + 1,
+          offset: this.offset,
           limit: this.limit
         }
       },
@@ -176,7 +176,7 @@ export default {
       var clientHeight = document.body.clientHeight
       var scrollHeight = document.body.scrollHeight
 
-      if (scrollTop + clientHeight >= scrollHeight - 10) {
+      if (scrollTop + clientHeight >= scrollHeight - 500) {
         if (_this.materials.length < _this.materialWrap.total) {
           if (_this.materials.length > 0) {
             _this.offset = _this.materials.length - 1

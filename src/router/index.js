@@ -5,6 +5,7 @@ import Home from '@/theme1/pages/home.vue'
 // import MaterialView from '../views/MaterialView.vue'
 import MaterialView from '@/theme1/pages/material/index.vue'
 import SizeAnalyze from '@/theme1/pages/material/sizeAnalyze.vue'
+import ProductData from '@/theme1/pages/material/productData.vue'
 
 Vue.use(VueRouter)
 
@@ -40,6 +41,12 @@ const routes = [
         name: 'size-analyze',
         props: true,
         component: SizeAnalyze
+      },
+      {
+        path: 'product-data',
+        name: 'product-data',
+        props: true,
+        component: ProductData
       }
     ]
   }

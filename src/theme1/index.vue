@@ -70,6 +70,15 @@ html {
 .theme_1-app {
   position: relative;
 
+  .el-button.el-button--primary {
+    background: #5e83f2;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: rgba(94, 131, 242, 0.7);
+    }
+  }
+
   .app-header {
     z-index: 1000;
     height: 64px;
