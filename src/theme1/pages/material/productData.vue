@@ -1,6 +1,7 @@
 <template>
   <div class="product-data">
     <vxe-table
+      stripe
       :data="results"
       v-loading="$apollo.queries.productWrap.loading && results.length === 0"
     >
@@ -8,6 +9,7 @@
       <vxe-table-column
         title="是否合格"
         width="80"
+        field="qualified"
         :formatter="formatQualified"
       >
       </vxe-table-column>
@@ -27,13 +29,12 @@
       <vxe-table-column width="150">
         <template slot="header">
           <el-button
-            type="primary"
             size="small"
             class="export-product-data-btn"
             @click="exportData"
             disabled
           >
-            <img src="~@/assets/export@2x.png" />导出数据
+            <img src="~@/assets/export@2x.png" v-show="false" />导出数据
           </el-button>
         </template>
         <template v-slot="{ row }">
@@ -191,10 +192,22 @@ export default {
   overflow: hidden;
   margin-bottom: 48px;
 
-  .export-product-data-btn img {
-    width: 10px;
-    padding-right: 4px;
-    display: inline-block;
+  th.vxe-header--column {
+    border-left: 1px solid rgba(236, 236, 239, 0.16);
+    background: #5e83f2;
+    color: #fff;
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+  .export-product-data-btn {
+    color: #5e83f2;
+
+    img {
+      width: 10px;
+      padding-right: 4px;
+      display: inline-block;
+    }
   }
 
   .loading {
