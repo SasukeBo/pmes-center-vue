@@ -32,7 +32,7 @@
             size="small"
             class="export-product-data-btn"
             @click="exportData"
-            disabled
+            :loading="downloading"
           >
             <img src="~@/assets/export@2x.png" v-show="false" />导出数据
           </el-button>
@@ -122,6 +122,7 @@ export default {
   },
   data() {
     return {
+      downloading: false,
       productWrap: {
         tableHeader: [],
         products: [],
@@ -181,7 +182,48 @@ export default {
       console.log(row)
     },
     exportData() {
-      console.log('export')
+      this.downloading = true
+      var s = this.searchForm
+      var input = {
+        materialID: this.id,
+        deviceID: pipeToUndefined(s.deviceID),
+        beginTime: pipeToUndefined(s.beginTime),
+        endTime: pipeToUndefined(s.endTime),
+        extra: {
+          lineID: pipeToUndefined(s.lineID),
+          jigID: pipeToUndefined(s.jigID),
+          mouldID: pipeToUndefined(s.mouldID),
+          shiftNumber: pipeToUndefined(s.shiftNumber)
+        }
+      }
+      this.$apollo
+        .query({
+          query: gql`
+            query($input: Search!) {
+              response: exportProducts(searchInput: $input) {
+                fileContent
+                fileExtension
+              }
+            }
+          `,
+          variables: { input }
+        })
+        .then(({ data: { response } }) => {
+          ;(function() {
+            var a = document.createElement('a')
+            a.download = 'export-data.' + response.fileExtension
+            a.href = 'data:text/plain,' + atob(response.fileContent)
+            a.click()
+          })()
+          this.downloading = false
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+          this.downloading = false
+        })
     }
   }
 }
