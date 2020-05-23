@@ -2,7 +2,7 @@
   <div class="material-view">
     <div class="header-block">
       <el-row :gutter="24">
-        <el-col :span="14">
+        <el-col :span="14" class="chart-panel-col">
           <div class="block-card chart-panel">
             <div class="chart-block" ref="chart-mount"></div>
             <div class="data-block" v-if="materialResult">
@@ -33,7 +33,7 @@
             ></MoreOptionPopover>
           </div>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="10" class="search-form-col">
           <div class="block-card filter-form">
             <div class="form-header">条件筛选</div>
 
@@ -220,7 +220,7 @@ export default {
             name: '产量',
             type: 'pie',
             radius: ['35%', '60%'],
-            center: ['55%', '50%'],
+            center: ['50%', '50%'],
             label: {
               show: false
             },
@@ -389,6 +389,10 @@ export default {
   .header-block {
     padding-top: 32px;
 
+    .search-form-col {
+      min-width: 486px;
+    }
+
     .chart-panel {
       position: relative;
 
@@ -478,6 +482,18 @@ export default {
           text-align: center;
         }
       }
+    }
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .theme_1-app .material-view .header-block {
+    .chart-panel-col {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .search-form-col {
+      width: 100%;
     }
   }
 }

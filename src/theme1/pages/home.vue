@@ -21,7 +21,7 @@
 
     <div class="header-block" v-if="materials.length">
       <el-row :gutter="24">
-        <el-col :span="18" v-if="recent">
+        <el-col :span="18" v-if="recent" class="recent-view-col">
           <div>
             <div class="col-title">最近预览</div>
             <div class="col-card">
@@ -29,7 +29,7 @@
             </div>
           </div>
         </el-col>
-        <el-col :span="recent ? 6 : 24">
+        <el-col :span="recent ? 6 : 24" class="create-material-col">
           <div>
             <div class="col-title">添加料号</div>
             <div class="col-card create-material-panel" @click="handleAdd">
@@ -46,7 +46,12 @@
 
       <div class="block-body">
         <el-row :gutter="24">
-          <el-col :span="6" v-for="m in materials" :key="'material_' + m.id">
+          <el-col
+            :span="6"
+            v-for="m in materials"
+            :key="'material_' + m.id"
+            class="material-card-col"
+          >
             <MaterialCard
               :materialID="m.id"
               :pending.sync="m.pending"
@@ -329,8 +334,6 @@ export default {
   }
 
   .header-block {
-    padding-top: 44px;
-
     .col-title {
       line-height: 16px;
       padding: 16px 0;
@@ -367,17 +370,17 @@ export default {
   }
 
   .page-banner img {
+    width: 100%;
     height: 160px;
     display: block;
   }
 
   .search-form {
-    width: 720px;
+    width: 60%;
     margin: auto;
     position: relative;
 
     .el-input {
-      position: absolute;
       top: -28px;
 
       .el-input__inner {
@@ -398,6 +401,37 @@ export default {
         color: #fff;
         font-weight: 400;
       }
+    }
+  }
+}
+
+@media only screen and (max-width: 650px) {
+  .theme_1-app .app-body .app-body-home {
+    .search-form {
+      width: 90%;
+    }
+
+    .materials-block .block-body .material-card-col {
+      width: 100%;
+    }
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .theme_1-app .app-body-home {
+    .header-block {
+      .recent-view-col {
+        // min-width: 650px;
+        width: 100%;
+      }
+
+      .create-material-col {
+        width: 100%;
+      }
+    }
+
+    .materials-block .block-body .material-card-col {
+      min-width: 306px;
     }
   }
 }
