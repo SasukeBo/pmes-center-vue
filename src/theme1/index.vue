@@ -7,7 +7,11 @@
           class="company-logo"
           @click="$router.push({ path: '/' })"
         />
-        <div v-if="$store.state.currentUser" class="float-right user-account">
+        <div
+          v-if="$store.state.currentUser"
+          class="float-right user-account"
+          @click="logout"
+        >
           <i class="el-icon-user-solid"></i>
           {{ $store.state.currentUser.account }}
         </div>
@@ -58,6 +62,34 @@ export default {
       if (nv) {
         this.$store.commit('LOGIN', nv)
       }
+    }
+  },
+  methods: {
+    logout() {
+      this.$confirm('确定退出登录吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation {
+                logout
+              }
+            `
+          })
+          .then(() => {
+            this.$message({ type: 'success', message: '退出登录成功' })
+            this.$store.commit('LOGIN', undefined)
+          })
+          .catch((e) => {
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      })
     }
   }
 }
@@ -113,7 +145,12 @@ html {
       line-height: 64px;
       margin: 0;
       padding: 0 8px;
-      cursor: default;
+      cursor: pointer;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #999;
+      }
     }
   }
 

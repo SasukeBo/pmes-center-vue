@@ -6,7 +6,7 @@
           >编辑</el-button
         >
         <span> | </span>
-        <el-button size="mini" type="text" @click="$emit('delete')"
+        <el-button size="mini" type="text" class="delete-btn" @click="confirm"
           >删除</el-button
         >
       </div>
@@ -14,6 +14,21 @@
     </el-popover>
   </div>
 </template>
+<script>
+export default {
+  methods: {
+    confirm() {
+      this.$confirm('确定删除此料号数据？', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$emit('delete')
+      })
+    }
+  }
+}
+</script>
 <style lang="scss">
 .el-popover {
   min-width: 0 !important;
@@ -22,6 +37,10 @@
 
 .operation-options {
   color: #999;
+
+  .el-button.delete-btn {
+    color: rgba(224, 70, 96, 1);
+  }
 
   .el-button {
     color: #999;

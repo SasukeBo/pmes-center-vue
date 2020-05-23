@@ -400,6 +400,10 @@ export default {
         font-size: 24px;
         color: #fff;
         font-weight: 400;
+
+        .el-button {
+          background: transparent;
+        }
       }
     }
   }
