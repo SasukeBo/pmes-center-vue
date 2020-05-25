@@ -1,6 +1,7 @@
 <template>
   <el-dialog :visible="visible" width="320px" custom-class="login-dialog">
     <div class="header">
+      <img src="~@/assets/fortunta-logo2.png" class="logo" />
       <div class="bottom">
         <div class="triangle-left"></div>
         <div class="triangle-right"></div>
@@ -184,6 +185,12 @@ export default {
       );
       position: relative;
       margin-bottom: 20px;
+
+      .logo {
+        display: block;
+        margin: auto;
+        padding-top: 10px;
+      }
 
       .bottom {
         position: absolute;
