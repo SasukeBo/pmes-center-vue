@@ -72,6 +72,7 @@ export default {
 
       .el-button {
         width: 100%;
+        border: none;
         background: #5e83f2;
         box-shadow: 0px 3px 6px rgba(94, 131, 242, 0.5);
         margin-bottom: 56px;

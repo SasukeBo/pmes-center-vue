@@ -465,6 +465,10 @@ export default {
     .filter-form .el-form {
       padding: 24px 60px;
 
+      .el-input__inner {
+        padding: 0 8px;
+      }
+
       .el-select {
         width: 100%;
       }

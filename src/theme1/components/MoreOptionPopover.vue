@@ -1,14 +1,12 @@
 <template>
   <div class="more-options">
-    <el-popover placement="left" trigger="click">
+    <el-popover placement="left" trigger="hover">
       <div class="operation-options">
         <el-button size="mini" type="text" @click="$emit('edit')"
           >编辑</el-button
         >
         <span> | </span>
-        <el-button size="mini" type="text" class="delete-btn" @click="confirm"
-          >删除</el-button
-        >
+        <el-button size="mini" type="text" @click="confirm">删除</el-button>
       </div>
       <el-button slot="reference" icon="el-icon-more" size="mini"></el-button>
     </el-popover>
@@ -37,10 +35,6 @@ export default {
 
 .operation-options {
   color: #999;
-
-  .el-button.delete-btn {
-    color: rgba(224, 70, 96, 1);
-  }
 
   .el-button {
     color: #999;

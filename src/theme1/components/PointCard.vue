@@ -57,6 +57,14 @@ export default {
         },
         xAxis: {
           type: 'category',
+          axisLabel: {
+            color: '#666'
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#999'
+            }
+          },
           axisPointer: {
             show: true,
             snap: true,
@@ -80,6 +88,14 @@ export default {
           {
             type: 'value',
             boundaryGap: false,
+            axisLabel: {
+              color: '#666'
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#999'
+              }
+            },
             splitLine: {
               show: false
             }
@@ -87,6 +103,14 @@ export default {
           {
             type: 'value',
             boundaryGap: false,
+            axisLabel: {
+              color: '#666'
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#999'
+              }
+            },
             splitLine: {
               show: false
             }

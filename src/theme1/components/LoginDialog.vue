@@ -9,16 +9,24 @@
     </div>
     <div class="login-form">
       <el-form size="small" :rules="rules" ref="login" :model="form">
-        <el-form-item class="is-active" prop="account">
+        <el-form-item
+          :class="[isActive === 'account' ? 'is-active' : '']"
+          prop="account"
+        >
           <el-input
+            @focus="active('account')"
             placeholder="请输入账号"
             v-model="form.account"
             prefix-icon="el-icon-user"
           ></el-input>
         </el-form-item>
 
-        <el-form-item prop="password">
+        <el-form-item
+          prop="password"
+          :class="[isActive === 'password' ? 'is-active' : '']"
+        >
           <el-input
+            @focus="active('password')"
             placeholder="请输入密码"
             v-model="form.password"
             show-password
@@ -54,7 +62,8 @@ export default {
       form: {
         account: '',
         password: ''
-      }
+      },
+      isActive: ''
     }
   },
   computed: {
@@ -63,6 +72,9 @@ export default {
     })
   },
   methods: {
+    active(val) {
+      this.isActive = val
+    },
     login() {
       this.$refs.login.validate((valid) => {
         if (valid) {
@@ -112,6 +124,7 @@ export default {
 .theme_1-app .login-dialog {
   background: transparent !important;
   position: relative;
+  box-shadow: none;
 
   .cancel-btn {
     position: absolute;
@@ -134,6 +147,7 @@ export default {
 
     .el-button {
       width: 100%;
+      border: none;
       background: #5e83f2;
       box-shadow: 0px 3px 6px rgba(94, 131, 242, 0.5);
     }
