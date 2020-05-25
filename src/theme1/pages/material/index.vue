@@ -243,6 +243,11 @@ export default {
   },
   created() {
     this.activePanel = this.$route.name
+
+    this.searchForm.endTime = new Date()
+    var now = new Date()
+    now.setMonth(now.getMonth() - 12)
+    this.searchForm.beginTime = now
   },
   mounted() {
     this.mychart = echarts.init(this.$refs['chart-mount'])
