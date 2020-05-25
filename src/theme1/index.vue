@@ -97,6 +97,7 @@ export default {
 <style lang="scss">
 html {
   background: #ececef;
+  font-family: source-han-sans-simplified-c, sans-serif;
 }
 
 .theme_1-app {

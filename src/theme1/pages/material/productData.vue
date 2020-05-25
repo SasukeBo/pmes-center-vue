@@ -34,7 +34,7 @@
             @click="exportData"
             :loading="downloading"
           >
-            <img src="~@/assets/export@2x.png" v-show="false" />导出数据
+            导出数据
           </el-button>
         </template>
         <template v-slot="{ row }">
@@ -43,8 +43,8 @@
             type="primary"
             disabled
             size="mini"
-            icon="el-icon-view"
-            >查看检测值</el-button
+            class="view-points-btn"
+            >检测值</el-button
           >
         </template>
       </vxe-table-column>
@@ -233,6 +233,15 @@ export default {
   height: 100%;
   overflow: hidden;
   margin-bottom: 48px;
+
+  .vxe-body--row.row--stripe {
+    background: rgba(94, 131, 242, 0.04);
+  }
+
+  .view-points-btn {
+    border: none;
+    box-shadow: 0px 3px 6px rgba(94, 131, 242, 0.5);
+  }
 
   th.vxe-header--column {
     border-left: 1px solid rgba(236, 236, 239, 0.16);

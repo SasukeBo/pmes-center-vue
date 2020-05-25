@@ -112,6 +112,7 @@ export default {
 .theme_1-app .login-dialog {
   background: transparent !important;
   position: relative;
+  box-shadow: none;
 
   .cancel-btn {
     position: absolute;
@@ -134,6 +135,7 @@ export default {
 
     .el-button {
       width: 100%;
+      border: none;
       background: #5e83f2;
       box-shadow: 0px 3px 6px rgba(94, 131, 242, 0.5);
     }
