@@ -31,8 +31,7 @@
           <el-button
             size="small"
             class="export-product-data-btn"
-            @click="exportData"
-            :loading="downloading"
+            @click="exportDataDialogVisible = true"
           >
             导出数据
           </el-button>
@@ -55,15 +54,23 @@
       v-show="$apollo.queries.productWrap.loading && results.length > 0"
       v-loading="$apollo.queries.productWrap.loading"
     ></div>
+
+    <ExportDialog
+      :visible.sync="exportDataDialogVisible"
+      :search="searchForm"
+      :materialID="id"
+    ></ExportDialog>
   </div>
 </template>
 <script>
 import gql from 'graphql-tag'
 import { pipeToUndefined } from '@/helpers'
 import XEUtils from 'xe-utils'
+import ExportDialog from '@/theme1/components/ExportDialog.vue'
 
 export default {
   name: 'ProductData',
+  components: { ExportDialog },
   props: {
     id: [String, Number],
     searchForm: Object
@@ -122,7 +129,6 @@ export default {
   },
   data() {
     return {
-      downloading: false,
       productWrap: {
         tableHeader: [],
         products: [],
@@ -136,7 +142,8 @@ export default {
       results: [],
       offset: 0,
       limit: 30,
-      isFetchMore: false
+      isFetchMore: false,
+      exportDataDialogVisible: false
     }
   },
   watch: {
@@ -180,50 +187,6 @@ export default {
     },
     viewRow(row) {
       console.log(row)
-    },
-    exportData() {
-      this.downloading = true
-      var s = this.searchForm
-      var input = {
-        materialID: this.id,
-        deviceID: pipeToUndefined(s.deviceID),
-        beginTime: pipeToUndefined(s.beginTime),
-        endTime: pipeToUndefined(s.endTime),
-        extra: {
-          lineID: pipeToUndefined(s.lineID),
-          jigID: pipeToUndefined(s.jigID),
-          mouldID: pipeToUndefined(s.mouldID),
-          shiftNumber: pipeToUndefined(s.shiftNumber)
-        }
-      }
-      this.$apollo
-        .query({
-          query: gql`
-            query($input: Search!) {
-              response: exportProducts(searchInput: $input) {
-                fileContent
-                fileExtension
-              }
-            }
-          `,
-          variables: { input }
-        })
-        .then(({ data: { response } }) => {
-          ;(function() {
-            var a = document.createElement('a')
-            a.download = 'export-data.' + response.fileExtension
-            a.href = 'data:text/plain,' + atob(response.fileContent)
-            a.click()
-          })()
-          this.downloading = false
-        })
-        .catch((e) => {
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '')
-          })
-          this.downloading = false
-        })
     }
   }
 }
