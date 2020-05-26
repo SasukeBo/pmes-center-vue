@@ -116,7 +116,7 @@ export default {
                 message: e.message.replace('GraphQL Error:', '')
               })
             })
-        }, 1000)
+        }, 300)
       }
     },
     'response.finished': function(val) {
@@ -146,7 +146,7 @@ export default {
         })
         .then(() => {
           this.cancelling = false
-          this.$message({ type: 'success', message: '取消成功' })
+          this.$message({ type: 'info', message: '已取消' })
           this.closeDialog()
         })
         .catch((e) => {

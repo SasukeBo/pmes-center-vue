@@ -174,19 +174,17 @@ export default {
         }
       `,
       variables() {
-        var s = this.searchParams
-
         return {
           input: {
             materialID: this.id,
-            deviceID: pipeToUndefined(s.deviceID),
-            beginTime: pipeToUndefined(s.beginTime),
-            endTime: pipeToUndefined(s.endTime),
+            deviceID: pipeToUndefined(this.searchForm.deviceID),
+            beginTime: pipeToUndefined(this.searchForm.beginTime),
+            endTime: pipeToUndefined(this.searchForm.endTime),
             extra: {
-              lineID: pipeToUndefined(s.lineID),
-              jigID: pipeToUndefined(s.jigID),
-              mouldID: pipeToUndefined(s.mouldID),
-              shiftNumber: pipeToUndefined(s.shiftNumber)
+              lineID: pipeToUndefined(this.searchForm.lineID),
+              jigID: pipeToUndefined(this.searchForm.jigID),
+              mouldID: pipeToUndefined(this.searchForm.mouldID),
+              shiftNumber: pipeToUndefined(this.searchForm.shiftNumber)
             }
           }
         }
@@ -212,7 +210,6 @@ export default {
         beginTime: undefined,
         endTime: undefined
       },
-      searchParams: {},
       option: {
         color: ['#3FE3D3', '#E04660'],
         series: [
@@ -253,11 +250,6 @@ export default {
     this.mychart = echarts.init(this.$refs['chart-mount'])
   },
   watch: {
-    searchForm(nv) {
-      setTimeout(() => {
-        this.searchParams = this.searchForm
-      }, 200)
-    },
     materialResult: {
       immediate: true,
       handler: function(nv) {
