@@ -1,7 +1,42 @@
 <template>
   <div class="size-analyze">
-    <div class="search-point" v-if="false">
-      <el-input v-model="searchPointName" placeholder="搜索点位"></el-input>
+    <div class="search-point">
+      <el-input
+        prefix-icon="el-icon-search"
+        v-model="searchPointName"
+        placeholder="搜索点位"
+        size="mini"
+        @keydown.native.enter.prevent="pattern = searchPointName"
+      ></el-input>
+    </div>
+
+    <div
+      class="yield-panels"
+      v-loading="$apollo.queries.yields.loading && !isFetchMore"
+    >
+      <div class="title">点位良率总览</div>
+      <div class="panel">
+        <table>
+          <tr v-for="i in Math.floor(yields.length / 18) + 1" :key="'row_' + i">
+            <td
+              v-for="j in 18"
+              :key="'row_' + i + 'cell_' + j"
+              :class="['yield-cell', j % 2 === 0 ? 'yield-cell__bg' : '']"
+            >
+              <div v-if="yields.length > (i - 1) * 18 + j - 1">
+                <span class="label">{{
+                  yields[(i - 1) * 18 + j - 1].name
+                }}</span>
+                <span class="value"
+                  >{{
+                    (yields[(i - 1) * 18 + j - 1].value * 100).toFixed(2)
+                  }}%</span
+                >
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
 
     <el-row :gutter="20">
@@ -39,17 +74,48 @@ export default {
         total: 0
       },
       results: [],
-      searchPointName: ''
+      searchPointName: '',
+      pattern: '',
+      yields: []
     }
   },
   apollo: {
+    yields: {
+      query: gql`
+        query($search: Search!, $pattern: String) {
+          yields: totalPointYield(searchInput: $search, pattern: $pattern) {
+            name
+            value
+          }
+        }
+      `,
+      variables() {
+        var s = this.searchForm
+        return {
+          search: {
+            materialID: this.id,
+            beginTime: pipeToUndefined(s.beginTime),
+            endTime: pipeToUndefined(s.endTime),
+            deviceID: pipeToUndefined(s.deviceID),
+            extra: {
+              lineID: pipeToUndefined(s.lineID),
+              jigID: pipeToUndefined(s.jigID),
+              mouldID: pipeToUndefined(s.mouldID),
+              shiftNumber: pipeToUndefined(s.shiftNumber)
+            }
+          },
+          pattern: this.pattern
+        }
+      }
+    },
     pointResultsWrap: {
       query: gql`
-        query($search: Search!, $limit: Int!, $offset: Int!) {
+        query($search: Search!, $limit: Int!, $offset: Int!, $pattern: String) {
           pointResultsWrap: analyzePoint(
             searchInput: $search
             limit: $limit
             offset: $offset
+            pattern: $pattern
           ) {
             total
             pointResults {
@@ -90,7 +156,8 @@ export default {
             }
           },
           offset: this.offset,
-          limit: this.limit
+          limit: this.limit,
+          pattern: this.pattern
         }
       }
     }
@@ -164,6 +231,86 @@ export default {
     padding-top: 8px;
     padding-bottom: 8px;
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-point {
+    background: rgba(255, 255, 255, 0.7);
+    height: 64px;
+    text-align: center;
+    margin-bottom: 10px;
+
+    .el-input {
+      width: 230px;
+      margin: 18px 0;
+
+      .el-input__inner {
+        border-radius: 900px;
+        padding-left: 56px;
+      }
+
+      .el-input__prefix {
+        left: 35px;
+      }
+    }
+  }
+
+  .yield-panels {
+    margin-bottom: 8px;
+    background: #fff;
+
+    .title {
+      color: #666;
+      font-size: 16px;
+      padding: 8px 0 8px 15px;
+    }
+
+    .panel {
+      background: #fff;
+      padding: 0 15px;
+      padding-bottom: 20px;
+      box-sizing: border-box;
+      overflow-x: auto;
+      overflow-y: hidden;
+
+      table {
+        border-collapse: collapse;
+      }
+
+      tr:first-child td {
+        border-top: 1px solid rgba(236, 236, 239, 1);
+      }
+
+      tr td:first-child {
+        border-left: 1px solid rgba(236, 236, 239, 1);
+      }
+
+      .yield-cell {
+        width: 66px;
+        height: 56px;
+        text-align: center;
+        padding: 0;
+        border-right: 1px solid rgba(236, 236, 239, 1);
+        border-bottom: 1px solid rgba(236, 236, 239, 1);
+
+        &.yield-cell__bg {
+          background: rgba(236, 236, 239, 0.2);
+        }
+      }
+
+      .yield-cell span {
+        display: inline-block;
+        font-size: 12px;
+
+        &.label {
+          color: #999999;
+        }
+
+        &.value {
+          color: #333;
+          font-weight: bold;
+        }
+      }
+    }
   }
 }
 </style>

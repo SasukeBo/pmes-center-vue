@@ -348,6 +348,7 @@ export default {
       }
     }
   }
+
   .tab-panels {
     margin-top: 32px;
     margin-bottom: 70px;
