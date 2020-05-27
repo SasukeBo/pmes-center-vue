@@ -1,6 +1,12 @@
 <template>
   <el-dialog :visible="visible" width="520px" custom-class="export-dialog">
-    <div class="percent-text">
+    <div class="status-icon" v-if="isFinished">
+      <img src="~@/assets/success-icon@2x.png" />
+    </div>
+    <div class="status-icon" v-if="isFailed">
+      <img src="~@/assets/failed-icon@2x.png" />
+    </div>
+    <div class="percent-text" v-if="!isFinished && !isFailed">
       <span>已完成</span>
       <span class="big-number">{{
         response.percent ? parsePercent(response.percent) : 0
@@ -21,7 +27,14 @@
     </div>
     <div class="tips">数据量较大时，建议拆分日期范围导出</div>
     <div class="close-btn">
-      <el-button plain size="mini" @click="cancel" :loading="cancelling"
+      <el-button
+        plain
+        size="mini"
+        @click="closeDialog"
+        v-if="isFinished || isFailed"
+        >确定</el-button
+      >
+      <el-button plain size="mini" @click="cancel" :loading="cancelling" v-else
         >取消</el-button
       >
     </div>
@@ -74,6 +87,8 @@ export default {
       opID: '',
       checker: undefined,
       cancelling: false,
+      isFinished: false,
+      isFailed: false,
       response: {
         percent: 0,
         message: '等待中 ...',
@@ -111,10 +126,9 @@ export default {
               _this.response.finished = response.finished
             })
             .catch((e) => {
-              _this.$message({
-                type: 'error',
-                message: e.message.replace('GraphQL Error:', '')
-              })
+              clearInterval(this.checker)
+              this.isFailed = true
+              _this.response.message = e.message.replace('GraphQL error:', '')
             })
         }, 300)
       }
@@ -125,7 +139,7 @@ export default {
         var a = document.createElement('a')
         a.href = '/downloads?file_name=' + this.response.fileName
         a.click()
-        this.closeDialog()
+        this.isFinished = true
       }
     }
   },
@@ -153,18 +167,20 @@ export default {
           this.cancelling = false
           this.$message({
             type: 'error',
-            message: e.message.replace('GraphQL Error:', '')
+            message: e.message.replace('GraphQL error:', '')
           })
         })
     },
     closeDialog() {
+      this.$emit('update:visible', false)
       this.response = {
         percent: 0,
         message: '等待中 ...',
         fileName: '',
         finished: false
       }
-      this.$emit('update:visible', false)
+      this.isFinished = false
+      this.isFailed = false
     },
     parsePercent(val) {
       var p = (val * 100).toFixed(0)
@@ -187,6 +203,14 @@ export default {
     padding: 0;
     border-radius: 4px;
     border: none;
+
+    .status-icon {
+      padding-top: 36px;
+
+      img {
+        width: 48px;
+      }
+    }
 
     .percent-text {
       padding-top: 32px;
