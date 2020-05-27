@@ -13,6 +13,9 @@
     <div
       class="yield-panels"
       v-loading="$apollo.queries.yields.loading && !isFetchMore"
+      element-loading-text="正在获取数据"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.4)"
     >
       <div class="title">点位良率总览</div>
       <div class="panel">
