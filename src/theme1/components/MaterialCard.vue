@@ -15,7 +15,8 @@
     </div>
     <div class="card-sub-title">
       {{ analyzeMaterial.material.projectRemark }}
-      <span v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+      <span
+        v-if="analyzeMaterial && analyzeMaterial.ok + analyzeMaterial.ng > 0"
         >总产出：{{ analyzeMaterial.ok + analyzeMaterial.ng }}</span
       >
     </div>
@@ -23,7 +24,7 @@
     <div ref="chart-mount" class="percent-pie-chart"></div>
     <div
       class="yield-rate"
-      v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+      v-if="analyzeMaterial && analyzeMaterial.ok + analyzeMaterial.ng > 0"
     >
       <span class="rate yield"
         >Yield:
