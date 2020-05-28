@@ -301,7 +301,7 @@ export default {
       }
 
       .yield-cell span {
-        display: inline-block;
+        display: block;
         font-size: 12px;
 
         &.label {
