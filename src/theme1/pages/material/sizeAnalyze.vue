@@ -56,8 +56,7 @@ export default {
       yieldChart: undefined,
       options: {
         tooltip: {
-          show: true,
-          formatter: '{a}<br> {b}: {c}%'
+          show: true
         },
         color: ['#3FE3D3', '#5E83F2'],
         title: {
@@ -65,20 +64,27 @@ export default {
           subtext: '不良率最高的前20个检测点位'
         },
         xAxis: {
-          type: 'category'
+          name: '点位',
+          type: 'category',
+          axisLabel: { interval: 0, rotate: -45 }
         },
-        yAxis: {
-          type: 'value',
-          scale: true
-        },
+        yAxis: [
+          {
+            name: '百分比',
+            nameLocation: 'center',
+            nameGap: 50,
+            type: 'value',
+            scale: true,
+            axisLabel: {
+              formatter: '{value}%'
+            }
+          }
+        ],
         series: [
           {
             type: 'bar',
             name: '点位良率',
-            showBackground: true,
-            backgroundStyle: {
-              color: 'rgba(220, 220, 220, 0.8)'
-            }
+            barMaxWidth: 20
           }
         ]
       }
@@ -90,6 +96,7 @@ export default {
         query($search: Search!, $pattern: String) {
           yields: totalPointYield(searchInput: $search, pattern: $pattern) {
             name
+            ng
             value
           }
         }
@@ -177,20 +184,60 @@ export default {
             return {
               value: rate,
               itemStyle: {
-                color: '#E04660'
+                color: {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: '#D92622' // 0% 处的颜色
+                    },
+                    {
+                      offset: 1,
+                      color: '#E04660' // 100% 处的颜色
+                    }
+                  ]
+                }
               }
             }
           } else if (i < 8) {
             return {
               value: rate,
               itemStyle: {
-                color: '#FFB763'
+                color: {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: '#FFB763' // 0% 处的颜色
+                    },
+                    {
+                      offset: 1,
+                      color: '#E04660' // 100% 处的颜色
+                    }
+                  ]
+                }
               }
             }
           }
 
           return rate
         })
+        this.options.tooltip.formatter = function(params) {
+          console.log(params)
+          return `
+          <div>${params.name}</div>
+          <div>${params.seriesName}：${params.value}%</div>
+          <div>不良数：${nv[params.dataIndex].ng}</div>
+          `
+        }
         this.options.xAxis.data = names
         this.options.series[0].data = values
         this.yieldChart.setOption(this.options)
