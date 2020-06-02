@@ -83,7 +83,7 @@ export default {
         series: [
           {
             type: 'bar',
-            name: '点位良率',
+            name: '点位不良率',
             barMaxWidth: 20
           }
         ]
