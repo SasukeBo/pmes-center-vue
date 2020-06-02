@@ -3,7 +3,7 @@
     <div class="data-block">
       <div class="title">
         {{ pointResult.point.name }} ({{
-          pointResult.point.norminal.toFixed(2)
+          pointResult.point.nominal.toFixed(2)
         }})
       </div>
 

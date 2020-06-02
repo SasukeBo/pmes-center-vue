@@ -147,7 +147,7 @@ export default {
         if (val) {
           this.option.title.text = `${
             val.point.name
-          } (${val.point.norminal.toFixed(2)})      Yield（${(
+          } (${val.point.nominal.toFixed(2)})      Yield（${(
             (100 * val.ok) /
             val.total
           ).toFixed(2)}%）`

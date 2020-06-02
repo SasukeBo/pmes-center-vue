@@ -62,7 +62,7 @@ export default {
                 name
                 upperLimit
                 lowerLimit
-                norminal
+                nominal
               }
               total
               s

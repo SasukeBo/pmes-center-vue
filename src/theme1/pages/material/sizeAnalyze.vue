@@ -10,36 +10,8 @@
       ></el-input>
     </div>
 
-    <div
-      class="yield-panels"
-      v-loading="$apollo.queries.yields.loading && !isFetchMore"
-      element-loading-text="正在获取数据"
-      element-loading-spinner="el-icon-loading"
-      element-loading-background="rgba(0, 0, 0, 0.4)"
-    >
-      <div class="title">点位良率总览</div>
-      <div class="panel">
-        <table>
-          <tr v-for="i in Math.floor(yields.length / 18) + 1" :key="'row_' + i">
-            <td
-              v-for="j in 18"
-              :key="'row_' + i + 'cell_' + j"
-              :class="['yield-cell', j % 2 === 0 ? 'yield-cell__bg' : '']"
-            >
-              <div v-if="yields.length > (i - 1) * 18 + j - 1">
-                <span class="label">{{
-                  yields[(i - 1) * 18 + j - 1].name
-                }}</span>
-                <span class="value"
-                  >{{
-                    (yields[(i - 1) * 18 + j - 1].value * 100).toFixed(2)
-                  }}%</span
-                >
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
+    <div class="yield-chart" v-loading="$apollo.queries.yields.loading">
+      <div class="yield-chart-mount" ref="chart"></div>
     </div>
 
     <el-row :gutter="20">
@@ -56,6 +28,7 @@
   </div>
 </template>
 <script>
+import echarts from 'echarts'
 import gql from 'graphql-tag'
 import PointCard from '@/theme1/components/PointCard.vue'
 import { pipeToUndefined } from '@/helpers'
@@ -79,7 +52,35 @@ export default {
       results: [],
       searchPointName: '',
       pattern: '',
-      yields: []
+      yields: [],
+      yieldChart: undefined,
+      options: {
+        tooltip: {
+          show: true,
+          formatter: '{a}<br> {b}: {c}%'
+        },
+        color: ['#3FE3D3', '#5E83F2'],
+        title: {
+          text: '点位良率',
+          subtext: '良率最低的20个检测点位'
+        },
+        xAxis: {
+          type: 'category'
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [
+          {
+            type: 'bar',
+            name: '点位良率',
+            showBackground: true,
+            backgroundStyle: {
+              color: 'rgba(220, 220, 220, 0.8)'
+            }
+          }
+        ]
+      }
     }
   },
   apollo: {
@@ -127,7 +128,7 @@ export default {
                 name
                 upperLimit
                 lowerLimit
-                norminal
+                nominal
               }
               total
               s
@@ -166,6 +167,27 @@ export default {
     }
   },
   watch: {
+    yields(nv) {
+      if (nv) {
+        var names = nv.map((i) => i.name)
+        var values = nv.map((i) => {
+          var rate = (i.value * 100).toFixed(2)
+          if (i.value < 0.9) {
+            return {
+              value: rate,
+              itemStyle: {
+                color: '#E04660'
+              }
+            }
+          }
+
+          return rate
+        })
+        this.options.xAxis.data = names
+        this.options.series[0].data = values
+        this.yieldChart.setOption(this.options)
+      }
+    },
     pointResultsWrap(nv) {
       if (nv) {
         if (this.isFetchMore) {
@@ -196,6 +218,9 @@ export default {
       }
     }
   },
+  mounted() {
+    this.yieldChart = echarts.init(this.$refs.chart)
+  },
   methods: {
     handlePageChange(val) {
       this.$router
@@ -214,6 +239,18 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   margin-bottom: 44px;
+
+  .yield-chart {
+    padding: 16px;
+    background: #fff;
+    border-radius: 4px;
+    margin-bottom: 8px;
+
+    .yield-chart-mount {
+      height: 400px;
+      width: 100%;
+    }
+  }
 
   .loading {
     height: 100px;
@@ -253,65 +290,6 @@ export default {
 
       .el-input__prefix {
         left: 35px;
-      }
-    }
-  }
-
-  .yield-panels {
-    margin-bottom: 8px;
-    background: #fff;
-
-    .title {
-      color: #666;
-      font-size: 16px;
-      padding: 8px 0 8px 15px;
-    }
-
-    .panel {
-      background: #fff;
-      padding: 0 15px;
-      padding-bottom: 20px;
-      box-sizing: border-box;
-      overflow-x: auto;
-      overflow-y: hidden;
-
-      table {
-        border-collapse: collapse;
-      }
-
-      tr:first-child td {
-        border-top: 1px solid rgba(236, 236, 239, 1);
-      }
-
-      tr td:first-child {
-        border-left: 1px solid rgba(236, 236, 239, 1);
-      }
-
-      .yield-cell {
-        width: 66px;
-        height: 56px;
-        text-align: center;
-        padding: 0;
-        border-right: 1px solid rgba(236, 236, 239, 1);
-        border-bottom: 1px solid rgba(236, 236, 239, 1);
-
-        &.yield-cell__bg {
-          background: rgba(236, 236, 239, 0.2);
-        }
-      }
-
-      .yield-cell span {
-        display: block;
-        font-size: 12px;
-
-        &.label {
-          color: #999999;
-        }
-
-        &.value {
-          color: #333;
-          font-weight: bold;
-        }
       }
     }
   }
