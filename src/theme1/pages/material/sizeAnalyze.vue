@@ -1,5 +1,9 @@
 <template>
   <div class="size-analyze">
+    <div class="yield-chart" v-loading="$apollo.queries.yields.loading">
+      <div class="yield-chart-mount" ref="chart"></div>
+    </div>
+
     <div class="search-point">
       <el-input
         prefix-icon="el-icon-search"
@@ -8,10 +12,6 @@
         size="mini"
         @keydown.native.enter.prevent="pattern = searchPointName"
       ></el-input>
-    </div>
-
-    <div class="yield-chart" v-loading="$apollo.queries.yields.loading">
-      <div class="yield-chart-mount" ref="chart"></div>
     </div>
 
     <el-row :gutter="20">
@@ -61,14 +61,15 @@ export default {
         },
         color: ['#3FE3D3', '#5E83F2'],
         title: {
-          text: '点位良率',
-          subtext: '良率最低的20个检测点位'
+          text: '点位不良率',
+          subtext: '不良率最高的前20个检测点位'
         },
         xAxis: {
           type: 'category'
         },
         yAxis: {
-          type: 'value'
+          type: 'value',
+          scale: true
         },
         series: [
           {
@@ -170,13 +171,20 @@ export default {
     yields(nv) {
       if (nv) {
         var names = nv.map((i) => i.name)
-        var values = nv.map((i) => {
-          var rate = (i.value * 100).toFixed(2)
-          if (i.value < 0.9) {
+        var values = nv.map((item, i) => {
+          var rate = (item.value * 100).toFixed(2)
+          if (i < 3) {
             return {
               value: rate,
               itemStyle: {
                 color: '#E04660'
+              }
+            }
+          } else if (i < 8) {
+            return {
+              value: rate,
+              itemStyle: {
+                color: '#FFB763'
               }
             }
           }
