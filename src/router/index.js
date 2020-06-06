@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 // import Home from '../views/Home.vue'
-import Home from '@/theme1/pages/home.vue'
+import Home from '@/version1/pages/home.vue'
 // import MaterialView from '../views/MaterialView.vue'
-import MaterialView from '@/theme1/pages/material/index.vue'
-import SizeAnalyze from '@/theme1/pages/material/sizeAnalyze.vue'
-import ProductData from '@/theme1/pages/material/productData.vue'
+import MaterialView from '@/version1/pages/material/index.vue'
+import SizeAnalyze from '@/version1/pages/material/sizeAnalyze.vue'
+import ProductData from '@/version1/pages/material/productData.vue'
 
 Vue.use(VueRouter)
 

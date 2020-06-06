@@ -30,7 +30,7 @@
 <script>
 import echarts from 'echarts'
 import gql from 'graphql-tag'
-import PointCard from '@/theme1/components/PointCard.vue'
+import PointCard from '@/version1/components/PointCard.vue'
 import { pipeToUndefined } from '@/helpers'
 export default {
   name: 'SizeAnalyze',

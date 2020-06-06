@@ -58,7 +58,7 @@
 <script>
 import echarts from 'echarts'
 import gql from 'graphql-tag'
-import MoreOptionPopover from '@/theme1/components/MoreOptionPopover.vue'
+import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
 export default {
   name: 'MaterialCard',
   components: { MoreOptionPopover },

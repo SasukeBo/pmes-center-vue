@@ -131,8 +131,8 @@
 import gql from 'graphql-tag'
 import echarts from 'echarts'
 import { pipeToUndefined } from '@/helpers'
-import MoreOptionPopover from '@/theme1/components/MoreOptionPopover.vue'
-import MaterialDialog from '@/theme1/components/MaterialDialog.vue'
+import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
+import MaterialDialog from '@/version1/components/MaterialDialog.vue'
 export default {
   name: 'Material',
   props: ['id'],

@@ -66,7 +66,7 @@
 import gql from 'graphql-tag'
 import { pipeToUndefined } from '@/helpers'
 import XEUtils from 'xe-utils'
-import ExportDialog from '@/theme1/components/ExportDialog.vue'
+import ExportDialog from '@/version1/components/ExportDialog.vue'
 
 export default {
   name: 'ProductData',

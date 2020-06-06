@@ -34,7 +34,7 @@
   </div>
 </template>
 <script>
-import LoginDialog from '@/theme1/components/LoginDialog.vue'
+import LoginDialog from '@/version1/components/LoginDialog.vue'
 import gql from 'graphql-tag'
 
 export default {

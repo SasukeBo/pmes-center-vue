@@ -102,10 +102,10 @@
   </div>
 </template>
 <script>
-import MaterialCard from '@/theme1/components/MaterialCard.vue'
-import RecentMaterial from '@/theme1/components/RecentMaterial.vue'
-import NotifyDialog from '@/theme1/components/NotifyDialog.vue'
-import MaterialDialog from '@/theme1/components/MaterialDialog.vue'
+import MaterialCard from '@/version1/components/MaterialCard.vue'
+import RecentMaterial from '@/version1/components/RecentMaterial.vue'
+import NotifyDialog from '@/version1/components/NotifyDialog.vue'
+import MaterialDialog from '@/version1/components/MaterialDialog.vue'
 import gql from 'graphql-tag'
 export default {
   name: 'Home',
