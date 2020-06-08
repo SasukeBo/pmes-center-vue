@@ -1,8 +1,10 @@
 import Vue from 'vue'
 // import App from './App.vue'
-import version1 from './version1/index.vue'
-import router from './router'
-import store from './store'
+// import entry from './version1/index.vue'
+import entry from './version2/index.vue'
+import router from './version2/router'
+import store from './version2/store'
+
 import 'element-ui/lib/theme-chalk/index.css'
 import ElementUI from 'element-ui'
 import { createProvider } from './vue-apollo'
@@ -20,5 +22,5 @@ new Vue({
   router,
   store,
   apolloProvider: createProvider(),
-  render: (h) => h(version1)
+  render: (h) => h(entry)
 }).$mount('#app')

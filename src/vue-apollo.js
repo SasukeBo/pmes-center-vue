@@ -13,18 +13,18 @@ const AUTH_TOKEN = 'apollo-token'
 
 const APIHost =
   process.env.NODE_ENV === 'production' ? '192.168.5.146' : 'localhost'
-// Http endpoint
-const httpEndpoint = 'http://' + APIHost + '/api'
+
+const httpEndpoint = 'http://' + APIHost + '/api/v1'
+
 // Files URL root
 export const filesRoot =
   process.env.VUE_APP_FILES_ROOT ||
-  httpEndpoint.substr(0, httpEndpoint.indexOf('/api'))
+  httpEndpoint.substr(0, httpEndpoint.indexOf('/api/v1'))
 
 Vue.prototype.$filesRoot = filesRoot
 
 // Config
 const defaultOptions = {
-  // You can use `https` for secure connection (recommended in production)
   httpEndpoint,
   // LocalStorage token
   tokenName: AUTH_TOKEN,
@@ -54,8 +54,18 @@ const defaultOptions = {
   // clientState: { resolvers: { ... }, defaults: { ... } }
 }
 
+const adminOptions = {
+  httpEndpoint: 'http://' + APIHost + '/api/v1/admin'
+}
+
 // Call this in the Vue app file
 export function createProvider(options = {}) {
+  const adminClient = createApolloClient({
+    ...defaultOptions,
+    ...adminOptions
+  })
+  adminClient.apolloClient.wsClient = adminClient.wsClient
+
   // Create apollo client
   const { apolloClient, wsClient } = createApolloClient({
     ...defaultOptions,
@@ -66,6 +76,10 @@ export function createProvider(options = {}) {
   // Create vue apollo provider
   const apolloProvider = new VueApollo({
     defaultClient: apolloClient,
+    clients: {
+      adminClient,
+      apolloClient
+    },
     defaultOptions: {
       $query: {
         // fetchPolicy: 'cache-and-network',
