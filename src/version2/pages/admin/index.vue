@@ -17,7 +17,9 @@
       <div class="page-body">
         <div class="page-title">
           <img src="~@/version2/assets/images/title-bg.png" />
-          <div class="page-title__context">{{ $route.meta.name }}</div>
+          <div class="page-title__context">
+            {{ pageTitle || $route.meta.name }}
+          </div>
         </div>
         <router-view></router-view>
       </div>
@@ -26,9 +28,15 @@
 </template>
 <script>
 import AdminMenu from '@/version2/components/AdminMenu.vue'
+import { mapState } from 'vuex'
 export default {
   components: {
     AdminMenu
+  },
+  computed: {
+    ...mapState({
+      pageTitle: (state) => state.pageTitle
+    })
   },
   data() {
     return {}
@@ -37,6 +45,7 @@ export default {
 </script>
 <style lang="scss">
 .admin-entry {
+  overflow: hidden;
   height: 100%;
   display: flex;
   background: #f3f4f4;

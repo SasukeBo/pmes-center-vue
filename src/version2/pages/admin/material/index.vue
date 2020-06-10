@@ -1,6 +1,11 @@
 <template>
   <div class="material-manage">
-    <div class="material-no-content" v-if="materials.total === 0">
+    <div
+      class="material-no-content"
+      v-if="
+        materials.total === 0 && $route.name === 'console-material-listview'
+      "
+    >
       <img src="~@/version2/assets/images/material-no-content.png" />
       <span class="material-no-content__tip">暂无料号</span>
       <div>

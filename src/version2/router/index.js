@@ -3,9 +3,12 @@ import VueRouter from 'vue-router'
 import Index from '@/version2/index.vue'
 import Center from '@/version2/pages/center'
 import Console from '@/version2/pages/admin'
-import Material from '@/version2/pages/admin/material.vue'
-import MaterialListView from '@/version2/pages/admin/material_listview.vue'
+import Material from '@/version2/pages/admin/material/index.vue'
+import MaterialListView from '@/version2/pages/admin/material/listview.vue'
 import Device from '@/version2/pages/admin/device.vue'
+import MaterialCreate from '@/version2/pages/admin/material/createform.vue'
+import MaterialImportRecord from '@/version2/pages/admin/material/importrecord.vue'
+import MaterialDecodeTemplate from '@/version2/pages/admin/material/decode-template'
 
 Vue.use(VueRouter)
 
@@ -47,17 +50,37 @@ const routes = [
     },
     children: [
       {
-        path: 'materials',
+        path: 'material',
         name: 'console-materials',
         meta: { name: '料号管理' },
         component: Material,
-        redirect: { name: 'console-materials-listview' },
+        redirect: { name: 'console-material-listview' },
         children: [
           {
             path: 'listview',
-            name: 'console-materials-listview',
+            name: 'console-material-listview',
             meta: { name: '料号列表' },
             component: MaterialListView
+          },
+          {
+            path: 'new',
+            name: 'console-material-create',
+            meta: { name: '新增料号' },
+            component: MaterialCreate
+          },
+          {
+            path: ':id/import_records',
+            name: 'console-material-import-record',
+            meta: { name: '导入记录' },
+            props: true,
+            component: MaterialImportRecord
+          },
+          {
+            path: ':id/decode_templates',
+            name: 'console-material-decode-template',
+            meta: { name: '解析模板' },
+            props: true,
+            component: MaterialDecodeTemplate
           }
         ]
       },

@@ -1,5 +1,21 @@
 <template>
   <div class="material-manage__listview">
+    <div class="material-manage__listview-header">
+      <div class="search-input">
+        <el-input placeholder="搜索料号" v-model="search" size="small">
+        </el-input>
+
+        <el-button size="mini">搜索</el-button>
+      </div>
+
+      <div class="add-button">
+        <el-button
+          size="small"
+          @click="$router.push({ name: 'console-material-create' })"
+          >添加料号</el-button
+        >
+      </div>
+    </div>
     <div class="material-manage__listview-body">
       <el-table
         :data="materialsWrap.materials"
@@ -27,9 +43,27 @@
           <template slot-scope="scope">
             <span class="link" @click="redirect(scope)">检测项</span>
             <span> | </span>
-            <span class="link" @click="redirect(scope)">解析模板</span>
+            <span
+              class="link"
+              @click="
+                redirect({
+                  name: 'console-material-decode-template',
+                  params: { id: scope.row.id, material: scope.row }
+                })
+              "
+              >解析模板</span
+            >
             <span> | </span>
-            <span class="link" @click="redirect(scope)">已导入文件</span>
+            <span
+              class="link"
+              @click="
+                redirect({
+                  name: 'console-material-import-record',
+                  params: { id: scope.row.id, material: scope.row }
+                })
+              "
+              >导入记录</span
+            >
             <span> | </span>
             <span class="link" @click="redirect(scope)">编辑</span>
             <span> | </span>
@@ -44,135 +78,33 @@
       </el-table>
     </div>
 
-    <div class="material-manage__listview-footer">
-      <el-pagination
-        background
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="page"
-        :page-sizes="[20, 50, 100, 400]"
-        :page-size="limit"
-        layout="total, prev, pager, next, sizes, jumper"
-        :total="materialsWrap.total"
-      >
-      </el-pagination>
-    </div>
+    <Pagination
+      :currentPage="page"
+      :total="materialsWrap.total"
+      :pageSizes="[20, 50, 100, 300]"
+      :pageSize="20"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    ></Pagination>
   </div>
 </template>
 <style lang="scss">
-.material-manage .material-manage__listview {
-  height: 100%;
-
-  .material-manage__listview-body {
-    height: calc(100% - 64px);
-    padding: 32px 32px 0 32px;
-    box-sizing: border-box;
-
-    .el-table__header tr th {
-      background: #5e83f2;
-      height: 64px;
-      border: none;
-      color: #fff;
-
-      .cell {
-        font-size: 14px;
-        font-weight: bold;
-      }
-    }
-
-    .el-table .cell {
-      padding-left: 32px;
-    }
-
-    .el-table td {
-      border: none;
-    }
-
-    .el-table.el-table--enable-row-hover .el-table__body tr:hover > td {
-      background: rgba(94, 131, 242, 0.16);
-    }
-
-    .el-table td.config-column .cell {
-      color: rgba(63, 227, 211, 1);
-
-      .link {
-        cursor: pointer;
-      }
-    }
-  }
-
-  .material-manage__listview-footer {
-    height: 64px;
-    padding: 16px 0;
-    box-sizing: border-box;
-    text-align: center;
-    border-top: 1px solid rgba(202, 202, 202, 1);
-
-    .el-pagination {
-      .el-pagination__total {
-        margin-right: 8px;
-        color: rgba(102, 102, 102, 0.7);
-        font-size: 12px;
-      }
-
-      .btn-prev,
-      .btn-next,
-      .el-pager .number {
-        margin: 0;
-        margin-right: 8px;
-        border-radius: 8px;
-        color: rgba(102, 102, 102, 0.7);
-        font-size: 12px;
-        font-weight: 400;
-      }
-
-      .btn-prev,
-      .btn-next {
-        background: #fff;
-        border: 1px solid rgba(229, 229, 229, 1);
-      }
-
-      .el-pager .number.active {
-        color: #fff;
-        background: #5e83f2;
-      }
-
-      .el-input__inner {
-        border-radius: 8px;
-      }
-
-      .el-pagination__sizes {
-        margin: 0;
-        color: rgba(102, 102, 102, 0.7);
-        font-size: 12px;
-        margin-right: 8px;
-      }
-
-      .el-pagination__jump {
-        color: rgba(102, 102, 102, 0.7);
-        font-size: 12px;
-        margin-left: 0;
-
-        .el-input__inner {
-          width: 28px;
-          padding: 0;
-        }
-      }
-    }
-  }
-}
+@import '~@/version2/assets/scss/material_manage_listview.scss';
 </style>
 <script>
 import gql from 'graphql-tag'
+import Pagination from '@/version2/components/Pagination.vue'
 export default {
+  components: { Pagination },
   data() {
     return {
       pattern: '',
+      search: '',
       page: 1,
       limit: 20,
       materialsWrap: {
         total: 0,
-        materials: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
+        materials: []
       }
     }
   },
@@ -215,12 +147,15 @@ export default {
       this.page = val
     },
     redirect(obj) {
-      console.log(obj)
+      this.$router.push(obj)
     },
     timeFormatter() {
       var t = new Date(arguments[2])
       return t.toLocaleString()
     }
+  },
+  created() {
+    this.$store.commit('SET_PAGE_TITLE', '料号列表')
   }
 }
 </script>
