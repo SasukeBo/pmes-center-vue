@@ -41,7 +41,16 @@
         ></el-table-column>
         <el-table-column label="配置" class-name="config-column" width="350">
           <template slot-scope="scope">
-            <span class="link" @click="redirect(scope)">检测项</span>
+            <span
+              class="link"
+              @click="
+                redirect({
+                  name: 'console-material-points',
+                  params: { id: scope.row.id, material: scope.row }
+                })
+              "
+              >检测项</span
+            >
             <span> | </span>
             <span
               class="link"
@@ -65,7 +74,16 @@
               >导入记录</span
             >
             <span> | </span>
-            <span class="link" @click="redirect(scope)">编辑</span>
+            <span
+              class="link"
+              @click="
+                redirect({
+                  name: 'console-material-edit',
+                  params: { id: scope.row.id, material: scope.row }
+                })
+              "
+              >编辑</span
+            >
             <span> | </span>
             <span
               class="link"

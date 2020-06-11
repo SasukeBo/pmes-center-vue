@@ -7,13 +7,15 @@
     <div class="tab-btns">
       <div
         :class="['tab-item', isActive('console-materials') ? 'is-active' : '']"
-        @click="$router.push({ name: 'console-materials' })"
       >
         <img
           :src="isActive('console-materials') ? activeItemBg : normalItemBg"
           class="bg-img"
         />
-        <div class="btn-content">
+        <div
+          class="btn-content"
+          @click="$router.push({ name: 'console-materials' })"
+        >
           <img
             class="manage-icon"
             src="~@/version2/assets/images/material-manage.png"
@@ -24,19 +26,31 @@
 
       <div
         :class="['tab-item', isActive('console-devices') ? 'is-active' : '']"
-        @click="$router.push({ name: 'console-devices' })"
       >
         <img
           class="bg-img"
           :src="isActive('console-devices') ? activeItemBg : normalItemBg"
         />
-        <div class="btn-content">
+        <div
+          class="btn-content"
+          @click="$router.push({ name: 'console-devices' })"
+        >
           <img
             class="manage-icon"
             src="~@/version2/assets/images/device-manage.png"
           />
           <div class="manage-label">设备管理</div>
         </div>
+      </div>
+    </div>
+
+    <div class="import-btn">
+      <div style="position: relative">
+        <div class="hover-wrap" @click="$router.push({ name: 'data-import' })">
+          <div class="button-area"></div>
+          <div class="content">导入数据</div>
+        </div>
+        <img src="~@/version2/assets/images/import-entry.png" />
       </div>
     </div>
   </div>
@@ -68,6 +82,41 @@ export default {
   box-sizing: border-box;
   padding-top: 16px;
 
+  .import-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    img {
+      display: block;
+    }
+
+    .content {
+      position: absolute;
+      right: 0;
+      left: 0;
+      bottom: 30px;
+      color: #fff;
+      width: fit-content;
+      cursor: pointer;
+      margin: auto;
+      font-size: 12px;
+    }
+
+    .button-area {
+      cursor: pointer;
+      background: transparent;
+      width: 45px;
+      height: 45px;
+      position: absolute;
+      right: 0;
+      left: 0;
+      margin: auto;
+      top: 52px;
+      border-radius: 50%;
+    }
+  }
+
   .logo-link {
     padding: 6px;
     margin-bottom: 8px;
@@ -87,7 +136,6 @@ export default {
     width: 100%;
     height: 153px;
     position: relative;
-    cursor: pointer;
 
     .bg-img {
       position: relative;
@@ -98,6 +146,7 @@ export default {
     .btn-content {
       width: 124px;
       height: 153px;
+      cursor: pointer;
       padding: 28px 18px;
       box-sizing: border-box;
       position: absolute;

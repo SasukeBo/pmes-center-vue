@@ -138,7 +138,7 @@
 @import '@/version2/assets/scss/material_manage_createform.scss';
 </style>
 <script>
-import TableCellForm from '@/version2/pages/admin/material/table-cell-form.vue'
+import TableCellForm from '@/version2/components/TableCellForm.vue'
 import FButton from '@/version2/components/FButton.vue'
 export default {
   components: {

@@ -141,7 +141,7 @@
 </template>
 <script>
 import FButton from '@/version2/components/FButton.vue'
-import TableCellForm from '@/version2/pages/admin/material/table-cell-form.vue'
+import TableCellForm from '@/version2/components/TableCellForm.vue'
 import PointForm from './point-form'
 export default {
   components: { FButton, PointForm, TableCellForm },

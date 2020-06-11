@@ -1,14 +1,22 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Store from '../store'
 import Index from '@/version2/index.vue'
 import Center from '@/version2/pages/center'
 import Console from '@/version2/pages/admin'
 import Material from '@/version2/pages/admin/material/index.vue'
-import MaterialListView from '@/version2/pages/admin/material/listview.vue'
-import Device from '@/version2/pages/admin/device.vue'
-import MaterialCreate from '@/version2/pages/admin/material/createform.vue'
-import MaterialImportRecord from '@/version2/pages/admin/material/importrecord.vue'
+import MaterialListView from '@/version2/pages/admin/material/list-view.vue'
+import Points from '@/version2/pages/admin/material/points.vue'
+import MaterialEdit from '@/version2/pages/admin/material/edit-form.vue'
+import MaterialCreate from '@/version2/pages/admin/material/create-form.vue'
+import MaterialImportRecord from '@/version2/pages/admin/material/import-record.vue'
 import MaterialDecodeTemplate from '@/version2/pages/admin/material/decode-template'
+
+import Device from '@/version2/pages/admin/device/index.vue'
+import DeviceListView from '@/version2/pages/admin/device/list-view.vue'
+import DeviceImportRecord from '@/version2/pages/admin/device/import-record.vue'
+
+import DataImport from '@/version2/pages/admin/data-import/index.vue'
 
 Vue.use(VueRouter)
 
@@ -69,6 +77,20 @@ const routes = [
             component: MaterialCreate
           },
           {
+            path: ':id/edit',
+            name: 'console-material-edit',
+            meta: { name: '编辑料号' },
+            props: true,
+            component: MaterialEdit
+          },
+          {
+            path: ':id/points',
+            name: 'console-material-points',
+            meta: { name: '检测项' },
+            props: true,
+            component: Points
+          },
+          {
             path: ':id/import_records',
             name: 'console-material-import-record',
             meta: { name: '导入记录' },
@@ -88,7 +110,29 @@ const routes = [
         path: 'devices',
         name: 'console-devices',
         meta: { name: '设备管理' },
-        component: Device
+        component: Device,
+        redirect: { name: 'console-device-listview' },
+        children: [
+          {
+            path: 'listview',
+            name: 'console-device-listview',
+            meta: { name: '设备列表' },
+            component: DeviceListView
+          },
+          {
+            path: ':id/import_records',
+            name: 'console-device-import-record',
+            meta: { name: '导入记录' },
+            props: true,
+            component: DeviceImportRecord
+          }
+        ]
+      },
+      {
+        path: 'data-import',
+        name: 'data-import',
+        meta: { name: '数据导入' },
+        component: DataImport
       }
     ]
   }
@@ -98,6 +142,10 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+router.afterEach((to, from) => {
+  Store.commit('SET_PAGE_TITLE', '')
 })
 
 export default router
