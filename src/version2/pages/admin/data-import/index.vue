@@ -1,7 +1,7 @@
 <template>
   <div class="console-import-data">
     <div class="console-import-data__header">
-      <el-button class="import-btn" size="small"
+      <el-button class="import-btn" size="small" @click="drawerVisible = true"
         ><img
           src="~@/version2/assets/images/icon-file.png"
         />添加文件</el-button
@@ -85,16 +85,28 @@
         @current-change="handleCurrentChange"
       ></Pagination>
     </div>
+
+    <el-drawer
+      :withHeader="false"
+      direction="rtl"
+      :close-on-press-escape="false"
+      custom-class="device-form-drawer"
+      :visible.sync="drawerVisible"
+    >
+      <ImportForm @close-drawer="drawerVisible = false"></ImportForm>
+    </el-drawer>
   </div>
 </template>
 <script>
 import Pagination from '@/version2/components/Pagination.vue'
+import ImportForm from './import-form'
 export default {
-  components: { Pagination },
+  components: { Pagination, ImportForm },
   data() {
     return {
       page: 1,
       total: 200,
+      drawerVisible: false,
       importRecords: [
         {
           fileName: '测试文件',
@@ -159,6 +171,10 @@ export default {
 </script>
 <style lang="scss">
 $--import-data-table-border__color: #dedede;
+
+.el-drawer__container:focus {
+  outline: none;
+}
 
 .console-import-data {
   height: 100%;
@@ -230,6 +246,18 @@ $--import-data-table-border__color: #dedede;
       img {
         padding-right: 8px;
       }
+    }
+  }
+
+  .device-form-drawer {
+    width: 83% !important;
+
+    &:focus {
+      outline: none;
+    }
+
+    .el-drawer__body:focus {
+      outline: none;
     }
   }
 }
