@@ -19,10 +19,6 @@ export default {
 }
 </script>
 <style lang="scss">
-* {
-  box-sizing: border-box;
-}
-
 html {
   background: #ececef;
   font-family: source-han-sans-simplified-c, sans-serif;

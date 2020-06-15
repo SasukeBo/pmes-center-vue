@@ -1,10 +1,8 @@
 <template>
   <div class="table-cell-form">
-    <div v-if="!isEdit" class="table-cell-form__show">
-      <span class="nil-value-btn" v-if="!formValue" @click="isEdit = true"
-        >+</span
-      >
-      <span v-else @click="isEdit = true">
+    <div v-if="!isEdit" class="table-cell-form__show" @click="isEdit = true">
+      <span class="nil-value-btn" v-if="!formValue && formValue !== 0">+</span>
+      <span v-else>
         {{ formatValue(formValue) }}
       </span>
     </div>
@@ -14,10 +12,9 @@
         v-if="type === 'input'"
         ref="input"
         size="small"
-        :autofocus="true"
         v-model="formValue"
-        @keyup.enter.native.prevent="isEdit = false"
-        @keyup.esc.native.prevent.stop="isEdit = false"
+        @keyup.enter.native.prevent="save"
+        @keyup.esc.native.prevent.stop="cancel"
       ></el-input>
 
       <el-select v-model="formValue" v-if="type === 'select'">
@@ -63,8 +60,13 @@ export default {
       formValue: ''
     }
   },
-  created() {
-    this.formValue = this.row[this.prop]
+  watch: {
+    row: {
+      immediate: true,
+      handler: function(val) {
+        this.formValue = this.row[this.prop]
+      }
+    }
   },
   methods: {
     formatValue(value) {
@@ -79,10 +81,13 @@ export default {
       this.isEdit = true
     },
     save() {
+      var origin = this.row
+      origin[this.prop] = this.formValue
+
       this.$emit('update', {
-        id: this.row.id || this.index + 1,
+        index: this.index,
         prop: this.prop,
-        value: this.formValue
+        data: origin
       })
       this.isEdit = false
     },

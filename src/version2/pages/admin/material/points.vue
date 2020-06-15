@@ -1,13 +1,21 @@
 <template>
   <div class="material-points">
     <div class="tip">
-      检测项录入支持导入，点击 <a href="javascript:;">下载模板</a>
+      检测项录入支持导入，点击
+      <a
+        href="/downloads/xlsx?file_token=points_import_template"
+        target="_blank"
+        >下载模板</a
+      >
     </div>
 
     <div class="import-points">
       <el-upload
-        action="https://jsonplaceholder.typicode.com/posts/"
+        action="/"
+        accept=".xlsx"
+        :http-request="handleUpload"
         :limit="1"
+        :show-file-list="false"
       >
         <el-button size="small" type="primary"
           ><img
@@ -18,7 +26,12 @@
     </div>
 
     <div class="points-table">
+      <div class="points-table-tip">
+        <i class="el-icon-info"></i> 点击单元格可以修改数据
+      </div>
       <el-table
+        :data="tablePoints"
+        height="100%"
         border
         header-row-class-name="import-record-table__header"
         row-class-name="import-record-table__row"
@@ -29,30 +42,267 @@
           width="80px"
         ></el-table-column>
 
-        <el-table-column label="name"></el-table-column>
-        <el-table-column label="name"></el-table-column>
-        <el-table-column label="name"></el-table-column>
-        <el-table-column label="name"></el-table-column>
-        <el-table-column label="操作"></el-table-column>
-        <template></template>
+        <el-table-column label="名称" prop="name">
+          <template slot-scope="scope">
+            <TableCellForm
+              :row="scope.row"
+              :index="scope.$index"
+              prop="name"
+              @update="editCell"
+            ></TableCellForm>
+          </template>
+        </el-table-column>
+        <el-table-column label="USL" prop="upperLimit">
+          <template slot-scope="scope">
+            <TableCellForm
+              :row="scope.row"
+              :index="scope.$index"
+              prop="upperLimit"
+              @update="editCell"
+            ></TableCellForm>
+          </template>
+        </el-table-column>
+        <el-table-column label="Nominal" prop="nominal">
+          <template slot-scope="scope">
+            <TableCellForm
+              :row="scope.row"
+              :index="scope.$index"
+              prop="nominal"
+              @update="editCell"
+            ></TableCellForm>
+          </template>
+        </el-table-column>
+        <el-table-column label="LSL" prop="lowerLimit">
+          <template slot-scope="scope">
+            <TableCellForm
+              :row="scope.row"
+              :index="scope.$index"
+              prop="lowerLimit"
+              @update="editCell"
+            ></TableCellForm>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template slot="header">
+            <el-button @click="addPoint()" size="small" type="primary">
+              + 手动添加
+            </el-button>
+          </template>
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              @click="remove(scope.row, scope.$index)"
+              style="color: #FB5D62"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
     <div class="footer-btns">
       <FButton type="plain" size="small" @click="$router.go(-1)">取消</FButton>
-      <FButton type="normal" size="small">保存</FButton>
+      <FButton type="normal" size="small" @click="save()" :loading="saving"
+        >保存</FButton
+      >
     </div>
   </div>
 </template>
 <script>
 import FButton from '@/version2/components/FButton.vue'
+import TableCellForm from '@/version2/components/TableCellForm.vue'
+import gql from 'graphql-tag'
+
 export default {
+  name: 'Points',
   components: {
-    FButton
+    FButton,
+    TableCellForm
   },
   props: ['id', 'material'],
+  apollo: {
+    points: {
+      query: gql`
+        query($materialID: Int!) {
+          points: listMaterialPoints(materialID: $materialID) {
+            id
+            name
+            upperLimit
+            nominal
+            lowerLimit
+          }
+        }
+      `,
+      client: 'adminClient',
+      fetchPolicy: 'network-only',
+      variables() {
+        return {
+          materialID: this.id
+        }
+      }
+    }
+  },
+  data() {
+    return {
+      saving: false,
+      points: [],
+      tablePoints: [],
+      deleteItems: []
+    }
+  },
+  watch: {
+    points(val) {
+      if (val) {
+        this.tablePoints = val.map((v) => {
+          delete v.__typename
+          return v
+        })
+      }
+    }
+  },
+  methods: {
+    addPoint() {
+      this.tablePoints.push({
+        id: 0,
+        name: '',
+        upperLimit: undefined,
+        nominal: undefined,
+        lowerLimit: undefined
+      })
+    },
+    editCell({ index, prop, data }) {
+      this.tablePoints[index][prop] = data[prop]
+    },
+    remove(point, index) {
+      this.deleteItems.push(point.id)
+      this.tablePoints.splice(index, 1)
+    },
+    validate() {
+      for (var i = 0; i < this.tablePoints.length; i++) {
+        var point = this.tablePoints[i]
+        for (const k in point) {
+          if (point[k] === undefined) {
+            return false
+          }
+        }
+      }
+
+      return true
+    },
+    save() {
+      if (this.validate()) {
+        this.saving = true
+        this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation(
+                $materialID: Int!
+                $saveItems: [PointCreateInput]!
+                $deleteItems: [Int!]!
+              ) {
+                response: savePoints(
+                  materialID: $materialID
+                  saveItems: $saveItems
+                  deleteItems: $deleteItems
+                )
+              }
+            `,
+            client: 'adminClient',
+            variables: {
+              materialID: this.id,
+              saveItems: this.tablePoints,
+              deleteItems: this.deleteItems
+            }
+          })
+          .then(() => {
+            this.saving = false
+            this.$message({ type: 'success', message: '保存成功' })
+            this.deleteItems = []
+            this.$apollo.queries.points
+              .refetch()
+              .then(({ data: { points } }) => {
+                this.tablePoints = points.map((v) => {
+                  delete v.__typename
+                  return v
+                })
+              })
+          })
+          .catch((e) => {
+            this.saving = false
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      } else {
+        this.$message({
+          type: 'error',
+          message: '抱歉，检测项信息必须填写完整。'
+        })
+      }
+    },
+    handleUpload({ file }) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($file: Upload!) {
+              response: parseImportPoints(file: $file) {
+                id
+                name
+                nominal
+                upperLimit
+                lowerLimit
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            file
+          }
+        })
+        .then(({ data: { response } }) => {
+          var points = response.map((p) => {
+            delete p.__typename
+            return p
+          })
+          if (!this.tablePoints) {
+            this.tablePoints = []
+          }
+          this.tablePoints = this.tablePoints.concat(points)
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    }
+  },
   created() {
-    this.$store.commit('SET_PAGE_TITLE', `${this.material.name}检测项`)
+    if (this.material) {
+      this.$store.commit('SET_PAGE_TITLE', `${this.material.name}检测项`)
+    } else {
+      this.$apollo
+        .query({
+          query: gql`
+            query($id: Int!) {
+              response: material(id: $id) {
+                name
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: this.id
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.$store.commit('SET_PAGE_TITLE', `${response.name}检测项`)
+        })
+        .catch(() => {
+          this.$store.commit('SET_PAGE_TITLE', '料号检测项')
+        })
+    }
   }
 }
 </script>
@@ -66,14 +316,22 @@ export default {
   padding-bottom: 64px;
 
   .points-table {
+    width: 80%;
+    margin: auto;
     height: calc(100% - 106px);
     padding: 24px 0;
+    position: relative;
     box-sizing: border-box;
 
-    .el-table {
-      width: 80%;
-      margin: auto;
-      height: 100%;
+    .points-table-tip {
+      font-size: 12px;
+      color: #999;
+      position: absolute;
+      top: 0px;
+    }
+
+    .import-record-table__row td {
+      text-align: center;
     }
 
     .import-record-table__header th {
@@ -83,6 +341,10 @@ export default {
       color: #666;
       font-weight: bold;
       background: #f3f4f4;
+
+      &:first-child {
+        border-left: 1px solid $--points-form-table-border;
+      }
     }
   }
 

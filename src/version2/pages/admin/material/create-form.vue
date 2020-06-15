@@ -39,13 +39,21 @@
 
       <div class="points-form" v-if="step === 2">
         <div class="tip">
-          检测项录入支持导入，点击 <a href="javascript:;">下载模板</a>
+          检测项录入支持导入，点击
+          <a
+            href="/downloads/xlsx?file_token=points_import_template"
+            target="_blank"
+            >下载模板</a
+          >
         </div>
 
         <div class="import-points">
           <el-upload
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action="/"
+            accept=".xlsx"
+            :http-request="handleUpload"
             :limit="1"
+            :show-file-list="false"
           >
             <el-button size="small" type="primary"
               ><img
@@ -66,8 +74,8 @@
           <div class="table-body" ref="table-body">
             <div
               class="table-body__row table-row"
-              v-for="p in points"
-              :key="'point_' + p.id"
+              v-for="(p, i) in points"
+              :key="'point_' + i"
             >
               <div class="table-cell">
                 <TableCellForm
@@ -79,7 +87,7 @@
               <div class="table-cell">
                 <TableCellForm
                   :row="p"
-                  prop="usl"
+                  prop="upperLimit"
                   @update="editCell"
                 ></TableCellForm>
               </div>
@@ -93,7 +101,7 @@
               <div class="table-cell">
                 <TableCellForm
                   :row="p"
-                  prop="lsl"
+                  prop="lowerLimit"
                   @update="editCell"
                 ></TableCellForm>
               </div>
@@ -122,10 +130,10 @@
       >
         取消
       </FButton>
-      <FButton v-if="step === 1" type="normal" size="small" @click="step = 2"
+      <FButton v-if="step === 1" type="normal" size="small" @click="goStep(2)"
         >下一步</FButton
       >
-      <FButton v-if="step === 2" type="plain" size="small" @click="step = 1"
+      <FButton v-if="step === 2" type="plain" size="small" @click="goStep(1)"
         >上一步</FButton
       >
       <FButton v-if="step === 2" type="normal" size="small" @click="submit"
@@ -140,6 +148,8 @@
 <script>
 import TableCellForm from '@/version2/components/TableCellForm.vue'
 import FButton from '@/version2/components/FButton.vue'
+import gql from 'graphql-tag'
+
 export default {
   components: {
     FButton,
@@ -148,6 +158,7 @@ export default {
   data() {
     return {
       step: 1,
+      submitting: false,
       rule1: {
         name: [{ required: true, message: '厂内料号为必填项', trigger: 'blur' }]
       },
@@ -156,29 +167,67 @@ export default {
         customerCode: '',
         projectRemark: ''
       },
-      points: [
-        {
-          id: 1,
-          name: 'FAI6',
-          usl: 0.34,
-          nominal: 0.35,
-          lsl: 0.37
-        }
-      ]
+      points: []
     }
   },
   created() {
     this.$store.commit('SET_PAGE_TITLE', '新增料号')
   },
   methods: {
-    submit() {},
+    goStep(step) {
+      if (this.step === 1) {
+        this.$refs.form1.validate((valid) => {
+          if (valid) {
+            this.step = step
+          }
+        })
+      } else {
+        this.step = step
+      }
+    },
+    submit() {
+      this.submitting = true
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($input: MaterialCreateInput!) {
+              response: addMaterial(input: $input) {
+                id
+                name
+                customerCode
+                projectRemark
+              }
+            }
+          `,
+          variables: {
+            input: {
+              name: this.form1.name,
+              customerCode: this.form1.customerCode,
+              projectRemark: this.form1.projectRemark,
+              points: this.points
+            }
+          },
+          client: 'adminClient'
+        })
+        .then(({ data: { response } }) => {
+          this.submitting = false
+          this.$message({ type: 'success', message: '料号创建成功' })
+          this.$router.push({ name: 'console-material-listview' })
+        })
+        .catch((e) => {
+          this.submitting = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     addPoint() {
       this.points.push({
-        id: this.points.length + 1,
         name: '',
-        usl: 0,
-        nominal: 0,
-        lsl: 0
+        upperLimit: undefined,
+        nominal: undefined,
+        lowerLimit: undefined
       })
 
       var el = this.$refs['table-body']
@@ -190,11 +239,48 @@ export default {
       console.log(scope)
     },
     editCell(val) {
-      this.points[val.id - 1][val.prop] = val.value
+      var data = val.data
+      var prop = val.prop
+      var index = this.points.findIndex((p) => p.name === data.name)
+      this.points[index][prop] = data[prop]
     },
     removeRow(row) {
-      var index = this.points.findIndex((p) => p.id === row.id)
+      var index = this.points.findIndex((p) => p.name === row.name)
       this.points.splice(index, 1)
+    },
+    handleUpload({ file }) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($file: Upload!) {
+              response: parseImportPoints(file: $file) {
+                id
+                name
+                nominal
+                upperLimit
+                lowerLimit
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            file
+          }
+        })
+        .then(({ data: { response } }) => {
+          var points = response.map((p) => {
+            delete p.__typename
+            delete p.id
+            return p
+          })
+          this.points = this.points.concat(points)
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
     }
   }
 }
