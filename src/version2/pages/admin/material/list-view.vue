@@ -142,7 +142,7 @@ export default {
       page: 1,
       limit: 20,
       materialsWrap: {
-        total: 0,
+        total: 1,
         materials: []
       }
     }

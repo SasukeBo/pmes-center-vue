@@ -27,7 +27,7 @@
         </el-table-column>
         <el-table-column label="创建人">
           <template slot-scope="scope">
-            {{ scope.row.user ? scope.row.user.name : '-' }}
+            {{ scope.row.user ? scope.row.user.account : '-' }}
           </template>
         </el-table-column>
         <el-table-column
@@ -36,18 +36,18 @@
           :formatter="timeFormatter"
         ></el-table-column>
         <el-table-column label="备注" prop="description"></el-table-column>
-        <el-table-column label="操作">
+        <el-table-column>
+          <template slot="header">
+            <el-button type="primary" size="small" @click="appendTemplate">
+              + 新增模板
+            </el-button>
+          </template>
           <template slot-scope="scope">
             <el-button type="text" @click="edit(scope.row)">编辑</el-button>
             <span> | </span>
             <el-button type="text" @click="remove(scope.row)">删除</el-button>
           </template>
         </el-table-column>
-        <template slot="append">
-          <div class="append-template-btn" @click="appendTemplate">
-            + 新增模板
-          </div>
-        </template>
       </el-table>
     </div>
 
@@ -63,41 +63,110 @@
       :visible.sync="drawerVisible"
       :before-close="handleClose"
     >
-      <DecodeForm :materialID="id"></DecodeForm>
+      <DecodeForm
+        :materialID="id"
+        :points="points"
+        :data="editTemplate"
+        :visible.sync="drawerVisible"
+        :isEdit="isDecodeFormEdit"
+      ></DecodeForm>
     </el-drawer>
   </div>
 </template>
 <script>
 import DecodeForm from './decode-form.vue'
 import FButton from '@/version2/components/FButton.vue'
+import gql from 'graphql-tag'
 export default {
   props: ['id', 'material'],
   components: { FButton, DecodeForm },
+  apollo: {
+    templates: {
+      query: gql`
+        query($materialID: Int!) {
+          templates: listDecodeTemplate(materialID: $materialID) {
+            id
+            name
+            user {
+              id
+              account
+            }
+            description
+            dataRowIndex
+            createdAtColumnIndex
+            productColumns {
+              name
+              index
+              type
+            }
+            pointColumns
+            default
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          materialID: this.id
+        }
+      }
+    },
+    points: {
+      query: gql`
+        query($materialID: Int!) {
+          points: listMaterialPoints(materialID: $materialID) {
+            id
+            name
+            upperLimit
+            lowerLimit
+            nominal
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          materialID: this.id
+        }
+      }
+    }
+  },
   data() {
     return {
       drawerVisible: false,
-      templates: [
-        {
-          id: 1,
-          name: '模板1',
-          default: false,
-          user: { name: 'user1' },
-          createdAt: '2020-03-04T12:00:00+08:00',
-          description: '描述一下'
-        },
-        {
-          id: 2,
-          name: '模板2',
-          default: true,
-          user: { name: 'user2' },
-          createdAt: '2020-04-18T12:00:00+08:00',
-          description: '描述一下'
-        }
-      ]
+      templates: [],
+      points: [],
+      isDecodeFormEdit: false,
+      editTemplate: undefined
     }
   },
   created() {
-    this.$store.commit('SET_PAGE_TITLE', `${this.material.name}解析模板`)
+    if (this.material) {
+      this.$store.commit('SET_PAGE_TITLE', `${this.material.name}解析模板`)
+    } else {
+      this.$apollo
+        .query({
+          query: gql`
+            query($id: Int!) {
+              response: material(id: $id) {
+                name
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: this.id
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.$store.commit('SET_PAGE_TITLE', `${response.name}解析模板`)
+        })
+        .catch(() => {
+          this.$store.commit('SET_PAGE_TITLE', '料号解析模板')
+        })
+    }
   },
   methods: {
     handleClose() {
@@ -107,9 +176,15 @@ export default {
       var t = new Date(arguments[2])
       return t.toLocaleString()
     },
-    edit(val) {},
+    edit(val) {
+      this.isDecodeFormEdit = true
+      this.editTemplate = val
+      this.drawerVisible = true
+    },
     remove(val) {},
     appendTemplate() {
+      this.isDecodeFormEdit = false
+      this.editTemplate = undefined
       this.drawerVisible = true
     },
     changeDefault(val) {

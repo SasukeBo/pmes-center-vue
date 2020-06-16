@@ -17,8 +17,10 @@ export default {
       columnValue: ''
     }
   },
-  created() {
-    this.columnValue = this.value
+  watch: {
+    value(val) {
+      this.columnValue = val
+    }
   },
   methods: {
     handleValueChange(value) {
@@ -30,12 +32,13 @@ export default {
 <style lang="scss">
 .decode-tempalate-form__point-form {
   display: flex;
-  margin-right: 16px;
+  margin-right: 24px;
   margin-bottom: 16px;
 
   .point-label {
     color: #666;
     font-size: 12px;
+    width: 64px;
     padding-right: 8px;
     line-height: 32px;
   }

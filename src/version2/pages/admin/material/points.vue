@@ -101,7 +101,7 @@
     </div>
 
     <div class="footer-btns">
-      <FButton type="plain" size="small" @click="$router.go(-1)">取消</FButton>
+      <FButton type="plain" size="small" @click="$router.go(-1)">返回</FButton>
       <FButton type="normal" size="small" @click="save()" :loading="saving"
         >保存</FButton
       >

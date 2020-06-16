@@ -1,7 +1,7 @@
 <template>
   <div class="decode-template-form">
     <div class="decode-template-form__header">
-      新增模板
+      {{ isEdit ? '编辑' : '新增' }}模板
     </div>
 
     <div class="decode-template-form__body">
@@ -17,7 +17,7 @@
 
           <el-form-item label="备注：" prop="description">
             <el-input
-              class="decode-template-form-cell"
+              class="decode-template-form-cell description"
               v-model="form.description"
             ></el-input>
           </el-form-item>
@@ -30,6 +30,7 @@
               <el-input
                 class="decode-template-form-cell"
                 placeholder="例：15"
+                v-model="form.dataRowIndex"
               ></el-input>
               <span>行</span>
             </div>
@@ -40,6 +41,7 @@
               <el-input
                 class="decode-template-form-cell"
                 placeholder="例：B"
+                v-model="form.createdAtColumnIndex"
               ></el-input>
               <span>列</span>
             </div>
@@ -63,6 +65,7 @@
             <template slot-scope="scope">
               <TableCellForm
                 :row="scope.row"
+                :index="scope.$index"
                 prop="name"
                 @update="editCell"
               ></TableCellForm>
@@ -72,6 +75,7 @@
             <template slot-scope="scope">
               <TableCellForm
                 :row="scope.row"
+                :index="scope.$index"
                 prop="index"
                 @update="editCell"
               ></TableCellForm>
@@ -114,10 +118,10 @@
 
         <div class="points-form">
           <PointForm
-            v-for="(v, k) in form.pointColumns"
-            :key="'point_' + k"
-            :label="k"
-            :value="v"
+            v-for="p in points"
+            :key="'point_' + p.id"
+            :label="p.name"
+            :value="form.pointColumns[p.name]"
             @change="handlePointColumnChange"
           ></PointForm>
         </div>
@@ -135,7 +139,7 @@
     </div>
     <div class="decode-template-form__footer">
       <FButton size="small" @click="cancel" type="plain">取消</FButton>
-      <FButton size="small" @click="save">保存</FButton>
+      <FButton size="small" @click="save" :loading="saving">保存</FButton>
     </div>
   </div>
 </template>
@@ -143,11 +147,25 @@
 import FButton from '@/version2/components/FButton.vue'
 import TableCellForm from '@/version2/components/TableCellForm.vue'
 import PointForm from './point-form'
+import gql from 'graphql-tag'
 export default {
   components: { FButton, PointForm, TableCellForm },
-  props: ['id'],
+  props: {
+    materialID: [Number, String],
+    isEdit: {
+      type: Boolean,
+      default: false
+    },
+    data: Object,
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    points: Array
+  },
   data() {
     return {
+      saving: false,
       columnTypeOptions: [
         { label: '字符型', value: 'String' },
         { label: '整数型', value: 'Integer' },
@@ -157,38 +175,83 @@ export default {
       form: {
         default: false,
         name: '',
-        pointColumns: {
-          FAI4_G7: 'A',
-          FAI4_G8: 'A',
-          FAI4_G9: 'A',
-          FAI4_N1: 'A',
-          FAI4_G2: 'A',
-          FAI4_N3: 'A',
-          FAI4_N4: 'A',
-          FAI4_N5: 'A',
-          FAI4_N6: 'A',
-          FAI4_N7: 'A',
-          FAI4_N8: 'A',
-          FAI4_N9: 'A',
-          FAI4_F8: 'A',
-          FAI4_H8: 'A'
-        },
-        productColumns: [
-          { name: 'NO.', index: 'A', type: 'Integer' },
-          { name: '生产日期', index: 'B', type: 'Datetime' },
-          { name: '线体号', index: 'C', type: 'String' }
-        ]
+        description: '',
+        createdAtcolumnIndex: undefined,
+        dataRowIndex: undefined,
+        pointColumns: {},
+        productColumns: []
       }
     }
   },
   methods: {
-    cancel() {},
-    save() {},
+    cancel() {
+      this.$emit('update:visible', false)
+      this.clearFormData()
+    },
+    clearFormData() {
+      this.form.default = false
+      this.form.name = ''
+      this.form.description = ''
+      this.form.pointColumns = {}
+      this.form.productColumns = []
+      this.form.createdAtColumnIndex = undefined
+      this.form.dataRowIndex = undefined
+    },
+    save() {
+      this.saving = true
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($input: DecodeTemplateInput!) {
+              response: saveDecodeTemplate(input: $input) {
+                id
+                name
+                material {
+                  id
+                }
+                user {
+                  id
+                }
+                description
+                dataRowIndex
+                createdAtColumnIndex
+                productColumns {
+                  name
+                  index
+                  type
+                }
+                pointColumns
+                default
+                createdAt
+                updatedAt
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            input: {
+              ...this.form,
+              materialID: this.materialID
+            }
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.saving = false
+          console.log(response)
+        })
+        .catch((e) => {
+          this.saving = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '"')
+          })
+        })
+    },
     handlePointColumnChange({ key, value }) {
       this.form.pointColumns[key] = value
     },
     editCell(val) {
-      this.form.productColumns[val.id - 1][val.prop] = val.value
+      this.form.productColumns[val.index][val.prop] = val.data[val.prop]
     },
     removeProductColumn(row) {
       var index = this.form.productColumns.findIndex((i) => i.name === row.name)
@@ -196,6 +259,25 @@ export default {
     },
     appendProductColumn() {
       this.form.productColumns.push({})
+    }
+  },
+  watch: {
+    visible: {
+      immediate: true,
+      handler: function(val) {
+        if (this.visible && this.isEdit && this.data) {
+          this.form.default = this.data.default
+          this.form.name = this.data.name
+          this.form.description = this.data.description
+          this.form.dataRowIndex = this.data.dataRowIndex
+          this.form.createdAtColumnIndex = this.data.createdAtColumnIndex
+          this.form.pointColumns = this.data.pointColumns
+          this.form.productColumns = this.data.productColumns.map((column) => {
+            delete column.__typename
+            return column
+          })
+        }
+      }
     }
   }
 }
