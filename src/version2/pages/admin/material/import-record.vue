@@ -3,7 +3,7 @@
     <div class="import-record-table">
       <el-table
         stripe
-        :data="records"
+        :data="importRecordsWrap.importRecords"
         height="100%"
         header-row-class-name="import-record-table__header"
         row-class-name="import-record-table__row"
@@ -25,7 +25,11 @@
           </template>
         </el-table-column>
         <el-table-column label="导入方式" prop="importType"></el-table-column>
-        <el-table-column label="文件大小" prop="fileSize"></el-table-column>
+        <el-table-column label="文件大小" prop="fileSize">
+          <template slot-scope="scope">
+            {{ (scope.row.fileSize / 1024 / 1024).toFixed(2) }} MB
+          </template>
+        </el-table-column>
         <el-table-column label="解析模板">
           <template slot-scope="scope">
             {{ scope.row.decodeTemplate ? scope.row.decodeTemplate.name : '-' }}
@@ -39,14 +43,42 @@
         <el-table-column label="数据总行数" prop="rowCount"></el-table-column>
         <el-table-column label="状态">
           <template slot-scope="scope">
-            {{ scope.row.finished ? '已完成' : '未完成' }}
+            <el-popover
+              placement="left"
+              width="200"
+              trigger="click"
+              :disabled="scope.row.status !== 'Failed'"
+            >
+              <div style="color: #666">
+                <div style="font-weight: bold; padding-bottom: 4px">
+                  错误信息：
+                </div>
+                <div>{{ scope.row.errorMessage }}</div>
+                <div
+                  style="font-weight: bold; padding-bottom: 4px; padding-top: 8px"
+                >
+                  原始错误：
+                </div>
+                <div>{{ scope.row.originErrorMessage }}</div>
+              </div>
+              <span
+                slot="reference"
+                :style="{
+                  color: scope.row.status === 'Failed' ? '#FB5D62' : '',
+                  cursor: scope.row.status === 'Failed' ? 'pointer' : ''
+                }"
+                >{{ statusMap[scope.row.status] }}</span
+              >
+            </el-popover>
           </template>
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button
+              v-if="scope.row.status === 'Finished'"
               class="import-record-revert"
               type="text"
+              :ref="'revert_btn' + scope.row.id"
               @click="revert(scope.row)"
               >撤销</el-button
             >
@@ -57,9 +89,9 @@
 
     <Pagination
       :currentPage="page"
-      :total="total"
+      :total="importRecordsWrap.total"
       :pageSizes="[20, 50, 100, 300]"
-      :pageSize="20"
+      :pageSize="limit"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     ></Pagination>
@@ -67,30 +99,117 @@
 </template>
 <script>
 import Pagination from '@/version2/components/Pagination.vue'
+import gql from 'graphql-tag'
+
 export default {
   props: ['id', 'material'],
   components: { Pagination },
   data() {
     return {
-      total: 0,
       page: 1,
-      records: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
+      limit: 20,
+      importRecordsWrap: {
+        total: 0,
+        importRecords: []
+      },
+      statusMap: {
+        Finished: '已完成',
+        Failed: '失败',
+        Loading: '导入中',
+        Reverted: '已撤销'
+      }
     }
   },
-  created() {
-    this.$store.commit('SET_PAGE_TITLE', `${this.material.name}数据导入记录`)
+  apollo: {
+    importRecordsWrap: {
+      query: gql`
+        query($materialID: Int!, $deviceID: Int, $page: Int!, $limit: Int!) {
+          importRecordsWrap: importRecords(
+            materialID: $materialID
+            deviceID: $deviceID
+            page: $page
+            limit: $limit
+          ) {
+            total
+            importRecords {
+              id
+              fileName
+              device {
+                id
+                name
+              }
+              rowCount
+              rowFinishedCount
+              status
+              errorMessage
+              originErrorMessage
+              fileSize
+              user {
+                id
+                account
+              }
+              importType
+              decodeTemplate {
+                id
+                name
+              }
+              createdAt
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          materialID: this.id,
+          page: this.page,
+          limit: this.limit
+        }
+      }
+    }
   },
   methods: {
+    revert(record) {
+      var btn = this.$refs[`revert_btn${record.id}`]
+      btn.loading = true
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: revertImport(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: record.id
+          }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '撤销导入成功' })
+          btn.loading = false
+          this.$apollo.queries.importRecordsWrap.refetch()
+        })
+        .catch((e) => {
+          btn.loading = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     handleSizeChange(val) {
-      console.log(val)
+      this.limit = val
     },
     handleCurrentChange(val) {
-      console.log(val)
+      this.page = val
     },
     timeFormatter() {
       var t = new Date(arguments[2])
       return t.toLocaleString()
     }
+  },
+  created() {
+    this.$store.commit('SET_PAGE_TITLE', `${this.material.name}数据导入记录`)
   }
 }
 </script>
