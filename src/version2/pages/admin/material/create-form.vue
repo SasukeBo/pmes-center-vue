@@ -53,6 +53,7 @@
             accept=".xlsx"
             :http-request="handleUpload"
             :limit="1"
+            ref="pointUpload"
             :show-file-list="false"
           >
             <el-button size="small" type="primary"
@@ -274,12 +275,14 @@ export default {
             return p
           })
           this.points = this.points.concat(points)
+          this.$refs.pointUpload.clearFiles()
         })
         .catch((e) => {
           this.$message({
             type: 'error',
             message: e.message.replace('GraphQL error:', '')
           })
+          this.$refs.pointUpload.clearFiles()
         })
     }
   }

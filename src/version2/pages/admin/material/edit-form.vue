@@ -22,19 +22,23 @@
 
     <div class="footer-btns">
       <FButton type="plain" size="small" @click="$router.go(-1)">返回</FButton>
-      <FButton type="normal" size="small">保存</FButton>
+      <FButton type="normal" size="small" :loading="saving" @click="save"
+        >保存</FButton
+      >
     </div>
   </div>
 </template>
 <script>
 import FButton from '@/version2/components/FButton.vue'
+import gql from 'graphql-tag'
 export default {
   components: {
     FButton
   },
-  props: ['id'],
+  props: ['id', 'material'],
   data() {
     return {
+      saving: false,
       form: {
         name: '',
         customerCode: '',
@@ -42,7 +46,78 @@ export default {
       }
     }
   },
-  created() {}
+  methods: {
+    save() {
+      this.saving = true
+      var data = { ...this.form }
+      delete data.name
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($input: MaterialUpdateInput!) {
+              response: updateMaterial(input: $input) {
+                id
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            input: {
+              ...data,
+              id: this.id
+            }
+          }
+        })
+        .then(() => {
+          this.saving = false
+          this.$message({ type: 'success', message: '保存料号信息成功' })
+          this.$router.push({ name: 'console-material-listview' })
+        })
+        .catch((e) => {
+          this.saving = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    }
+  },
+  created() {
+    var data = this.material
+    if (!data) {
+      this.$apollo
+        .query({
+          query: gql`
+            query($id: Int!) {
+              response: material(id: $id) {
+                id
+                name
+                customerCode
+                projectRemark
+              }
+            }
+          `,
+          client: 'adminClient',
+          variabels: {
+            id: this.id
+          }
+        })
+        .then(({ data: { response } }) => {
+          data = response
+          delete data.__typename
+        })
+        .catch((e) => {
+          this.message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    }
+
+    this.form.name = data.name
+    this.form.customerCode = data.customerCode
+    this.form.projectRemark = data.projectRemark
+  }
 }
 </script>
 

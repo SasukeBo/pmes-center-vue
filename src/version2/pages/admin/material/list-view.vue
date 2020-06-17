@@ -2,14 +2,22 @@
   <div class="material-manage__listview">
     <div
       class="material-manage__listview-list"
-      v-if="materialsWrap.total > 0 && materialsWrap.materials.length > 0"
+      v-if="
+        (materialsWrap.total > 0 && materialsWrap.materials.length > 0) ||
+          pattern
+      "
     >
       <div class="material-manage__listview-header">
         <div class="search-input">
-          <el-input placeholder="搜索料号" v-model="search" size="small">
+          <el-input
+            placeholder="搜索料号"
+            v-model="search"
+            size="small"
+            @keyup.enter.native.prevent="pattern = search"
+          >
           </el-input>
 
-          <el-button size="mini">搜索</el-button>
+          <el-button size="mini" @click="pattern = search">搜索</el-button>
         </div>
 
         <div class="add-button">
