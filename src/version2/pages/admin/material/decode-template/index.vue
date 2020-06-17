@@ -69,6 +69,7 @@
         :data="editTemplate"
         :visible.sync="drawerVisible"
         :isEdit="isDecodeFormEdit"
+        @update-list="$apollo.queries.templates.refetch()"
       ></DecodeForm>
     </el-drawer>
   </div>
@@ -78,6 +79,7 @@ import DecodeForm from './decode-form.vue'
 import FButton from '@/version2/components/FButton.vue'
 import gql from 'graphql-tag'
 export default {
+  name: 'DecodeTemplateList',
   props: ['id', 'material'],
   components: { FButton, DecodeForm },
   apollo: {
@@ -181,18 +183,60 @@ export default {
       this.editTemplate = val
       this.drawerVisible = true
     },
-    remove(val) {},
+    remove(val) {
+      console.log(val)
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: deleteDecodeTemplate(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: val.id
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.$message({ type: 'success', message: '删除解析模板成功' })
+          this.$apollo.queries.templates.refetch()
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     appendTemplate() {
       this.isDecodeFormEdit = false
       this.editTemplate = undefined
       this.drawerVisible = true
     },
     changeDefault(val) {
-      var index = this.templates.findIndex((i) => i.default && i.id !== val.id)
-      if (index > -1) {
-        this.templates[index].default = false
-      }
-      // 调用接口 修改 default 值
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!, $isDefault: Boolean!) {
+              response: changeDefaultTemplate(id: $id, isDefault: $isDefault)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: val.id,
+            isDefault: val.default
+          }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '修改成功' })
+          this.$apollo.queries.templates.refetch()
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
     }
   }
 }
@@ -213,15 +257,6 @@ export default {
     height: calc(100% - 64px);
     padding: 56px 106px;
     box-sizing: border-box;
-
-    .el-table {
-      border-left: none;
-
-      &:before,
-      &:after {
-        display: none;
-      }
-    }
 
     .append-template-btn {
       height: 64px;
@@ -254,10 +289,6 @@ export default {
         text-align: center;
         color: #666;
         font-size: 12px;
-
-        &:first-child {
-          border-left: 1px solid #ebeef5;
-        }
       }
     }
   }

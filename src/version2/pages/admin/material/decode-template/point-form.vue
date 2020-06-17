@@ -18,8 +18,11 @@ export default {
     }
   },
   watch: {
-    value(val) {
-      this.columnValue = val
+    value: {
+      immediate: true,
+      handler: function(val) {
+        this.columnValue = val
+      }
     }
   },
   methods: {

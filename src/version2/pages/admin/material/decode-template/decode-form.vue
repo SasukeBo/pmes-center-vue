@@ -7,7 +7,7 @@
     <div class="decode-template-form__body">
       <div class="scroll-inner">
         <div class="block-title">解析模板</div>
-        <el-form :form="form" inline size="small">
+        <el-form :model="form" inline size="small" :rules="rules1" ref="form1">
           <el-form-item label="模板名称：" prop="name">
             <el-input
               class="decode-template-form-cell"
@@ -24,8 +24,8 @@
         </el-form>
 
         <div class="block-title">配置</div>
-        <el-form :form="form" inline size="small">
-          <el-form-item label="数据起始行：" prop="">
+        <el-form :model="form" inline size="small" ref="form2" :rules="rules2">
+          <el-form-item label="数据起始行：" prop="dataRowIndex">
             <div class="cell-input">
               <el-input
                 class="decode-template-form-cell"
@@ -36,7 +36,7 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="生产日期数据列：" prop="">
+          <el-form-item label="生产日期数据列：" prop="createdAtColumnIndex">
             <div class="cell-input">
               <el-input
                 class="decode-template-form-cell"
@@ -172,11 +172,22 @@ export default {
         { label: '浮点数', value: 'Float' },
         { label: '日期', value: 'Datetime' }
       ],
+      rules1: {
+        name: [{ required: true, message: '此为必填项', trigger: 'blur' }]
+      },
+      rules2: {
+        dataRowIndex: [
+          { required: true, message: '此为必填项', trigger: 'blur' }
+        ],
+        createdAtColumnIndex: [
+          { required: true, message: '此为必填项', trigger: 'blur' }
+        ]
+      },
       form: {
         default: false,
         name: '',
         description: '',
-        createdAtcolumnIndex: undefined,
+        createdAtColumnIndex: undefined,
         dataRowIndex: undefined,
         pointColumns: {},
         productColumns: []
@@ -198,54 +209,48 @@ export default {
       this.form.dataRowIndex = undefined
     },
     save() {
-      this.saving = true
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($input: DecodeTemplateInput!) {
-              response: saveDecodeTemplate(input: $input) {
-                id
-                name
-                material {
-                  id
-                }
-                user {
-                  id
-                }
-                description
-                dataRowIndex
-                createdAtColumnIndex
-                productColumns {
-                  name
-                  index
-                  type
-                }
-                pointColumns
-                default
-                createdAt
-                updatedAt
-              }
+      var _this = this
+      _this.$refs.form1.validate((valid) => {
+        if (valid) {
+          _this.$refs.form2.validate((valid) => {
+            if (valid) {
+              _this.saving = true
+              _this.$apollo
+                .mutate({
+                  mutation: gql`
+                    mutation($input: DecodeTemplateInput!) {
+                      response: saveDecodeTemplate(input: $input) {
+                        id
+                      }
+                    }
+                  `,
+                  client: 'adminClient',
+                  variables: {
+                    input: {
+                      ..._this.form,
+                      id:
+                        _this.isEdit && _this.data ? _this.data.id : undefined,
+                      materialID: _this.materialID
+                    }
+                  }
+                })
+                .then(({ data: { response } }) => {
+                  _this.saving = false
+                  _this.$message({ type: 'success', message: '保存成功' })
+                  _this.$emit('update-list')
+                  _this.$emit('update:visible', false)
+                })
+                .catch((e) => {
+                  _this.saving = false
+                  _this.$message({
+                    type: 'error',
+                    message: e.message.replace('GraphQL error:', '"')
+                  })
+                })
             }
-          `,
-          client: 'adminClient',
-          variables: {
-            input: {
-              ...this.form,
-              materialID: this.materialID
-            }
-          }
-        })
-        .then(({ data: { response } }) => {
-          this.saving = false
-          console.log(response)
-        })
-        .catch((e) => {
-          this.saving = false
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '"')
           })
-        })
+        }
+      })
     },
     handlePointColumnChange({ key, value }) {
       this.form.pointColumns[key] = value
