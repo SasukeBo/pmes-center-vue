@@ -17,7 +17,16 @@
         </el-form-item>
 
         <el-form-item label="料号:" prop="materialID">
-          <el-select v-model="form.materialID" placeholder="请选择料号">
+          <el-select
+            v-model="form.materialID"
+            filterable
+            clearable
+            remote
+            size="small"
+            placeholder="请选择料号"
+            :remote-method="searchMaterials"
+            :loading="searchMaterialsLoading"
+          >
             <el-option
               v-for="m in materials"
               :key="m.id"
@@ -57,11 +66,25 @@
 </template>
 <script>
 import FButton from '@/version2/components/FButton.vue'
+import gql from 'graphql-tag'
 export default {
+  name: 'DeviceForm',
   components: { FButton },
+  props: {
+    isEdit: {
+      type: Boolean,
+      default: false
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    data: Object
+  },
   data() {
     return {
-      materials: [{ name: '测试料号', id: 1 }],
+      searchMaterialsLoading: false,
+      materials: [],
       rules: {
         name: [
           { required: true, message: '设备名称为必填项', trigger: 'blur' }
@@ -80,12 +103,70 @@ export default {
     }
   },
   methods: {
-    cancel() {
-      this.$refs.form.resetFields()
+    clearForm() {
+      this.form = {}
+      this.materials = []
       this.$refs.form.clearValidate()
-      this.$emit('close-drawer')
     },
-    save() {}
+    cancel() {
+      this.$emit('update:visible', false)
+      this.clearForm()
+    },
+    save() {},
+    searchMaterials(query) {
+      if (query !== '') {
+        this.searchMaterialsLoading = true
+        this.$apollo
+          .query({
+            query: gql`
+              query($pattern: String, $page: Int!, $limit: Int!) {
+                response: materials(
+                  pattern: $pattern
+                  page: $page
+                  limit: $limit
+                ) {
+                  materials {
+                    id
+                    name
+                  }
+                }
+              }
+            `,
+            client: 'adminClient',
+            variables: {
+              pattern: query,
+              page: 1,
+              limit: 20
+            }
+          })
+          .then(({ data: { response } }) => {
+            this.searchMaterialsLoading = false
+            this.materials = response.materials
+          })
+          .catch((e) => {
+            this.searchMaterialsLoading = false
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      }
+    }
+  },
+  watch: {
+    visible: {
+      immediate: true,
+      handler: function(val) {
+        if (this.visible && this.isEdit && this.data) {
+          this.form.name = this.data.name
+          this.form.deviceSupplier = this.data.deviceSupplier
+          this.form.materialID = this.data.material.id
+          this.form.address = this.data.address
+          this.form.isRealtime = this.data.isRealtime
+          this.materials.push(this.data.material)
+        }
+      }
+    }
   }
 }
 </script>

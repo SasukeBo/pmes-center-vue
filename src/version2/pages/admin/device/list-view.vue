@@ -6,17 +6,25 @@
           placeholder="搜索设备"
           v-model="searchForm.pattern"
           size="small"
+          @keyup.enter.native.prevent="search = searchForm.pattern"
         >
         </el-input>
 
-        <el-button size="mini">搜索</el-button>
+        <el-button @click="search = searchForm.pattern" size="mini"
+          >搜索</el-button
+        >
       </div>
 
       <div class="material-select">
         <el-select
-          size="small"
           v-model="searchForm.materialID"
+          filterable
+          clearable
+          remote
+          size="small"
           placeholder="料号筛选"
+          :remote-method="searchMaterials"
+          :loading="searchMaterialsLoading"
         >
           <el-option
             v-for="m in materials"
@@ -28,9 +36,7 @@
       </div>
 
       <div class="add-button">
-        <el-button size="small" @click="drawerVisible = true"
-          >添加设备</el-button
-        >
+        <el-button size="small" @click="appendButton">添加设备</el-button>
       </div>
     </div>
 
@@ -38,7 +44,7 @@
       <el-table
         stripe
         height="100%"
-        :data="devices"
+        :data="deviceWrap.devices"
         header-row-class-name="device-table__header"
         row-class-name="device-table__row"
       >
@@ -54,14 +60,26 @@
           </template>
         </el-table-column>
         <el-table-column label="Token" prop="uuid"> </el-table-column>
-        <el-table-column label="IP" prop="ip"></el-table-column>
-        <el-table-column label="厂商" prop="deviceSupplier"></el-table-column>
+        <el-table-column label="IP">
+          <template slot-scope="scope">
+            {{ scope.row.ip ? scope.row.ip : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="厂商">
+          <template slot-scope="scope">
+            {{ scope.row.deviceSupplier ? scope.row.deviceSupplier : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="实时数据">
           <template slot-scope="scope">
             {{ scope.row.isRealtime ? '是' : '否' }}
           </template>
         </el-table-column>
-        <el-table-column label="物理地址" prop="address"></el-table-column>
+        <el-table-column label="物理地址">
+          <template slot-scope="scope">
+            {{ scope.row.address ? scope.row.address : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button class="op-btn" type="text" @click="edit(scope.row)"
@@ -93,9 +111,9 @@
 
     <Pagination
       :currentPage="page"
-      :total="total"
+      :total="deviceWrap.total"
       :pageSizes="[20, 50, 100, 300]"
-      :pageSize="20"
+      :pageSize="limit"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     ></Pagination>
@@ -109,8 +127,9 @@
       :before-close="handleClose"
     >
       <DeviceForm
-        :device="editDevice"
-        @close-drawer="drawerVisible = false"
+        :visible.sync="drawerVisible"
+        :data="editDevice"
+        :isEdit="isEdit"
       ></DeviceForm>
     </el-drawer>
   </div>
@@ -118,47 +137,124 @@
 <script>
 import Pagination from '@/version2/components/Pagination.vue'
 import DeviceForm from './device-form'
+import gql from 'graphql-tag'
 export default {
+  name: 'DeviceList',
   components: { Pagination, DeviceForm },
+  apollo: {
+    deviceWrap: {
+      query: gql`
+        query($pattern: String, $materialID: Int, $page: Int!, $limit: Int!) {
+          deviceWrap: listDevices(
+            pattern: $pattern
+            materialID: $materialID
+            page: $page
+            limit: $limit
+          ) {
+            total
+            devices {
+              id
+              name
+              material {
+                id
+                name
+              }
+              uuid
+              ip
+              deviceSupplier
+              isRealtime
+              address
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          pattern: this.search,
+          materialID: this.searchForm.materialID,
+          page: this.page,
+          limit: this.limit
+        }
+      }
+    }
+  },
   data() {
     return {
       page: 1,
-      total: 100,
+      limit: 20,
+      searchMaterialsLoading: false,
       materials: [],
+      isEdit: false,
       editDevice: undefined,
       drawerVisible: false,
+      search: '',
       searchForm: {
         pattern: '',
         materialID: undefined
       },
-      devices: [
-        {
-          name: '设备1',
-          material: { name: '1828' },
-          uuid: '123fa32fa35g894h-43fg28-9fja329jgas8g48ur',
-          ip: '192.168.5.198',
-          deviceSupplier: '欧姆龙',
-          isRealtime: true,
-          address: '富诚达B1栋三楼'
-        },
-        {
-          name: '设备1',
-          material: { name: '1828' },
-          uuid: '123fa32fa35g894h-43fg28-9fja329jgas8g48ur',
-          ip: '192.168.5.198',
-          deviceSupplier: '欧姆龙',
-          isRealtime: true,
-          address: '富诚达B1栋三楼'
-        }
-      ]
+      deviceWrap: {
+        total: 0,
+        devices: []
+      }
     }
   },
   methods: {
-    edit() {},
+    edit(device) {
+      this.isEdit = true
+      this.editDevice = device
+      this.drawerVisible = true
+    },
+    appendButton() {
+      this.isEdit = false
+      this.editDevice = undefined
+      this.drawerVisible = true
+    },
     remove() {},
-    handleClose() {},
+    handleClose() {
+      this.drawerVisible = false
+    },
     handleSizeChange(val) {},
-    handleCurrentChange(val) {}
+    handleCurrentChange(val) {},
+    searchMaterials(query) {
+      if (query !== '') {
+        this.searchMaterialsLoading = true
+        this.$apollo
+          .query({
+            query: gql`
+              query($pattern: String, $page: Int!, $limit: Int!) {
+                response: materials(
+                  pattern: $pattern
+                  page: $page
+                  limit: $limit
+                ) {
+                  materials {
+                    id
+                    name
+                  }
+                }
+              }
+            `,
+            client: 'adminClient',
+            variables: {
+              pattern: query,
+              page: 1,
+              limit: 20
+            }
+          })
+          .then(({ data: { response } }) => {
+            this.searchMaterialsLoading = false
+            this.materials = response.materials
+          })
+          .catch((e) => {
+            this.searchMaterialsLoading = false
+            this.$message({
+              type: 'error',
+              message: e.message.replace('GraphQL error:', '')
+            })
+          })
+      }
+    }
   }
 }
 </script>
