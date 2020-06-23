@@ -148,51 +148,51 @@ export default {
     }
   },
   watch: {
-    pending: {
-      immediate: true,
-      handler: function(nv) {
-        if (!nv) {
-          clearInterval(this.interval)
-          this.needFetch = undefined
-          if (this.$apollo.queries.analyzeMaterial) {
-            console.log('start analyzeMaterial')
-            this.$apollo.queries.analyzeMaterial.start()
-          }
-        } else {
-          this.interval = setInterval(() => {
-            this.$apollo
-              .query({
-                query: gql`
-                  query($fileIDs: [Int]!) {
-                    finished: dataFetchFinishPercent(fileIDs: $fileIDs)
-                  }
-                `,
-                variables: {
-                  fileIDs: this.fileIDs || this.needFetch
-                },
-                fetchPolicy: 'network-only'
-              })
-              .then(({ data }) => {
-                this.finished = data.finished * 100
-                if (data.finished === 1) {
-                  setTimeout(() => {
-                    this.$emit('update:pending', false)
-                  }, 500)
-                }
-              })
-              .catch((e) => {
-                console.log(e.message)
-              })
-          }, 500)
-        }
-      }
-    },
+    // pending: {
+    //   immediate: true,
+    //   handler: function(nv) {
+    //     if (!nv) {
+    //       clearInterval(this.interval)
+    //       this.needFetch = undefined
+    //       if (this.$apollo.queries.analyzeMaterial) {
+    //         console.log('start analyzeMaterial')
+    //         this.$apollo.queries.analyzeMaterial.start()
+    //       }
+    //     } else {
+    //       this.interval = setInterval(() => {
+    //         this.$apollo
+    //           .query({
+    //             query: gql`
+    //               query($fileIDs: [Int]!) {
+    //                 finished: dataFetchFinishPercent(fileIDs: $fileIDs)
+    //               }
+    //             `,
+    //             variables: {
+    //               fileIDs: this.fileIDs || this.needFetch
+    //             },
+    //             fetchPolicy: 'network-only'
+    //           })
+    //           .then(({ data }) => {
+    //             this.finished = data.finished * 100
+    //             if (data.finished === 1) {
+    //               setTimeout(() => {
+    //                 this.$emit('update:pending', false)
+    //               }, 500)
+    //             }
+    //           })
+    //           .catch((e) => {
+    //             console.log(e.message)
+    //           })
+    //       }, 500)
+    //     }
+    //   }
+    // },
     analyzeMaterial(nv) {
-      if (nv.status && nv.status.pending) {
-        this.needFetch = nv.status.fileIDs
-        this.$emit('update:pending', nv.status.pending)
-        return
-      }
+      // if (nv.status && nv.status.pending) {
+      //   this.needFetch = nv.status.fileIDs
+      //   this.$emit('update:pending', nv.status.pending)
+      //   return
+      // }
       if (nv) {
         this.renderChart()
       }
