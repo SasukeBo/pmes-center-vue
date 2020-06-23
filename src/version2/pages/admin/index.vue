@@ -82,12 +82,15 @@ export default {
         top: -64px;
 
         .page-title__context {
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
           position: absolute;
           width: 233px;
           text-align: center;
           left: 0;
           top: 0;
-          padding: 22px 0;
+          padding: 22px 16px;
           box-sizing: border-box;
           color: #6a6a6a;
           font-size: 20px;

@@ -184,7 +184,6 @@ export default {
       this.drawerVisible = true
     },
     remove(val) {
-      console.log(val)
       this.$apollo
         .mutate({
           mutation: gql`

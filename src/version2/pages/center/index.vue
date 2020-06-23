@@ -6,7 +6,11 @@
         <el-input v-model="form.account"></el-input>
       </el-form-item>
       <el-form-item label="密码">
-        <el-input v-model="form.password" show-password></el-input>
+        <el-input
+          v-model="form.password"
+          show-password
+          @keyup.native.enter.prevent="login"
+        ></el-input>
       </el-form-item>
       <el-form-item>
         <el-button @click="login">登录</el-button>
@@ -29,16 +33,18 @@ export default {
   methods: {
     login() {
       var req = new XMLHttpRequest()
+      var _this = this
       req.onreadystatechange = function() {
         if (req.readyState === 4) {
           if (req.status >= 200 && req.status < 400) {
-            var result = req.responseText
-            try {
-              result = JSON.parse(req.responseText)
-            } catch (e) {}
-            console.log(result)
+            var res = JSON.parse(req.responseText || '')
+            if (res.errors) {
+              _this.$GraphQLError(res.errors[0])
+            } else {
+              _this.$router.push({ name: 'console' })
+            }
           } else {
-            console.log(req.status)
+            _this.$message({ type: 'error', message: req.statusText })
           }
         }
       }

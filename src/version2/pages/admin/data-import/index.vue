@@ -92,8 +92,9 @@
       :close-on-press-escape="false"
       custom-class="device-form-drawer"
       :visible.sync="drawerVisible"
+      :before-close="handleClose"
     >
-      <ImportForm @close-drawer="drawerVisible = false"></ImportForm>
+      <ImportForm :visible.sync="drawerVisible"></ImportForm>
     </el-drawer>
   </div>
 </template>
@@ -160,6 +161,9 @@ export default {
     }
   },
   methods: {
+    handleClose() {
+      this.drawerVisible = false
+    },
     handleSizeChange() {},
     handleCurrentChange() {},
     timeFomatter(val) {
@@ -178,16 +182,13 @@ $--import-data-table-border__color: #dedede;
 
 .console-import-data {
   height: 100%;
-  box-sizing: border-box;
   padding: 56px 63px 0 63px;
+  box-sizing: border-box;
 
   .console-import-data__body {
     height: calc(100% - 96px);
+    box-sizing: border-box;
     padding: 32px 0;
-
-    .el-table:before {
-      display: none;
-    }
 
     .import-data-table__header th,
     .import-data-table__row td {

@@ -130,6 +130,7 @@
         :visible.sync="drawerVisible"
         :data="editDevice"
         :isEdit="isEdit"
+        @refetchDevice="$apollo.queries.deviceWrap.refetch()"
       ></DeviceForm>
     </el-drawer>
   </div>
@@ -210,12 +211,42 @@ export default {
       this.editDevice = undefined
       this.drawerVisible = true
     },
-    remove() {},
+    remove(device) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: deleteDevice(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: device.id
+          }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '删除成功' })
+          var index = this.deviceWrap.devices.findIndex(
+            (d) => d.id === device.id
+          )
+          this.deviceWrap.devices.splice(index, 1)
+        })
+        .catch((e) => {
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     handleClose() {
       this.drawerVisible = false
     },
-    handleSizeChange(val) {},
-    handleCurrentChange(val) {},
+    handleSizeChange(val) {
+      this.limit = val
+    },
+    handleCurrentChange(val) {
+      this.page = val
+    },
     searchMaterials(query) {
       if (query !== '') {
         this.searchMaterialsLoading = true

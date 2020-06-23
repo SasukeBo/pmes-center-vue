@@ -59,8 +59,8 @@
     </div>
 
     <div class="device-form__footer">
-      <FButton size="small" @click="cancel" type="plain">取消</FButton>
-      <FButton size="small" @click="save">保存</FButton>
+      <FButton size="small" @click="closeDrawer" type="plain">取消</FButton>
+      <FButton size="small" @click="save" :loading="saving">保存</FButton>
     </div>
   </div>
 </template>
@@ -84,6 +84,7 @@ export default {
   data() {
     return {
       searchMaterialsLoading: false,
+      saving: false,
       materials: [],
       rules: {
         name: [
@@ -104,15 +105,55 @@ export default {
   },
   methods: {
     clearForm() {
-      this.form = {}
+      this.form = {
+        name: '',
+        deviceSupplier: '',
+        materialID: undefined,
+        address: '',
+        isRealtime: false
+      }
       this.materials = []
       this.$refs.form.clearValidate()
     },
-    cancel() {
+    closeDrawer() {
       this.$emit('update:visible', false)
       this.clearForm()
     },
-    save() {},
+    save() {
+      this.saving = true
+      var input = {
+        ...this.form
+      }
+      input.remark = this.form.name
+      if (this.isEdit) {
+        input.id = this.data.id
+      }
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($input: DeviceInput!) {
+              response: saveDevice(input: $input) {
+                id
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: { input }
+        })
+        .then(() => {
+          this.saving = false
+          this.closeDrawer()
+          this.$emit('refetchDevice')
+          this.$message({ type: 'success', message: '创建设备成功' })
+        })
+        .catch((e) => {
+          this.saving = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     searchMaterials(query) {
       if (query !== '') {
         this.searchMaterialsLoading = true

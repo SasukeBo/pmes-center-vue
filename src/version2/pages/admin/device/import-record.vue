@@ -3,7 +3,7 @@
     <div class="import-record-table">
       <el-table
         stripe
-        :data="records"
+        :data="importRecordsWrap.importRecords"
         height="100%"
         header-row-class-name="import-record-table__header"
         row-class-name="import-record-table__row"
@@ -34,14 +34,16 @@
         <el-table-column label="数据总行数" prop="rowCount"></el-table-column>
         <el-table-column label="状态">
           <template slot-scope="scope">
-            {{ scope.row.finished ? '已完成' : '未完成' }}
+            {{ statusMap[scope.row.status] }}
           </template>
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button
+              v-if="scope.row.status === 'Finished'"
               class="import-record-revert"
               type="text"
+              :ref="'revert_btn' + scope.row.id"
               @click="revert(scope.row)"
               >撤销</el-button
             >
@@ -52,9 +54,9 @@
 
     <Pagination
       :currentPage="page"
-      :total="total"
+      :total="importRecordsWrap.total"
       :pageSizes="[20, 50, 100, 300]"
-      :pageSize="20"
+      :pageSize="limit"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     ></Pagination>
@@ -62,20 +64,129 @@
 </template>
 <script>
 import Pagination from '@/version2/components/Pagination.vue'
+import gql from 'graphql-tag'
 export default {
-  props: ['id', 'material'],
+  props: {
+    id: [Number, String]
+  },
   components: { Pagination },
   data() {
     return {
-      total: 0,
+      device: undefined,
       page: 1,
-      records: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
+      limit: 20,
+      statusMap: {
+        Finished: '已完成',
+        Failed: '失败',
+        Loading: '导入中',
+        Reverted: '已撤销'
+      },
+      importRecordsWrap: {
+        total: 0,
+        importRecords: []
+      }
     }
   },
-  created() {
-    this.$store.commit('SET_PAGE_TITLE', `${this.material.name}数据导入记录`)
+  apollo: {
+    device: {
+      query: gql`
+        query($id: Int!) {
+          device(id: $id) {
+            id
+            name
+            material {
+              id
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          id: this.id
+        }
+      }
+    },
+    importRecordsWrap: {
+      query: gql`
+        query($materialID: Int!, $deviceID: Int, $page: Int!, $limit: Int!) {
+          importRecordsWrap: importRecords(
+            materialID: $materialID
+            deviceID: $deviceID
+            page: $page
+            limit: $limit
+          ) {
+            total
+            importRecords {
+              id
+              fileName
+              material {
+                id
+                name
+              }
+              rowCount
+              rowFinishedCount
+              status
+              errorMessage
+              originErrorMessage
+              fileSize
+              user {
+                id
+                account
+              }
+              importType
+              decodeTemplate {
+                id
+                name
+              }
+              createdAt
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          materialID: this.device.material.id,
+          deviceID: this.device.id,
+          page: this.page,
+          limit: this.limit
+        }
+      },
+      skip() {
+        return !this.device
+      }
+    }
   },
   methods: {
+    revert(record) {
+      var btn = this.$refs[`revert_btn${record.id}`]
+      btn.loading = true
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: revertImport(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: record.id
+          }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '撤销导入成功' })
+          btn.loading = false
+          this.$apollo.queries.importRecordsWrap.refetch()
+        })
+        .catch((e) => {
+          btn.loading = false
+          this.$message({
+            type: 'error',
+            message: e.message.replace('GraphQL error:', '')
+          })
+        })
+    },
     handleSizeChange(val) {
       console.log(val)
     },
@@ -85,6 +196,18 @@ export default {
     timeFormatter() {
       var t = new Date(arguments[2])
       return t.toLocaleString()
+    }
+  },
+  watch: {
+    device: {
+      immediate: true,
+      handler: function(val) {
+        if (val) {
+          this.$store.commit('SET_PAGE_TITLE', `${val.name}数据导入记录`)
+        } else {
+          this.$store.commit('SET_PAGE_TITLE', '设备数据导入记录')
+        }
+      }
     }
   }
 }

@@ -4,6 +4,9 @@
   </div>
 </template>
 <script>
+import Vue from 'vue'
+import GraphQLError from './utils/graphql_error'
+Vue.prototype.$GraphQLError = GraphQLError
 export default {
   created() {
     var _this = this
@@ -12,9 +15,7 @@ export default {
       .then(({ data: { response } }) => {
         _this.$store.commit('LOGIN', response)
       })
-      .catch((e) => {
-        _this.$message({ type: 'error', message: e.message })
-      })
+      .catch((e) => _this.$GraphQLError(e))
   }
 }
 </script>

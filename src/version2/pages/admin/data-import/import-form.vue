@@ -5,12 +5,27 @@
     </div>
 
     <div class="import-form__body">
-      <el-form :model="form" :rules="rules" size="small" label-width="100px">
+      <el-form
+        :model="form"
+        :rules="rules"
+        size="small"
+        label-width="100px"
+        ref="form"
+      >
         <el-form-item label="料号:" prop="materialID">
-          <el-select v-model="form.materialID">
+          <el-select
+            v-model="form.materialID"
+            filterable
+            clearable
+            remote
+            size="small"
+            placeholder="请选择料号"
+            :remote-method="searchMaterials"
+            :loading="searchMaterialsLoading"
+          >
             <el-option
               v-for="m in materials"
-              :key="'material_' + m.id"
+              :key="m.id"
               :label="m.name"
               :value="m.id"
             ></el-option>
@@ -18,39 +33,50 @@
         </el-form-item>
 
         <el-form-item label="设备:" prop="deviceID">
-          <el-select v-model="form.deviceID">
+          <el-select
+            clearable
+            size="small"
+            v-model="form.deviceID"
+            :disabled="!form.materialID"
+            placeholder="请先选择料号，再选择设备"
+          >
             <el-option
-              v-for="d in device"
-              :key="'device_' + d.id"
-              :label="d.name"
-              :value="d.id"
+              v-for="m in devices"
+              :key="m.id"
+              :label="m.name"
+              :value="m.id"
             ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="解析模板:" prop="decodeTemplateID">
-          <el-select v-model="form.decodeTemplateID">
+          <el-select
+            clearable
+            size="small"
+            :disabled="!form.materialID"
+            v-model="form.decodeTemplateID"
+            placeholder="请先选择料号，再选择模板"
+          >
             <el-option
-              v-for="d in decodeTemplates"
-              :key="'decodeTemplate_' + d.id"
-              :label="d.name"
-              :value="d.id"
+              v-for="m in decodeTemplates"
+              :key="m.id"
+              :label="m.name"
+              :value="m.id"
             ></el-option>
           </el-select>
         </el-form-item>
       </el-form>
 
       <el-upload
-        class="data-file-upload"
-        action="/test/upload"
         multiple
-        :file-list="fileList"
+        action="/posts"
+        class="data-file-upload"
+        :on-error="handleUploadError"
+        :on-success="handleUploadSuccess"
       >
-        <el-button class="import-btn" size="small" @click="drawerVisible = true"
-          ><img
-            src="~@/version2/assets/images/pi-upload.png"
-          />上传文件</el-button
-        >
+        <el-button class="import-btn" size="small">
+          <img src="~@/version2/assets/images/pi-upload.png" />上传文件
+        </el-button>
         <div slot="tip" class="data-file-upload__tip">
           只能上传xlsx文件
         </div>
@@ -58,25 +84,35 @@
     </div>
 
     <div class="import-form__footer">
-      <FButton size="small" @click="cancel" type="plain">取消</FButton>
+      <FButton size="small" @click="close" type="plain">取消</FButton>
       <FButton size="small" @click="save">保存</FButton>
     </div>
   </div>
 </template>
 <script>
 import FButton from '@/version2/components/FButton.vue'
+import gql from 'graphql-tag'
 export default {
+  name: 'ImportForm',
   components: { FButton },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       form: {
         materialID: undefined,
         deviceID: undefined,
-        decodeTemplateID: undefined
+        decodeTemplateID: undefined,
+        fileTokens: []
       },
+      searchMaterialsLoading: false,
       materials: [],
       devices: [],
-      decodeTemplate: [],
+      decodeTemplates: [],
       rules: {
         materialID: [
           { required: true, message: '料号为必选项', trigger: 'blur' }
@@ -91,8 +127,137 @@ export default {
     }
   },
   methods: {
-    save() {},
-    cancel() {}
+    handleUploadSuccess(res) {
+      this.form.fileTokens.push(res.token)
+    },
+    handleUploadError(err) {
+      var response = JSON.parse(err.message)
+      this.$message({ type: 'error', message: response.errors[0].message })
+    },
+    save() {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+        }
+      })
+    },
+    clearForm() {
+      this.form.materialID = undefined
+      this.form.deviceID = undefined
+      this.form.decodeTemplateID = undefined
+      this.$refs.form.clearValidate()
+    },
+    close() {
+      this.$emit('update:visible', false)
+      this.clearForm()
+    },
+    searchMaterials(query) {
+      if (query !== '') {
+        this.searchMaterialsLoading = true
+        this.$apollo
+          .query({
+            query: gql`
+              query($pattern: String, $page: Int!, $limit: Int!) {
+                response: materials(
+                  pattern: $pattern
+                  page: $page
+                  limit: $limit
+                ) {
+                  materials {
+                    id
+                    name
+                  }
+                }
+              }
+            `,
+            client: 'adminClient',
+            variables: {
+              pattern: query,
+              page: 1,
+              limit: 20
+            }
+          })
+          .then(({ data: { response } }) => {
+            this.searchMaterialsLoading = false
+            this.materials = response.materials
+          })
+          .catch((e) => {
+            this.searchMaterialsLoading = false
+            this.$GraphQLError(e)
+          })
+      }
+    },
+    getDevices() {
+      var variables = {
+        materialID: this.form.materialID,
+        page: 1,
+        limit: 1000
+      }
+      this.$apollo
+        .query({
+          query: gql`
+            query(
+              $pattern: String
+              $materialID: Int
+              $page: Int!
+              $limit: Int!
+            ) {
+              response: listDevices(
+                pattern: $pattern
+                materialID: $materialID
+                page: $page
+                limit: $limit
+              ) {
+                devices {
+                  id
+                  name
+                  material {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables
+        })
+        .then(({ data: { response } }) => {
+          this.devices = response.devices
+        })
+        .catch((e) => this.$GraphQLError(e))
+    },
+    getDecodeTemplates() {
+      this.$apollo
+        .query({
+          query: gql`
+            query($materialID: Int!) {
+              response: listDecodeTemplate(materialID: $materialID) {
+                id
+                name
+              }
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            materialID: this.form.materialID
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.decodeTemplates = response
+        })
+        .catch((e) => this.$GraphQLError(e))
+    }
+  },
+  watch: {
+    'form.materialID': function(val) {
+      if (val) {
+        this.getDevices()
+        this.getDecodeTemplates()
+      } else {
+        this.form.deviceID = undefined
+        this.form.decodeTemplateID = undefined
+      }
+    }
   }
 }
 </script>

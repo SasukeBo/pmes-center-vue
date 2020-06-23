@@ -236,9 +236,6 @@ export default {
         el.scrollTo(0, el.scrollHeight)
       }, 100)
     },
-    display(scope) {
-      console.log(scope)
-    },
     editCell(val) {
       var data = val.data
       var prop = val.prop
