@@ -27,7 +27,7 @@
   </div>
 </template>
 <script>
-import AdminMenu from '@/version2/components/AdminMenu.vue'
+import AdminMenu from '@/version2/pages/admin/components/AdminMenu.vue'
 import { mapState } from 'vuex'
 export default {
   components: {

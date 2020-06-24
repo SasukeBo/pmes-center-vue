@@ -92,7 +92,7 @@
   </div>
 </template>
 <script>
-import FButton from '@/version2/components/FButton.vue'
+import FButton from '@/version2/pages/admin/components/FButton.vue'
 import gql from 'graphql-tag'
 export default {
   name: 'ImportForm',

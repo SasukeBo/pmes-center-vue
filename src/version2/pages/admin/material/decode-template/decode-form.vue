@@ -144,8 +144,8 @@
   </div>
 </template>
 <script>
-import FButton from '@/version2/components/FButton.vue'
-import TableCellForm from '@/version2/components/TableCellForm.vue'
+import FButton from '@/version2/pages/admin/components/FButton.vue'
+import TableCellForm from '@/version2/pages/admin/components/TableCellForm.vue'
 import PointForm from './point-form'
 import gql from 'graphql-tag'
 export default {

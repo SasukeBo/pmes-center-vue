@@ -15,7 +15,7 @@ export default {
       .then(({ data: { response } }) => {
         _this.$store.commit('LOGIN', response)
       })
-      .catch((e) => _this.$GraphQLError(e))
+      .catch((e) => console.log(e))
   }
 }
 </script>

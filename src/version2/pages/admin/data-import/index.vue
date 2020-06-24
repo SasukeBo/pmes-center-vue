@@ -112,7 +112,7 @@
   </div>
 </template>
 <script>
-import Pagination from '@/version2/components/Pagination.vue'
+import Pagination from '@/version2/pages/admin/components/Pagination.vue'
 import ImportForm from './import-form'
 import ImportProgress from './ImportProgress'
 import gql from 'graphql-tag'

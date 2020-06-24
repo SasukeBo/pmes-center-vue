@@ -98,7 +98,7 @@
   </div>
 </template>
 <script>
-import Pagination from '@/version2/components/Pagination.vue'
+import Pagination from '@/version2/pages/admin/components/Pagination.vue'
 import gql from 'graphql-tag'
 
 export default {

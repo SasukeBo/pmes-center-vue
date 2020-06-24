@@ -1,7 +1,10 @@
 <template>
   <div class="admin-menu">
     <div class="logo-link">
-      <img src="~@/version2/assets/images/logo.png" />
+      <img
+        src="~@/version2/assets/images/logo.png"
+        @click="$router.push({ name: 'data-center' })"
+      />
     </div>
 
     <div class="tab-btns">
@@ -125,6 +128,7 @@ export default {
       width: 112px;
       height: 112px;
       margin-right: 45px;
+      cursor: pointer;
     }
   }
 
