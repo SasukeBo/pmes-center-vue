@@ -2,6 +2,7 @@
   <el-button
     :size="size"
     :class="['app-theme-button', 'theme-button__' + type]"
+    :loading="loading"
     @click="$emit('click')"
     ><slot></slot
   ></el-button>
@@ -16,6 +17,10 @@ export default {
     size: {
       default: 'small',
       type: String
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   }
 }

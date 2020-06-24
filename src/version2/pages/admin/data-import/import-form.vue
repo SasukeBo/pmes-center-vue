@@ -87,7 +87,7 @@
 
     <div class="import-form__footer">
       <FButton size="small" @click="close" type="plain">取消</FButton>
-      <FButton size="small" @click="save">保存</FButton>
+      <FButton size="small" @click="save" :loading="saving">保存</FButton>
     </div>
   </div>
 </template>
@@ -111,6 +111,7 @@ export default {
         decodeTemplateID: undefined,
         fileTokens: []
       },
+      saving: false,
       searchMaterialsLoading: false,
       materials: [],
       devices: [],
@@ -145,6 +146,7 @@ export default {
     save() {
       this.$refs.form.validate((valid) => {
         if (valid) {
+          this.saving = true
           this.$apollo
             .mutate({
               mutation: gql`
@@ -168,11 +170,15 @@ export default {
               }
             })
             .then(() => {
+              this.saving = false
               this.$message({ type: 'success', message: '导入数据成功' })
               this.close()
               this.$emit('update-list')
             })
-            .catch((e) => this.$GraphQLError(e))
+            .catch((e) => {
+              this.$GraphQLError(e)
+              this.saving = false
+            })
         }
       })
     },

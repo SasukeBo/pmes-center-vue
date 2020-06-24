@@ -10,27 +10,29 @@
       <div class="status-icon">
         <img
           src="~@/version2/assets/images/pi-quxiao.png"
-          v-if="record.status === 'Loading'"
+          v-if="status === 'Loading'"
           @click="cancel"
         />
         <img
           src="~@/version2/assets/images/pi-error.png"
-          v-if="record.status === 'Failed'"
+          v-if="status === 'Failed'"
         />
         <img
           src="~@/version2/assets/images/pi-success.png"
-          v-if="record.status === 'Finished'"
+          v-if="status === 'Finished'"
         />
       </div>
 
-      <el-button
-        size="small"
-        type="text"
-        class="cancel-btn inline-item"
-        v-if="record.status === 'Finished'"
-        @click="revert"
-        >撤销</el-button
-      >
+      <div class="opration-btn">
+        <el-button
+          size="small"
+          type="text"
+          class="cancel-btn inline-item"
+          v-if="status === 'Finished'"
+          @click="revert"
+          >撤销</el-button
+        >
+      </div>
     </div>
   </div>
 </template>
@@ -41,7 +43,8 @@ export default {
   name: 'ImportProgress',
   props: {
     record: Object,
-    rowFinishedCount: Number
+    rowFinishedCount: Number,
+    status: String
   },
   data() {
     return {
@@ -98,9 +101,9 @@ export default {
               .query({
                 query: gql`
                   query($id: Int!) {
-                    response: importPercent(id: $id) {
+                    response: importStatus(id: $id) {
                       status
-                      count
+                      finishedRowCount
                     }
                   }
                 `,
@@ -111,7 +114,8 @@ export default {
                 }
               })
               .then(({ data: { response } }) => {
-                this.$emit('update:rowFinishedCount', response.count)
+                this.$emit('update:rowFinishedCount', response.finishedRowCount)
+                this.$emit('update:status', response.status)
                 if (response.status !== 'Loading') {
                   clearInterval(this.percentageInterval)
                 }
@@ -134,6 +138,10 @@ export default {
     width: 32px;
     text-align: left;
     margin-right: 8px;
+  }
+
+  .opration-btn {
+    width: 40px;
   }
 
   .el-progress {

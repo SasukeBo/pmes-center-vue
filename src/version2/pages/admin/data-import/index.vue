@@ -15,11 +15,16 @@
         header-row-class-name="import-data-table__header"
         row-class-name="import-data-table__row"
       >
-        <el-table-column
-          label="文件名称"
-          prop="fileName"
-          min-width="150px"
-        ></el-table-column>
+        <el-table-column label="文件名称" prop="fileName" min-width="150px">
+          <template slot-scope="scope">
+            <a
+              v-if="scope.row.file"
+              :href="'/downloads/xlsx?file_token=' + scope.row.file.token"
+              >{{ scope.row.file.name }}</a
+            >
+            <span v-else>{{ scope.row.fileName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="解析模板">
           <template slot-scope="scope">
             {{ scope.row.decodeTemplate.name }}
@@ -64,12 +69,14 @@
         <el-table-column min-width="400px">
           <template slot-scope="scope">
             <div class="import-operation-panel">
-              <span class="inline-item">
+              <span class="inline-item" style="font-weight: bold">
                 {{ (scope.row.fileSize / 1024 / 1024).toFixed(2) }} MB
               </span>
               <ImportProgress
+                :key="scope.row.id"
                 :record="scope.row"
                 :rowFinishedCount.sync="scope.row.rowFinishedCount"
+                :status.sync="scope.row.status"
                 @update-list="updateList"
               ></ImportProgress>
             </div>
@@ -138,6 +145,11 @@ export default {
             total
             importRecords {
               id
+              file {
+                id
+                name
+                token
+              }
               fileName
               material {
                 id
@@ -251,6 +263,10 @@ $--import-data-table-border__color: #dedede;
         &.is-failed {
           color: $--font-color__danger;
         }
+      }
+
+      .import-operation-panel {
+        text-align: right;
       }
     }
   }
