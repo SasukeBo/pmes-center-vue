@@ -1,12 +1,16 @@
 /*          theme color
 ----------------------------------- */
 $--color-main: rgba(94, 131, 242, 1);
+$--color-red: #fb5d62;
+$--color-green: #3fe3d3;
 $--color-gray: #666;
 
 /*          font color
 ----------------------------------- */
 $--font-color__main: $--color-main;
 $--font-color__normal: $--color-gray;
+$--font-color__success: $--color-green;
+$--font-color__danger: $--color-red;
 
 /*          background color
 ----------------------------------- */

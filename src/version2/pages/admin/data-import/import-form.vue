@@ -69,8 +69,10 @@
 
       <el-upload
         multiple
+        ref="upload"
         action="/posts"
         class="data-file-upload"
+        :on-remove="handleUploadRemove"
         :on-error="handleUploadError"
         :on-success="handleUploadSuccess"
       >
@@ -127,6 +129,12 @@ export default {
     }
   },
   methods: {
+    handleUploadRemove(file) {
+      var index = this.form.fileTokens.findIndex(
+        (t) => t === file.response.token
+      )
+      this.form.fileTokens.splice(index, 1)
+    },
     handleUploadSuccess(res) {
       this.form.fileTokens.push(res.token)
     },
@@ -137,6 +145,34 @@ export default {
     save() {
       this.$refs.form.validate((valid) => {
         if (valid) {
+          this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation(
+                  $materialID: Int!
+                  $deviceID: Int!
+                  $decodeTemplateID: Int!
+                  $fileTokens: [String!]!
+                ) {
+                  response: importData(
+                    materialID: $materialID
+                    deviceID: $deviceID
+                    decodeTemplateID: $decodeTemplateID
+                    fileTokens: $fileTokens
+                  )
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                ...this.form
+              }
+            })
+            .then(() => {
+              this.$message({ type: 'success', message: '导入数据成功' })
+              this.close()
+              this.$emit('update-list')
+            })
+            .catch((e) => this.$GraphQLError(e))
         }
       })
     },
@@ -144,11 +180,13 @@ export default {
       this.form.materialID = undefined
       this.form.deviceID = undefined
       this.form.decodeTemplateID = undefined
+      this.form.fileTokens = []
       this.$refs.form.clearValidate()
     },
     close() {
       this.$emit('update:visible', false)
       this.clearForm()
+      this.$refs.upload.clearFiles()
     },
     searchMaterials(query) {
       if (query !== '') {

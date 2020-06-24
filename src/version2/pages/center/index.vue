@@ -52,6 +52,7 @@ export default {
       var formData = new FormData()
       formData.append('account', this.form.account)
       formData.append('password', this.form.password)
+      formData.append('remember', true)
       req.send(formData)
     }
   }

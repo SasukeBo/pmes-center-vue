@@ -11,11 +11,15 @@
     <div class="console-import-data__body">
       <el-table
         height="100%"
-        :data="importRecords"
+        :data="importRecordsWrap.importRecords"
         header-row-class-name="import-data-table__header"
         row-class-name="import-data-table__row"
       >
-        <el-table-column label="文件名称" prop="fileName"></el-table-column>
+        <el-table-column
+          label="文件名称"
+          prop="fileName"
+          min-width="150px"
+        ></el-table-column>
         <el-table-column label="解析模板">
           <template slot-scope="scope">
             {{ scope.row.decodeTemplate.name }}
@@ -35,40 +39,39 @@
           label="导入时间"
           :formatter="timeFomatter"
           prop="createdAt"
+          min-width="150px"
         ></el-table-column>
         <el-table-column label="是否完成">
           <template slot-scope="scope">
-            {{ scope.row.finished ? '是' : '否' }}
+            <el-tooltip
+              class="item"
+              effect="dark"
+              :disabled="!scope.row.errorMessage"
+              :content="scope.row.errorMessage"
+              placement="top-start"
+            >
+              <span
+                :class="[
+                  'import-status',
+                  scope.row.status === 'Failed' ? 'is-failed' : ''
+                ]"
+              >
+                {{ statusMap[scope.row.status] }}
+              </span>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column min-width="400px">
           <template slot-scope="scope">
             <div class="import-operation-panel">
-              <span class="inline-item">20M</span>
-              <el-progress
-                class="inline-item"
-                :show-text="false"
-                :percentage="50"
-                :stroke-width="10"
-              ></el-progress>
-              <div class="status-icon inline-item">
-                <img
-                  src="~@/version2/assets/images/pi-quxiao.png"
-                  v-if="true"
-                  @click="cancel(scope.row)"
-                />
-                <img
-                  src="~@/version2/assets/images/pi-error.png"
-                  v-if="false"
-                />
-                <img
-                  src="~@/version2/assets/images/pi-success.png"
-                  v-if="false"
-                />
-              </div>
-              <el-button size="small" type="text" class="retry-btn inline-item"
-                >重试</el-button
-              >
+              <span class="inline-item">
+                {{ (scope.row.fileSize / 1024 / 1024).toFixed(2) }} MB
+              </span>
+              <ImportProgress
+                :record="scope.row"
+                :rowFinishedCount.sync="scope.row.rowFinishedCount"
+                @update-list="updateList"
+              ></ImportProgress>
             </div>
           </template>
         </el-table-column>
@@ -78,9 +81,9 @@
     <div class="console-import-data__footer">
       <Pagination
         :currentPage="page"
-        :total="total"
+        :total="importRecordsWrap.total"
         :pageSizes="[20, 50, 100, 300]"
-        :pageSize="20"
+        :pageSize="limit"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       ></Pagination>
@@ -94,86 +97,108 @@
       :visible.sync="drawerVisible"
       :before-close="handleClose"
     >
-      <ImportForm :visible.sync="drawerVisible"></ImportForm>
+      <ImportForm
+        :visible.sync="drawerVisible"
+        @update-list="updateList"
+      ></ImportForm>
     </el-drawer>
   </div>
 </template>
 <script>
 import Pagination from '@/version2/components/Pagination.vue'
 import ImportForm from './import-form'
+import ImportProgress from './ImportProgress'
+import gql from 'graphql-tag'
+
 export default {
-  components: { Pagination, ImportForm },
+  name: 'MyImportRecords',
+  components: { Pagination, ImportForm, ImportProgress },
   data() {
     return {
       page: 1,
-      total: 200,
+      limit: 20,
+      statusMap: {
+        Finished: '已完成',
+        Failed: '失败',
+        Loading: '导入中',
+        Reverted: '已撤销'
+      },
       drawerVisible: false,
-      importRecords: [
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
-        },
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
-        },
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
-        },
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
-        },
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
-        },
-        {
-          fileName: '测试文件',
-          decodeTemplate: { name: '默认解析模板' },
-          material: { name: '测试料号' },
-          device: { name: '测试设备' },
-          createdAt: '2020-06-18T12:00:00+08:00',
-          finished: false
+      importRecordsWrap: {
+        total: 0,
+        importRecords: []
+      }
+    }
+  },
+  apollo: {
+    importRecordsWrap: {
+      query: gql`
+        query($page: Int!, $limit: Int!) {
+          importRecordsWrap: myImportRecords(page: $page, limit: $limit) {
+            total
+            importRecords {
+              id
+              fileName
+              material {
+                id
+                name
+              }
+              device {
+                id
+                name
+              }
+              rowCount
+              rowFinishedCount
+              status
+              errorMessage
+              originErrorMessage
+              fileSize
+              user {
+                id
+                account
+              }
+              importType
+              decodeTemplate {
+                id
+                name
+              }
+              createdAt
+            }
+          }
         }
-      ]
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          page: this.page,
+          limit: this.limit
+        }
+      }
     }
   },
   methods: {
     handleClose() {
       this.drawerVisible = false
     },
-    handleSizeChange() {},
-    handleCurrentChange() {},
+    handleSizeChange(val) {
+      this.limit = val
+    },
+    handleCurrentChange(val) {
+      this.page = val
+    },
     timeFomatter(val) {
       var t = new Date(val.createdAt)
       return t.toLocaleString()
+    },
+    updateList() {
+      this.$apollo.queries.importRecordsWrap.refetch()
     }
   }
 }
 </script>
 <style lang="scss">
+@import '@/version2/assets/scss/variables.scss';
+
 $--import-data-table-border__color: #dedede;
 
 .el-drawer__container:focus {
@@ -217,16 +242,14 @@ $--import-data-table-border__color: #dedede;
       display: inline-block;
       vertical-align: middle;
       margin: 0 12px;
+    }
 
-      &.el-progress {
-        width: 120px;
+    .el-table {
+      .import-status {
+        cursor: pointer;
 
-        .el-progress-bar__inner {
-          background: linear-gradient(
-            270deg,
-            rgba(63, 227, 211, 1) 0%,
-            rgba(94, 131, 242, 1) 100%
-          );
+        &.is-failed {
+          color: $--font-color__danger;
         }
       }
     }

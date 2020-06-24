@@ -20,7 +20,11 @@
           </template>
         </el-table-column>
         <el-table-column label="导入方式" prop="importType"></el-table-column>
-        <el-table-column label="文件大小" prop="fileSize"></el-table-column>
+        <el-table-column label="文件大小" prop="fileSize">
+          <template slot-scope="scope">
+            {{ (scope.row.fileSize / 1024 / 1024).toFixed(2) }} MB
+          </template>
+        </el-table-column>
         <el-table-column label="解析模板">
           <template slot-scope="scope">
             {{ scope.row.decodeTemplate ? scope.row.decodeTemplate.name : '-' }}
@@ -188,10 +192,10 @@ export default {
         })
     },
     handleSizeChange(val) {
-      console.log(val)
+      this.limit = val
     },
     handleCurrentChange(val) {
-      console.log(val)
+      this.page = val
     },
     timeFormatter() {
       var t = new Date(arguments[2])
