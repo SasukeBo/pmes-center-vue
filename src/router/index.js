@@ -6,6 +6,7 @@ import Home from '@/version1/pages/home.vue'
 import MaterialView from '@/version1/pages/material/index.vue'
 import SizeAnalyze from '@/version1/pages/material/sizeAnalyze.vue'
 import ProductData from '@/version1/pages/material/productData.vue'
+import MaterialOverview from '@/version1/pages/material/overview'
 
 Vue.use(VueRouter)
 
@@ -34,8 +35,14 @@ const routes = [
     name: 'MaterialView',
     props: true,
     component: MaterialView,
-    redirect: { name: 'size-analyze' },
+    redirect: { name: 'material-overview' },
     children: [
+      {
+        path: 'overview',
+        name: 'material-overview',
+        props: true,
+        component: MaterialOverview
+      },
       {
         path: 'size-analyze',
         name: 'size-analyze',

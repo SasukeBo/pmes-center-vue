@@ -41,6 +41,8 @@
       </el-row>
     </div>
 
+    <TopYieldMaterial></TopYieldMaterial>
+
     <div class="materials-block" v-if="materials.length">
       <div class="block-title">最近一年数据</div>
 
@@ -106,10 +108,18 @@ import MaterialCard from '@/version1/components/MaterialCard.vue'
 import RecentMaterial from '@/version1/components/RecentMaterial.vue'
 import NotifyDialog from '@/version1/components/NotifyDialog.vue'
 import MaterialDialog from '@/version1/components/MaterialDialog.vue'
+import TopYieldMaterial from '@/version1/components/TopYieldMaterial.vue'
+
 import gql from 'graphql-tag'
 export default {
   name: 'Home',
-  components: { MaterialCard, RecentMaterial, NotifyDialog, MaterialDialog },
+  components: {
+    MaterialCard,
+    RecentMaterial,
+    NotifyDialog,
+    MaterialDialog,
+    TopYieldMaterial
+  },
   apollo: {
     materialWrap: {
       query: gql`
