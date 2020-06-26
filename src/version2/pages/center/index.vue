@@ -45,8 +45,9 @@ export default {
         query {
           currentUser {
             id
+            uuid
             account
-            admin
+            isAdmin
           }
         }
       `

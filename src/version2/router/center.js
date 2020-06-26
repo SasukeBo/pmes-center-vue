@@ -1,8 +1,9 @@
 import Center from '@/version2/pages/center'
 import Home from '@/version2/pages/center/home'
-import MaterialView from '@/version2/pages/center/material/view'
+import MaterialPage from '@/version2/pages/center/material'
 import SizeAnalyze from '@/version2/pages/center/material/sizeAnalyze'
 import ProductData from '@/version2/pages/center/material/productData'
+import MaterialOverview from '@/version2/pages/center/material/MaterialOverview'
 
 const centerRoutes = {
   path: '/center',
@@ -19,9 +20,15 @@ const centerRoutes = {
       path: 'material/:id/view',
       name: 'MaterialView',
       props: true,
-      component: MaterialView,
-      redirect: { name: 'size-analyze' },
+      component: MaterialPage,
+      redirect: { name: 'material-overview' },
       children: [
+        {
+          path: 'overview',
+          name: 'material-overview',
+          props: true,
+          component: MaterialOverview
+        },
         {
           path: 'size-analyze',
           name: 'size-analyze',
