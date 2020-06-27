@@ -1,7 +1,7 @@
 <template>
   <div class="top-yield-custom-chart">
     <div class="custom-chart__head">
-      <span class="title">自定义分组良率展示</span>
+      <span class="title">自定义看板</span>
       <el-button size="small" @click="echartsFormVisible = true"
         >自定义</el-button
       >
@@ -17,12 +17,12 @@
       <el-form :model="echartsForm" ref="custom-graph-form" :rules="rules">
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="echartsForm.xAxis" placeholder="请选择X轴属性">
-            <el-option label="设备" value="Device"></el-option>
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="冶具号" value="jig_id"></el-option>
-            <el-option label="班别" value="shift_number"></el-option>
-            <el-option label="线体号" value="line_id"></el-option>
-            <el-option label="模具号" value="mould_id"></el-option>
+            <el-option
+              v-for="(k, v) in attributesMap"
+              :key="'xaxis_' + v"
+              :label="k"
+              :value="v"
+            ></el-option>
           </el-select>
         </el-form-item>
 
@@ -30,23 +30,28 @@
           <el-select v-model="echartsForm.yAxis" placeholder="请选择Y轴属性">
             <el-option label="产量" value="Amount"></el-option>
             <el-option label="良率" value="Yield"></el-option>
-            <el-option label="不良率" value="Unyield"></el-option>
+            <el-option label="不良率" value="UnYield"></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="分组字段" prop="groupBy">
-          <el-select v-model="echartsForm.groupBy" placeholder="请选择分组字段">
-            <el-option label="设备" value="Device"></el-option>
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="冶具号" value="jig_id"></el-option>
-            <el-option label="班别" value="shift_number"></el-option>
-            <el-option label="线体号" value="line_id"></el-option>
-            <el-option label="模具号" value="mould_id"></el-option>
+          <el-select
+            v-model="echartsForm.groupBy"
+            placeholder="请选择分组字段"
+            clearable
+          >
+            <el-option
+              v-for="(k, v) in attributesMap"
+              :key="'groupby_' + v"
+              :label="k"
+              :value="v"
+            ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="日期范围">
           <el-date-picker
+            clearable
             v-model="echartsForm.duration"
             type="daterange"
             range-separator="至"
@@ -63,13 +68,15 @@
           ></el-input-number>
         </el-form-item>
 
-        <el-form-item label="正/倒序">
+        <el-form-item label="排序">
           <el-switch
             v-model="echartsForm.sort"
+            active-text="递减"
+            inactive-text="递增"
             active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-value="ASC"
-            inactive-value="DESC"
+            inactive-color="#5e83f2"
+            active-value="DESC"
+            inactive-value="ASC"
           >
           </el-switch>
         </el-form-item>
@@ -92,6 +99,13 @@ export default {
     id: [String, Number]
   },
   data() {
+    var checkUniqueAttributeForXAxisAndGroupBy = (rule, value, callback) => {
+      if (this.echartsForm.xAxis === this.echartsForm.groupBy) {
+        callback(new Error('X轴属性与分组属性不能相同'))
+      } else {
+        callback()
+      }
+    }
     return {
       echartsFormVisible: false,
       echartsForm: {
@@ -103,8 +117,14 @@ export default {
         sort: 'ASC'
       },
       rules: {
-        xAxis: [{ required: true, message: 'X轴属性必选', trigger: 'blur' }],
-        yAxis: [{ required: true, message: 'Y轴属性必选', trigger: 'blur' }]
+        xAxis: [
+          { required: true, message: 'X轴属性必选', trigger: 'blur' },
+          { validator: checkUniqueAttributeForXAxisAndGroupBy, trigger: 'blur' }
+        ],
+        yAxis: [{ required: true, message: 'Y轴属性必选', trigger: 'blur' }],
+        groupBy: [
+          { validator: checkUniqueAttributeForXAxisAndGroupBy, trigger: 'blur' }
+        ]
       },
       form: {
         xAxis: 'Device',
@@ -114,44 +134,26 @@ export default {
         limit: undefined,
         sort: 'ASC'
       },
+      attributesMap: {
+        Device: '设备',
+        Date: '日期',
+        jig_id: '冶具号',
+        shift_number: '班别',
+        line_id: '线体号',
+        mould_id: '模具号'
+      },
+      yAxisNameMap: {
+        Amount: '产量',
+        Yield: '良率',
+        UnYield: '不良率'
+      },
       echartsResult: {
         xAxisData: [],
         seriesData: {
           data: []
         }
       },
-      yieldChart: undefined,
-      yields: [],
-      options: {
-        tooltip: {
-          show: true
-        },
-        color: ['#3FE3D3', '#5E83F2'],
-        xAxis: {
-          name: '设备',
-          type: 'category',
-          axisLabel: { interval: 0, rotate: -45 }
-        },
-        yAxis: [
-          {
-            name: '百分比',
-            nameLocation: 'center',
-            nameGap: 50,
-            type: 'value',
-            scale: true,
-            axisLabel: {
-              formatter: '{value}%'
-            }
-          }
-        ],
-        series: [
-          {
-            type: 'bar',
-            name: '设备生产不良率',
-            barMaxWidth: 20
-          }
-        ]
-      }
+      yieldChart: undefined
     }
   },
   apollo: {
@@ -181,87 +183,94 @@ export default {
   },
   methods: {
     cancel() {
-      this.$refs['custom-graph-form'].resetField()
+      // this.$refs['custom-graph-form'].resetFields()
       this.echartsFormVisible = false
     },
     submit() {
       this.$refs['custom-graph-form'].validate((valid) => {
         if (valid) {
           this.form.xAxis = this.echartsForm.xAxis
-          this.form.yAxis = this.exhartsForm.yAxis
-          this.form.groupBy = this.exhartsForm.groupBy
-          this.form.duration = this.exhartsForm.duration
-          this.form.limit = this.exhartsForm.limit
-          this.form.sort = this.exhartsForm.sort
+          this.form.yAxis = this.echartsForm.yAxis
+          this.form.groupBy = this.echartsForm.groupBy
+            ? this.echartsForm.groupBy
+            : undefined
+          this.form.duration = this.echartsForm.duration
+          this.form.limit = this.echartsForm.limit
+          this.form.sort = this.echartsForm.sort
           this.echartsFormVisible = false
         }
       })
+    },
+    assembleSeries(seriesData) {
+      var keys = Object.keys(seriesData)
+      return keys.map((k) => {
+        var data = seriesData[k].map((item) => {
+          if (this.form.yAxis !== 'Amount') return (item * 100).toFixed(2)
+          return item
+        })
+
+        return {
+          data,
+          type: 'bar',
+          name: k,
+          barMaxWidth: 20
+        }
+      })
+    },
+    assembleXAxis(data) {
+      if (this.form.xAxis === 'Date') {
+        data = data.map((d) => {
+          var t = new Date(d)
+          return t.toLocaleDateString()
+        })
+      }
+      return {
+        data,
+        name: this.attributesMap[this.form.xAxis],
+        type: 'category',
+        axisLabel: { interval: 0, rotate: -45 }
+      }
+    },
+    assembleYAxis() {
+      return {
+        name: this.yAxisNameMap[this.form.yAxis],
+        type: 'value',
+        scale: true,
+        max: this.form.yAxis !== 'Amount' ? 100 : undefined,
+        axisLabel: {
+          formatter: this.form.yAxis !== 'Amount' ? '{value}%' : '{value}'
+        }
+      }
     }
   },
   watch: {
     echartsResult(nv) {
       if (nv) {
-        var values = nv.seriesData.data.map((item, i) => {
-          var rate = ((1 - item) * 100).toFixed(2)
-          if (i < 3) {
-            return {
-              value: rate,
-              itemStyle: {
-                color: {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [
-                    {
-                      offset: 0,
-                      color: '#D92622' // 0% 处的颜色
-                    },
-                    {
-                      offset: 1,
-                      color: '#E04660' // 100% 处的颜色
-                    }
-                  ]
-                }
-              }
+        var options = {
+          legend: {},
+          toolbox: {
+            feature: {
+              magicType: {
+                type: ['line', 'bar']
+              },
+              saveAsImage: {}
             }
-          } else if (i < 8) {
-            return {
-              value: rate,
-              itemStyle: {
-                color: {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [
-                    {
-                      offset: 0,
-                      color: '#FFB763' // 0% 处的颜色
-                    },
-                    {
-                      offset: 1,
-                      color: '#E04660' // 100% 处的颜色
-                    }
-                  ]
-                }
+          },
+          tooltip: {
+            show: true,
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              crossStyle: {
+                color: '#999'
               }
             }
           }
-
-          return rate
-        })
-        this.options.tooltip.formatter = function(params) {
-          return `
-          <div>${params.name}</div>
-          <div>${params.seriesName}：${params.value}%</div>
-          `
         }
-        this.options.xAxis.data = nv.xAxisData
-        this.options.series[0].data = values
-        this.yieldChart.setOption(this.options)
+        options.xAxis = this.assembleXAxis(nv.xAxisData)
+        options.yAxis = this.assembleYAxis()
+        options.series = this.assembleSeries(nv.seriesData)
+        this.yieldChart.setOption(options)
       }
     }
   },
