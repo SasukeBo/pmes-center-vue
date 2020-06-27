@@ -287,7 +287,7 @@ export default {
 .top-yield-custom-chart {
   padding: 16px;
   background: #fff;
-  margin-top: 32px;
+  margin-bottom: 16px;
   border-radius: 4px;
 
   .yield-chart-mount {

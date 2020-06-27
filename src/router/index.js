@@ -6,7 +6,9 @@ import Home from '@/version1/pages/home.vue'
 import MaterialView from '@/version1/pages/material/index.vue'
 import MaterialOverview from '@/version1/pages/material/overview'
 import MaterialDevices from '@/version1/pages/material/device'
+import MaterialSizes from '@/version1/pages/material/size'
 import DeviceView from '@/version1/pages/device/index.vue'
+import SizeView from '@/version1/pages/size/index.vue'
 
 Vue.use(VueRouter)
 
@@ -44,6 +46,12 @@ const routes = [
         component: MaterialOverview
       },
       {
+        path: 'sizes',
+        name: 'material-size',
+        props: true,
+        component: MaterialSizes
+      },
+      {
         path: 'devices',
         name: 'material-device',
         props: true,
@@ -56,6 +64,12 @@ const routes = [
     name: 'device-view',
     props: true,
     component: DeviceView
+  },
+  {
+    path: '/sizes/:id/view',
+    name: 'size-view',
+    props: true,
+    component: SizeView
   }
 ]
 

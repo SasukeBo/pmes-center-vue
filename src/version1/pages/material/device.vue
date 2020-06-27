@@ -44,7 +44,7 @@
 </template>
 <script>
 import gql from 'graphql-tag'
-import TopYieldDevice from '../overview/TopYieldDevice'
+import TopYieldDevice from './overview/TopYieldDevice'
 
 export default {
   name: 'MaterialDevice',

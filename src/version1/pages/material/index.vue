@@ -26,6 +26,9 @@ export default {
     handlePanelChange(val) {
       this.$router.push({ name: val.name, params: { id: this.id } })
     }
+  },
+  created() {
+    this.activePanel = this.$route.name
   }
 }
 </script>

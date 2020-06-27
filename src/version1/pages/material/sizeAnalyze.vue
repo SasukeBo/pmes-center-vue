@@ -155,25 +155,6 @@ export default {
   overflow-x: hidden;
   margin-bottom: 44px;
 
-  .yield-chart {
-    padding: 16px;
-    background: #fff;
-    border-radius: 4px;
-    margin-bottom: 8px;
-
-    .yield-chart-mount {
-      height: 400px;
-      width: 100%;
-    }
-  }
-
-  .loading {
-    height: 100px;
-
-    .el-loading-mask {
-      background: transparent;
-    }
-  }
 
   .el-pagination {
     text-align: center;

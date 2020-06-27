@@ -379,7 +379,6 @@ export default {
   }
 
   .header-block {
-    padding-top: 32px;
     margin-bottom: 16px;
 
     .search-form-col {

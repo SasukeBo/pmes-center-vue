@@ -150,8 +150,8 @@ export default {
 .top-yield-point-chart {
   padding: 16px;
   background: #fff;
-  margin-top: 32px;
   border-radius: 4px;
+  margin-bottom: 16px;
 
   .yield-chart-mount {
     height: 400px;
