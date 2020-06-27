@@ -113,7 +113,7 @@ html {
   }
 
   .app-header {
-    z-index: 1000;
+    z-index: 3000;
     height: 64px;
     background: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);

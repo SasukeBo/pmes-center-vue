@@ -4,9 +4,9 @@ import VueRouter from 'vue-router'
 import Home from '@/version1/pages/home.vue'
 // import MaterialView from '../views/MaterialView.vue'
 import MaterialView from '@/version1/pages/material/index.vue'
-import SizeAnalyze from '@/version1/pages/material/sizeAnalyze.vue'
-import ProductData from '@/version1/pages/material/productData.vue'
 import MaterialOverview from '@/version1/pages/material/overview'
+import MaterialDevices from '@/version1/pages/material/device'
+import DeviceView from '@/version1/pages/device/index.vue'
 
 Vue.use(VueRouter)
 
@@ -44,18 +44,18 @@ const routes = [
         component: MaterialOverview
       },
       {
-        path: 'size-analyze',
-        name: 'size-analyze',
+        path: 'devices',
+        name: 'material-device',
         props: true,
-        component: SizeAnalyze
-      },
-      {
-        path: 'product-data',
-        name: 'product-data',
-        props: true,
-        component: ProductData
+        component: MaterialDevices
       }
     ]
+  },
+  {
+    path: '/devices/:id/view',
+    name: 'device-view',
+    props: true,
+    component: DeviceView
   }
 ]
 

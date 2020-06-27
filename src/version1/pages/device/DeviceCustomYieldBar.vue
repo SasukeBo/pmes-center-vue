@@ -1,7 +1,6 @@
 <template>
-  <div class="top-yield-custom-chart">
+  <div class="device-custom-yield-bar">
     <div class="custom-chart__head">
-      <span class="title">自定义看板</span>
       <el-button size="small" @click="echartsFormVisible = true"
         >自定义</el-button
       >
@@ -94,7 +93,7 @@ import echarts from 'echarts'
 import gql from 'graphql-tag'
 
 export default {
-  name: 'TopYieldCustom',
+  name: 'DeviceCustomYieldBar',
   props: {
     id: [String, Number]
   },
@@ -109,11 +108,11 @@ export default {
     return {
       echartsFormVisible: false,
       echartsForm: {
-        xAxis: 'Device',
+        xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: undefined,
         duration: [],
-        limit: undefined,
+        limit: 20,
         sort: 'ASC'
       },
       rules: {
@@ -127,15 +126,14 @@ export default {
         ]
       },
       form: {
-        xAxis: 'Device',
+        xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: undefined,
         duration: [],
-        limit: undefined,
+        limit: 20,
         sort: 'ASC'
       },
       attributesMap: {
-        Device: '设备',
         Date: '日期',
         jig_id: '冶具号',
         shift_number: '班别',
@@ -160,7 +158,7 @@ export default {
     echartsResult: {
       query: gql`
         query($input: GroupAnalyzeInput!) {
-          echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
+          echartsResult: groupAnalyzeDevice(analyzeInput: $input) {
             xAxisData
             seriesData
           }
@@ -231,8 +229,7 @@ export default {
       return {
         data,
         name: this.attributesMap[this.form.xAxis],
-        type: 'category',
-        axisLabel: { interval: 0, rotate: -45 }
+        type: 'category'
       }
     },
     assembleYAxis() {
@@ -240,7 +237,7 @@ export default {
         name: this.yAxisNameMap[this.form.yAxis],
         type: 'value',
         scale: true,
-        max: this.form.yAxis !== 'Amount' ? 100 : undefined,
+        max: this.form.yAxis === 'Yield' ? 100 : undefined,
         axisLabel: {
           formatter: this.form.yAxis !== 'Amount' ? '{value}%' : '{value}'
         }
@@ -251,6 +248,9 @@ export default {
     echartsResult(nv) {
       if (nv) {
         var options = {
+          title: {
+            text: '自定义数据图表'
+          },
           legend: {},
           toolbox: {
             feature: {
@@ -271,9 +271,14 @@ export default {
             }
           }
         }
+
+        options.title.subtext = `${this.form.sort === 'ASC' ? '最小' : '最大'}${
+          this.form.limit ? '前' + this.form.limit + '项' : '前N项'
+        }${this.yAxisNameMap[this.form.yAxis]}`
         options.xAxis = this.assembleXAxis(nv.xAxisData)
         options.yAxis = this.assembleYAxis()
         options.series = this.assembleSeries(nv.seriesData)
+        console.log(options)
         this.yieldChart.setOption(options)
       }
     }
@@ -284,7 +289,7 @@ export default {
 }
 </script>
 <style lang="scss">
-.top-yield-custom-chart {
+.device-custom-yield-bar {
   padding: 16px;
   background: #fff;
   margin-top: 32px;
@@ -304,7 +309,7 @@ export default {
   }
 
   .custom-chart__head {
-    display: flex;
+    text-align: right;
 
     .title {
       color: #666;

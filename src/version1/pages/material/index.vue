@@ -35,6 +35,11 @@ export default {
 
   .tab-panels-header {
     padding-top: 16px;
+
+    .el-tabs .el-tabs__nav {
+      background: #fff;
+      border-radius: 4px;
+    }
   }
 }
 </style>
