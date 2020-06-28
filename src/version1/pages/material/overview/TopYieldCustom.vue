@@ -14,7 +14,12 @@
     ></div>
 
     <el-dialog title="自定义图表" :visible.sync="echartsFormVisible">
-      <el-form :model="echartsForm" ref="custom-graph-form" :rules="rules">
+      <el-form
+        :model="echartsForm"
+        ref="custom-graph-form"
+        :rules="rules"
+        label-width="200px"
+      >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="echartsForm.xAxis" placeholder="请选择X轴属性">
             <el-option
@@ -68,7 +73,7 @@
           ></el-input-number>
         </el-form-item>
 
-        <el-form-item label="排序">
+        <el-form-item label="排序(无分组时有效)">
           <el-switch
             v-model="echartsForm.sort"
             active-text="递减"
@@ -212,11 +217,16 @@ export default {
           if (this.form.yAxis !== 'Amount') return (item * 100).toFixed(2)
           return item
         })
+        var name = k
+        if (this.form.groupBy === 'Date') {
+          var t = new Date(name)
+          name = t.toLocaleDateString()
+        }
 
         return {
+          name,
           data,
           type: 'bar',
-          name: k,
           barMaxWidth: 20
         }
       })
@@ -274,6 +284,7 @@ export default {
         options.xAxis = this.assembleXAxis(nv.xAxisData)
         options.yAxis = this.assembleYAxis()
         options.series = this.assembleSeries(nv.seriesData)
+        this.yieldChart.clear()
         this.yieldChart.setOption(options)
       }
     }

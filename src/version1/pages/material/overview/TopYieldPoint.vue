@@ -1,5 +1,32 @@
 <template>
-  <div class="top-yield-point-chart" v-loading="$apollo.queries.yields.loading">
+  <div
+    class="top-yield-point-chart"
+    v-loading="$apollo.queries.sizeUnYieldResult.loading"
+  >
+    <el-form inline size="mini" class="inline-filter">
+      <el-form-item>
+        <el-checkbox v-model="sort">递减</el-checkbox>
+      </el-form-item>
+      <el-form-item>
+        <el-input-number
+          v-model="limit"
+          controls-position="right"
+          @change="handleChange"
+          :min="10"
+        ></el-input-number>
+      </el-form-item>
+      <el-form-column label="日期范围">
+        <el-date-picker
+          size="mini"
+          v-model="duration"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+        >
+        </el-date-picker>
+      </el-form-column>
+    </el-form>
     <div class="yield-chart-mount" ref="chart"></div>
   </div>
 </template>
@@ -14,7 +41,10 @@ export default {
   data() {
     return {
       yieldChart: undefined,
-      yields: [],
+      sizeUnYieldResult: [],
+      duration: [],
+      limit: 20,
+      sort: true,
       options: {
         tooltip: {
           show: true
@@ -52,35 +82,38 @@ export default {
     }
   },
   apollo: {
-    yields: {
+    sizeUnYieldResult: {
       query: gql`
-        query($search: Search!, $pattern: String) {
-          yields: totalPointYield(searchInput: $search, pattern: $pattern) {
-            name
-            ng
-            value
+        query($input: GroupAnalyzeInput!) {
+          sizeUnYieldResult: sizeUnYieldTop(groupInput: $input) {
+            xAxisData
+            seriesData
           }
         }
       `,
       variables() {
         return {
-          search: {
-            materialID: this.id,
-            extra: {}
+          input: {
+            targetID: this.id,
+            yAxis: 'UnYield',
+            xAxis: 'Date',
+            duration: this.duration,
+            limit: this.limit,
+            sort: this.sort ? 'DESC' : 'ASC'
           }
         }
       }
     }
   },
   watch: {
-    yields(nv) {
+    sizeUnYieldResult(nv) {
       if (nv) {
-        var names = nv.map((i) => i.name)
-        var values = nv.map((item, i) => {
-          var rate = (item.value * 100).toFixed(2)
+        var data = nv.seriesData.data || []
+        var values = data.map((value, i) => {
+          value = (value * 100).toFixed(2)
           if (i < 3) {
             return {
-              value: rate,
+              value,
               itemStyle: {
                 color: {
                   type: 'linear',
@@ -103,7 +136,7 @@ export default {
             }
           } else if (i < 8) {
             return {
-              value: rate,
+              value,
               itemStyle: {
                 color: {
                   type: 'linear',
@@ -126,17 +159,17 @@ export default {
             }
           }
 
-          return rate
+          return value
         })
         this.options.tooltip.formatter = function(params) {
           return `
           <div>${params.name}</div>
           <div>${params.seriesName}：${params.value}%</div>
-          <div>不良数：${nv[params.dataIndex].ng}</div>
           `
         }
-        this.options.xAxis.data = names
+        this.options.xAxis.data = nv.xAxisData
         this.options.series[0].data = values
+        this.yieldChart.clear()
         this.yieldChart.setOption(this.options)
       }
     }
@@ -152,6 +185,13 @@ export default {
   background: #fff;
   border-radius: 4px;
   margin-bottom: 16px;
+  position: relative;
+
+  .inline-filter {
+    position: absolute;
+    right: 16px;
+    z-index: 1000;
+  }
 
   .yield-chart-mount {
     height: 400px;
