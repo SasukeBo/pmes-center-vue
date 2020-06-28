@@ -2,8 +2,12 @@
   <div class="material-size">
     <TopYieldPoint :id="id"></TopYieldPoint>
 
-    <div class="size-tables" v-if="pointListWrap">
-      <el-table :data="pointListWrap.list" style="width: 100%">
+    <div class="size-tables" v-loading="$apollo.queries.pointListWrap.loading">
+      <el-table
+        :data="pointListWrap.list"
+        style="width: 100%"
+        v-if="pointListWrap"
+      >
         <el-table-column label="名称">
           <template slot-scope="scope">
             {{ scope.row.point.name }}
@@ -38,7 +42,10 @@
         </el-table-column>
       </el-table>
 
+      <div style="height: 300px" v-else></div>
+
       <el-pagination
+        v-if="pointListWrap"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="page"
