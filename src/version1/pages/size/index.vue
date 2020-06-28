@@ -1,10 +1,17 @@
 <template>
-  <div class="size-view"></div>
+  <div class="size-view">
+    <PointCard :id="id"></PointCard>
+    <SizeDateYieldGraph :id="id"></SizeDateYieldGraph>
+  </div>
 </template>
 <script>
 import gql from 'graphql-tag'
+import PointCard from '@/version1/components/PointCard.vue'
+import SizeDateYieldGraph from '@/version1/pages/size/SizeDateYieldGraph.vue'
+
 export default {
   name: 'SizeView',
+  components: { PointCard, SizeDateYieldGraph },
   props: {
     id: [Number, String]
   },
@@ -37,4 +44,9 @@ export default {
   }
 }
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.size-view {
+  padding-top: 16px;
+  padding-bottom: 32px;
+}
+</style>

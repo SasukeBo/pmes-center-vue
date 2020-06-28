@@ -1,28 +1,40 @@
 <template>
-  <div class="point-card">
+  <div class="point-card" v-loading="$apollo.queries.pointResult.loading">
     <div class="data-block">
-      <div class="title">
+      <div class="title" v-if="pointResult">
         {{ pointResult.point.name }} ({{
           pointResult.point.nominal.toFixed(2)
         }})
       </div>
 
-      <div class="subtitle">
+      <div class="subtitle" v-if="pointResult">
         Yeild: {{ ((pointResult.ok * 100) / pointResult.total).toFixed(2) }}%
       </div>
-      <div class="item">Total: {{ pointResult.total }}</div>
-      <div class="item">Average: {{ pointResult.avg.toFixed(2) }}</div>
-      <div class="item">Max: {{ pointResult.max.toFixed(2) }}</div>
-      <div class="item">Min: {{ pointResult.min.toFixed(2) }}</div>
-      <div class="item">
+      <div class="item" v-if="pointResult">Total: {{ pointResult.total }}</div>
+      <div class="item" v-if="pointResult">
+        Average: {{ pointResult.avg.toFixed(2) }}
+      </div>
+      <div class="item" v-if="pointResult">
+        Max: {{ pointResult.max.toFixed(2) }}
+      </div>
+      <div class="item" v-if="pointResult">
+        Min: {{ pointResult.min.toFixed(2) }}
+      </div>
+      <div class="item" v-if="pointResult">
         UpperLimit: {{ pointResult.point.upperLimit.toFixed(2) }}
       </div>
-      <div class="item">
+      <div class="item" v-if="pointResult">
         LowerLimit: {{ pointResult.point.lowerLimit.toFixed(2) }}
       </div>
-      <div class="item">SD: {{ pointResult.s.toFixed(6) }}</div>
-      <div class="item">CP: {{ pointResult.cp.toFixed(2) }}</div>
-      <div class="item">CPK: {{ pointResult.cpk.toFixed(2) }}</div>
+      <div class="item" v-if="pointResult">
+        SD: {{ pointResult.s.toFixed(6) }}
+      </div>
+      <div class="item" v-if="pointResult">
+        CP: {{ pointResult.cp.toFixed(2) }}
+      </div>
+      <div class="item" v-if="pointResult">
+        CPK: {{ pointResult.cpk.toFixed(2) }}
+      </div>
     </div>
 
     <div class="analyze-chart" ref="chart"></div>
@@ -30,15 +42,19 @@
 </template>
 <script>
 import echarts from 'echarts'
+import gql from 'graphql-tag'
 export default {
   props: {
-    pointResult: Object
+    id: [Number, String]
   },
   data() {
     return {
+      pointResult: undefined,
       mychart: undefined,
       gt: 0,
       lt: 0,
+      duration: [],
+      filters: {},
       option: {
         title: {
           padding: [0, 24],
@@ -148,102 +164,137 @@ export default {
       }
     }
   },
-  watch: {
+  apollo: {
     pointResult: {
-      immediate: true,
-      handler: function(val) {
-        if (val) {
-          this.option.xAxis.data = val.dataset.values
-          this.option.series[0].data = val.dataset.freqs
-          this.option.series[1].data = val.dataset.distribution
-          this.option.xAxis.axisPointer.label.formatter = function(params) {
-            var i = val.dataset.values.findIndex((i) => `${i}` === params.value)
-            if (i >= 0) {
-              return `${params.value}: ${val.dataset.freqs[i]}`
+      query: gql`
+        query($id: Int!, $duration: [Time]!, $filters: Map!) {
+          pointResult: sizeNormalDistribution(
+            id: $id
+            duration: $duration
+            filters: $filters
+          ) {
+            point {
+              id
+              name
+              upperLimit
+              lowerLimit
+              nominal
             }
-
-            return ''
+            total
+            s
+            ok
+            ng
+            cp
+            cpk
+            avg
+            max
+            min
+            dataset
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.id,
+          duration: this.duration,
+          filters: this.filters
+        }
+      }
+    }
+  },
+  watch: {
+    pointResult(val) {
+      if (val) {
+        this.option.xAxis.data = val.dataset.values
+        this.option.series[0].data = val.dataset.freqs
+        this.option.series[1].data = val.dataset.distribution
+        this.option.xAxis.axisPointer.label.formatter = function(params) {
+          var i = val.dataset.values.findIndex((i) => `${i}` === params.value)
+          if (i >= 0) {
+            return `${params.value}: ${val.dataset.freqs[i]}`
           }
 
-          var point = val.point
-          var markLineData = []
-          var values = val.dataset.values
-          var _u3s = val.avg - 3 * val.s
-          var u3s = val.avg + 3 * val.s
-          var gt = values.findIndex((i) => i >= _u3s)
-          if (gt < 0 && values[0] >= point.lowerLimit) {
-            gt = 0
-          }
-          if (gt >= 0) {
-            markLineData.push({
-              xAxis: gt,
-              lineStyle: { color: '#5E83F2', type: 'solid', width: 2 },
-              label: {
-                formatter: function() {
-                  return `μ-3σ (${_u3s.toFixed(3)})`
-                }
+          return ''
+        }
+
+        var point = val.point
+        var markLineData = []
+        var values = val.dataset.values
+        var _u3s = val.avg - 3 * val.s
+        var u3s = val.avg + 3 * val.s
+        var gt = values.findIndex((i) => i >= _u3s)
+        if (gt < 0 && values[0] >= point.lowerLimit) {
+          gt = 0
+        }
+        if (gt >= 0) {
+          markLineData.push({
+            xAxis: gt,
+            lineStyle: { color: '#5E83F2', type: 'solid', width: 2 },
+            label: {
+              formatter: function() {
+                return `μ-3σ (${_u3s.toFixed(3)})`
               }
-            })
-          }
-          this.gt = gt
-          var lt = values.findIndex((i) => i > u3s) - 1
-          if (lt < 0 && values[values.length - 1] <= point.upperLimit) {
-            lt = values.length - 1
-          }
-          if (lt >= 0) {
-            markLineData.push({
-              xAxis: lt,
-              lineStyle: { color: '#5E83F2', type: 'solid', width: 2 },
-              label: {
-                formatter: function() {
-                  return `μ+3σ (${u3s.toFixed(3)})`
-                }
+            }
+          })
+        }
+        this.gt = gt
+        var lt = values.findIndex((i) => i > u3s) - 1
+        if (lt < 0 && values[values.length - 1] <= point.upperLimit) {
+          lt = values.length - 1
+        }
+        if (lt >= 0) {
+          markLineData.push({
+            xAxis: lt,
+            lineStyle: { color: '#5E83F2', type: 'solid', width: 2 },
+            label: {
+              formatter: function() {
+                return `μ+3σ (${u3s.toFixed(3)})`
               }
-            })
-          }
-          this.lt = lt
+            }
+          })
+        }
+        this.lt = lt
 
-          this.option.series[1].markLine.data = markLineData
-          this.option.series[1].markArea = {
-            itemStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  {
-                    offset: 0,
-                    color: '#3FE3D3' // 0% 处的颜色
-                  },
-                  {
-                    offset: 1,
-                    color: '#57F262' // 100% 处的颜色
-                  }
-                ]
-              },
-              opacity: 0.13
-            },
-            data: [
-              [
+        this.option.series[1].markLine.data = markLineData
+        this.option.series[1].markArea = {
+          itemStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
                 {
-                  name: '合格区间',
-                  xAxis: gt,
-                  label: {
-                    show: false
-                  }
+                  offset: 0,
+                  color: '#3FE3D3' // 0% 处的颜色
                 },
                 {
-                  xAxis: lt
+                  offset: 1,
+                  color: '#57F262' // 100% 处的颜色
                 }
               ]
+            },
+            opacity: 0.13
+          },
+          data: [
+            [
+              {
+                name: '合格区间',
+                xAxis: gt,
+                label: {
+                  show: false
+                }
+              },
+              {
+                xAxis: lt
+              }
             ]
-          }
+          ]
+        }
 
-          if (this.mychart) {
-            this.mychart.setOption(this.option)
-          }
+        if (this.mychart) {
+          this.mychart.setOption(this.option)
         }
       }
     }

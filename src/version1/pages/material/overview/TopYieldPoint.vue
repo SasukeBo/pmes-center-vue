@@ -11,11 +11,10 @@
         <el-input-number
           v-model="limit"
           controls-position="right"
-          @change="handleChange"
           :min="10"
         ></el-input-number>
       </el-form-item>
-      <el-form-column label="日期范围">
+      <el-form-item label="日期范围">
         <el-date-picker
           size="mini"
           v-model="duration"
@@ -25,7 +24,7 @@
           end-placeholder="结束日期"
         >
         </el-date-picker>
-      </el-form-column>
+      </el-form-item>
     </el-form>
     <div class="yield-chart-mount" ref="chart"></div>
   </div>
