@@ -100,7 +100,7 @@ export default {
         { name: 'NG', value: nv.ng }
       ]
 
-      this.yieldChart.clear()
+      this.mychart.clear()
       this.mychart.setOption(this.option)
     }
   }
