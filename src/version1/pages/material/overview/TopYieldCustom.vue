@@ -254,7 +254,7 @@ export default {
         name: this.yAxisNameMap[this.form.yAxis],
         type: 'value',
         scale: true,
-        max: this.form.yAxis !== 'Amount' ? 100 : undefined,
+        max: this.form.yAxis === 'Yield' ? 100 : undefined,
         axisLabel: {
           formatter: this.form.yAxis !== 'Amount' ? '{value}%' : '{value}'
         }
