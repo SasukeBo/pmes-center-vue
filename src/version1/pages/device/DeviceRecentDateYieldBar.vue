@@ -132,6 +132,7 @@ export default {
         options.xAxis.data = nv.xAxisData
         options.yAxis = this.assembleYAxis()
         options.series = this.assembleSeries(nv.seriesData)
+        this.yieldChart.clear()
         this.chart.setOption(options)
       }
     }

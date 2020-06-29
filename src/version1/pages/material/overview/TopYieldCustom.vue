@@ -132,9 +132,9 @@ export default {
         ]
       },
       form: {
-        xAxis: 'Device',
+        xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: undefined,
+        groupBy: 'shift_number',
         duration: [],
         limit: undefined,
         sort: 'ASC'
@@ -221,6 +221,10 @@ export default {
         if (this.form.groupBy === 'Date') {
           var t = new Date(name)
           name = t.toLocaleDateString()
+        }
+        if (this.form.groupBy === 'shift_number') {
+          if (k === 'A') name = '白班'
+          if (k === 'B') name = '晚班'
         }
 
         return {

@@ -258,6 +258,7 @@ export default {
           this.form.sort === 'ASC' ? '最低的' : '最高的'
         }${this.form.limit}个设备`
 
+        this.yieldChart.clear()
         this.yieldChart.setOption(options)
       }
     }

@@ -128,7 +128,7 @@ export default {
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: undefined,
+        groupBy: 'jig_id',
         duration: [],
         limit: 20,
         sort: 'ASC'
@@ -213,7 +213,7 @@ export default {
 
         return {
           data,
-          type: 'bar',
+          type: 'line',
           name: k,
           barMaxWidth: 20
         }
@@ -279,6 +279,7 @@ export default {
         options.yAxis = this.assembleYAxis()
         options.series = this.assembleSeries(nv.seriesData)
         console.log(options)
+        this.yieldChart.clear()
         this.yieldChart.setOption(options)
       }
     }
