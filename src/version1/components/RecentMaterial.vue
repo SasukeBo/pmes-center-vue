@@ -59,11 +59,6 @@ export default {
             }
             ok
             ng
-            status {
-              message
-              pending
-              fileIDs
-            }
           }
         }
       `,
@@ -118,10 +113,6 @@ export default {
   },
   watch: {
     analyzeMaterial(nv) {
-      if (nv.status && nv.status.pending) {
-        return
-      }
-
       this.option.series[0].data = [
         { name: 'OK', value: nv.ok },
         { name: 'NG', value: nv.ng }

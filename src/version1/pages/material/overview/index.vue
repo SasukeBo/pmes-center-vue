@@ -27,10 +27,6 @@
                 ).toFixed(2)
               }}%
             </div>
-            <MoreOptionPopover
-              @edit="editMaterial"
-              @delete="deleteMaterial"
-            ></MoreOptionPopover>
           </div>
         </el-col>
         <el-col :span="10" class="search-form-col">
@@ -116,7 +112,6 @@
 import gql from 'graphql-tag'
 import echarts from 'echarts'
 import { pipeToUndefined } from '@/helpers'
-import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
 import MaterialDialog from '@/version1/components/MaterialDialog.vue'
 import TopYieldDevice from './TopYieldDevice.vue'
 import TopYieldPoint from './TopYieldPoint.vue'
@@ -126,7 +121,6 @@ export default {
   name: 'Material',
   props: ['id'],
   components: {
-    MoreOptionPopover,
     MaterialDialog,
     TopYieldDevice,
     TopYieldPoint,
@@ -160,11 +154,6 @@ export default {
             }
             ok
             ng
-            status {
-              message
-              pending
-              fileIDs
-            }
           }
         }
       `,

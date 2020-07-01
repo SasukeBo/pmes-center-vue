@@ -7,14 +7,27 @@
           class="company-logo"
           @click="$router.push({ path: '/' })"
         />
-        <div
+        <el-dropdown
           v-if="$store.state.currentUser"
           class="float-right user-account"
-          @click="logout"
         >
-          <i class="el-icon-user-solid"></i>
-          {{ $store.state.currentUser.account }}
-        </div>
+          <span>
+            <i class="el-icon-user-solid"></i>
+            <span>{{ $store.state.currentUser.username }}</span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item v-if="currentUser.admin"
+              ><router-link :to="{ name: 'admin-page' }"
+                >后台管理</router-link
+              ></el-dropdown-item
+            >
+            <el-dropdown-item @click="logout"
+              ><span>退出登录</span></el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </el-dropdown>
+
         <el-button
           v-if="!$store.state.currentUser"
           class="float-right"
@@ -45,7 +58,7 @@ export default {
         query {
           currentUser {
             id
-            account
+            username
             admin
           }
         }
@@ -113,7 +126,7 @@ html {
   }
 
   .app-header {
-    z-index: 3000;
+    z-index: 2001;
     height: 64px;
     background: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);

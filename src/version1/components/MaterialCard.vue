@@ -3,11 +3,6 @@
     class="material-card"
     v-loading="$apollo.queries.analyzeMaterial.loading"
   >
-    <MoreOptionPopover
-      @edit="editMaterial"
-      @delete="deleteMaterial"
-    ></MoreOptionPopover>
-
     <div class="card-title">
       {{ analyzeMaterial.material.customerCode }} ({{
         analyzeMaterial.material.name
@@ -42,32 +37,17 @@
         >查看详情</el-button
       >
     </div>
-
-    <div v-show="pending" class="loading-data-mask">
-      <div class="pending-title">正在加载FTP文件数据</div>
-      <div class="pending-subtitle">请稍候 ...</div>
-      <el-progress
-        type="circle"
-        :width="150"
-        :stroke-width="10"
-        :percentage="parseInt(finished.toFixed())"
-      ></el-progress>
-    </div>
   </div>
 </template>
 <script>
 import echarts from 'echarts'
 import gql from 'graphql-tag'
-import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
+// import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
 export default {
   name: 'MaterialCard',
-  components: { MoreOptionPopover },
+  // components: { MoreOptionPopover },
   props: {
     materialID: [Number, String],
-    pending: {
-      type: Boolean,
-      default: false
-    },
     fileIDs: Array
   },
   apollo: {
@@ -83,11 +63,6 @@ export default {
             }
             ok
             ng
-            status {
-              message
-              pending
-              fileIDs
-            }
           }
         }
       `,
@@ -102,9 +77,6 @@ export default {
             endTime: end
           }
         }
-      },
-      skip() {
-        return this.pending
       }
     }
   },
@@ -148,51 +120,7 @@ export default {
     }
   },
   watch: {
-    // pending: {
-    //   immediate: true,
-    //   handler: function(nv) {
-    //     if (!nv) {
-    //       clearInterval(this.interval)
-    //       this.needFetch = undefined
-    //       if (this.$apollo.queries.analyzeMaterial) {
-    //         console.log('start analyzeMaterial')
-    //         this.$apollo.queries.analyzeMaterial.start()
-    //       }
-    //     } else {
-    //       this.interval = setInterval(() => {
-    //         this.$apollo
-    //           .query({
-    //             query: gql`
-    //               query($fileIDs: [Int]!) {
-    //                 finished: dataFetchFinishPercent(fileIDs: $fileIDs)
-    //               }
-    //             `,
-    //             variables: {
-    //               fileIDs: this.fileIDs || this.needFetch
-    //             },
-    //             fetchPolicy: 'network-only'
-    //           })
-    //           .then(({ data }) => {
-    //             this.finished = data.finished * 100
-    //             if (data.finished === 1) {
-    //               setTimeout(() => {
-    //                 this.$emit('update:pending', false)
-    //               }, 500)
-    //             }
-    //           })
-    //           .catch((e) => {
-    //             console.log(e.message)
-    //           })
-    //       }, 500)
-    //     }
-    //   }
-    // },
     analyzeMaterial(nv) {
-      // if (nv.status && nv.status.pending) {
-      //   this.needFetch = nv.status.fileIDs
-      //   this.$emit('update:pending', nv.status.pending)
-      //   return
-      // }
       if (nv) {
         this.renderChart()
       }
@@ -202,12 +130,12 @@ export default {
     this.mychart = echarts.init(this.$refs['chart-mount'])
   },
   methods: {
-    editMaterial() {
-      this.$emit('edit', this.analyzeMaterial.material)
-    },
-    deleteMaterial() {
-      this.$emit('delete', this.materialID)
-    },
+    // editMaterial() {
+    //   this.$emit('edit', this.analyzeMaterial.material)
+    // },
+    // deleteMaterial() {
+    //   this.$emit('delete', this.materialID)
+    // },
     renderChart() {
       var result = this.analyzeMaterial
       this.option.series[0].data = [

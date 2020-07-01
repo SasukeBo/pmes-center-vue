@@ -9,6 +9,8 @@ import MaterialDevices from '@/version1/pages/material/device'
 import MaterialSizes from '@/version1/pages/material/size'
 import DeviceView from '@/version1/pages/device/index.vue'
 import SizeView from '@/version1/pages/size/index.vue'
+import AdminPage from '@/version1/pages/admin'
+import AdminImportRecords from '@/version1/pages/admin/records.vue'
 
 Vue.use(VueRouter)
 
@@ -70,6 +72,17 @@ const routes = [
     name: 'size-view',
     props: true,
     component: SizeView
+  },
+  {
+    path: '/admin',
+    name: 'admin-page',
+    component: AdminPage
+  },
+  {
+    path: '/admin/material/:id/import_records',
+    name: 'admin-import-records',
+    props: true,
+    component: AdminImportRecords
   }
 ]
 

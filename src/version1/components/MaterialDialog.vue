@@ -87,7 +87,7 @@ export default {
               .mutate({
                 mutation: gql`
                   mutation($input: MaterialUpdateInput!) {
-                    updateMaterial(input: $input) {
+                    response: updateMaterial(input: $input) {
                       id
                       name
                       customerCode
@@ -103,8 +103,8 @@ export default {
                   }
                 }
               })
-              .then(({ data: { updateMaterial } }) => {
-                this.$emit('after-update', updateMaterial)
+              .then(({ data: { response } }) => {
+                this.$emit('after-update', response)
                 this.loading = false
                 this.closeDialog()
                 this.$message({
@@ -124,18 +124,11 @@ export default {
               .mutate({
                 mutation: gql`
                   mutation($input: MaterialCreateInput!) {
-                    addMaterial(input: $input) {
-                      material {
-                        id
-                        name
-                        customerCode
-                        projectRemark
-                      }
-                      status {
-                        pending
-                        message
-                        fileIDs
-                      }
+                    response: addMaterial(input: $input) {
+                      id
+                      name
+                      customerCode
+                      projectRemark
                     }
                   }
                 `,
@@ -147,18 +140,9 @@ export default {
                   }
                 }
               })
-              .then(({ data: { addMaterial } }) => {
-                var material = {
-                  ...addMaterial.material,
-                  pending: false,
-                  fileIDs: []
-                }
-                if (addMaterial.status) {
-                  material.pending = addMaterial.status.pending
-                  material.fileIDs = addMaterial.status.fileIDs
-                }
+              .then(({ data: { response } }) => {
                 this.loading = false
-                this.$emit('after-create', material)
+                this.$emit('after-create', response)
                 this.closeDialog()
               })
               .catch((e) => {

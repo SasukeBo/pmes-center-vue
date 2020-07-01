@@ -21,20 +21,11 @@
 
     <div class="header-block" v-if="materials.length">
       <el-row :gutter="24">
-        <el-col :span="18" v-if="recent" class="recent-view-col">
+        <el-col :span="24" v-if="recent" class="recent-view-col">
           <div>
             <div class="col-title">最近预览</div>
             <div class="col-card">
               <RecentMaterial :materialID="recent"></RecentMaterial>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="recent ? 6 : 24" class="create-material-col">
-          <div>
-            <div class="col-title">添加料号</div>
-            <div class="col-card create-material-panel" @click="handleAdd">
-              <img src="~@/assets/icon-plus@2x.png" />
-              <span>添加料号</span>
             </div>
           </div>
         </el-col>
@@ -151,6 +142,7 @@ export default {
   },
   data() {
     return {
+      recent: undefined,
       offset: 0,
       limit: 20,
       isEdit: false,
