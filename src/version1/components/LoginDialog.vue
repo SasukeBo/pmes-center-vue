@@ -84,7 +84,7 @@ export default {
                 mutation($input: LoginInput!) {
                   login(loginInput: $input) {
                     id
-                    account
+                    username
                     admin
                   }
                 }
