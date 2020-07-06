@@ -222,17 +222,12 @@ export default {
         return [{ data: [], name: 'data', type: 'bar' }]
       }
 
-      return keys.map((k) => {
-        var data = seriesData[k].map((item) => {
+      return keys.map((name) => {
+        var data = seriesData[name].map((item) => {
           if (item === 0) return undefined
           if (this.form.yAxis !== 'Amount') return (item * 100).toFixed(2)
           return item
         })
-        var name = k
-        if (this.form.groupBy === 'Date') {
-          var t = new Date(name)
-          name = t.toLocaleDateString()
-        }
 
         var label = {
           show: true,
@@ -297,13 +292,25 @@ export default {
         params.forEach((param) => {
           if (param.data === undefined) return
           var amount = `（${data[param.seriesName][param.dataIndex]} 个）`
+          var seriesName
+          switch (_this.form.groupBy) {
+            case 'shift_number':
+              seriesName = _this.shiftNumberMap[param.seriesName]
+              break
+            case 'Date':
+              var date = new Date(param.seriesName)
+              seriesName = date.toLocaleDateString()
+              break
+            default:
+              seriesName = param.seriesName
+              break
+          }
           var rest = `
           <div>
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: center; background: ${
             param.color
           }"></span>
-          <span>${_this.shiftNumberMap[param.seriesName] ||
-            param.seriesName}: ${param.data}${_this.isRate ? '%' : '个'}${
+          <span>${seriesName}: ${param.data}${_this.isRate ? '%' : '个'}${
             _this.isRate ? amount : ''
           }</span>
           </div>
@@ -328,10 +335,15 @@ export default {
     assembleLegend() {
       var _this = this
       var formatter = function(name) {
-        if (_this.form.groupBy === 'shift_number') {
-          return _this.shiftNumberMap[name]
+        switch (_this.form.groupBy) {
+          case 'shift_number':
+            return _this.shiftNumberMap[name]
+          case 'Date':
+            var date = new Date(name)
+            return date.toLocaleDateString()
+          default:
+            return name
         }
-        return name
       }
 
       return { formatter }
