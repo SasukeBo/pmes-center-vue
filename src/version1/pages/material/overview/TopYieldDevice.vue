@@ -153,6 +153,7 @@ export default {
         } else if (i < 8) {
           return SeriesDataValueItemStyle(value, '#FFB763', '#E04660', 'linear')
         }
+        return value
       })
 
       var name = `设备${this.yAxisNameMap[this.form.yAxis]}`
