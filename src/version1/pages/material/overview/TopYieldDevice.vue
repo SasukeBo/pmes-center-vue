@@ -61,6 +61,7 @@
 <script>
 import echarts from 'echarts'
 import gql from 'graphql-tag'
+import { SeriesDataValueItemStyle } from '@/version1/utils.js'
 
 export default {
   name: 'TopYieldDevice',
@@ -109,6 +110,7 @@ export default {
           echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
             xAxisData
             seriesData
+            seriesAmountData
           }
         }
       `,
@@ -140,6 +142,111 @@ export default {
           this.formVisible = false
         }
       })
+    },
+    setSeries(data) {
+      var values = data.map((value, i) => {
+        if (this.form.yAxis !== 'Amount') {
+          value = (value * 100).toFixed(2)
+        }
+        if (i < 3) {
+          return SeriesDataValueItemStyle(value, '#D92622', '#E04660', 'linear')
+        } else if (i < 8) {
+          return SeriesDataValueItemStyle(value, '#FFB763', '#E04660', 'linear')
+        }
+      })
+
+      var name = `设备${this.yAxisNameMap[this.form.yAxis]}`
+      var label = {
+        show: true,
+        position: 'top',
+        formatter: this.form.yAxis === 'Amount' ? '{c}个' : '{c}%'
+      }
+
+      return [
+        {
+          name,
+          data: values,
+          type: 'bar',
+          barMaxWidth: 20,
+          label
+        }
+      ]
+    },
+    setYAxis(data) {
+      var name = this.yAxisNameMap[this.form.yAxis]
+      var max, min
+      var formatter = '{value}'
+      if (this.form.yAxis !== 'Amount') {
+        max = 100
+        formatter = '{value}%'
+        if (data.length > 0) {
+          if (this.form.sort === 'ASC') {
+            min = parseInt(data[0] * 70)
+          } else {
+            min = parseInt(data[data.length - 1] * 70)
+          }
+        }
+      }
+
+      return {
+        name,
+        max,
+        min,
+        nameLocation: 'center',
+        nameGap: 50,
+        type: 'value',
+        scale: true,
+        axisLabel: { formatter }
+      }
+    },
+    setTooltip(amountData) {
+      var _this = this
+      var formatter = function(params) {
+        var message = `
+        <div>
+        <span style="display: inline-block; background: red;width: 8px;height: 8px; border-radius: 50%;vertical-align: center;"></span>
+        <span style="font-weight: bolder">${params.name}</span>
+        </div>
+        <div>
+        <span style="font-size: 12px; font-weight: bold">${params.seriesName}:</span>
+        `
+        var rest
+        if (_this.form.yAxis === 'Amount') {
+          rest = `
+          <span>${params.value}个</span>
+          </div>
+          `
+        } else {
+          rest = `
+          <span>${params.value}%</span>
+          </div>
+          <div>
+          <span style="font-size: 12px; font-weight: bold">设备总产量:</span>
+          <span>${amountData[params.dataIndex]}个</span>
+          </div>
+          `
+        }
+        return message + rest
+      }
+
+      return { formatter }
+    },
+    setTitle() {
+      var subtext = `${this.yAxisNameMap[this.form.yAxis]}${
+        this.form.sort === 'ASC' ? '最低的' : '最高的'
+      }${this.form.limit}个设备`
+      return {
+        text: '设备生产数据',
+        subtext
+      }
+    },
+    setXAxis(data) {
+      return {
+        name: '生产设备',
+        type: 'category',
+        axisLabel: { interval: 0, rotate: -45 },
+        data
+      }
     }
   },
   watch: {
@@ -153,111 +260,14 @@ export default {
     },
     echartsResult(nv) {
       if (nv) {
-        nv.seriesData.data = nv.seriesData.data || []
-        var values = nv.seriesData.data.map((value, i) => {
-          if (this.form.yAxis !== 'Amount') {
-            value = (value * 100).toFixed(2)
-          }
-          if (i < 3) {
-            return {
-              value,
-              itemStyle: {
-                color: {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [
-                    {
-                      offset: 0,
-                      color: '#D92622' // 0% 处的颜色
-                    },
-                    {
-                      offset: 1,
-                      color: '#E04660' // 100% 处的颜色
-                    }
-                  ]
-                }
-              }
-            }
-          } else if (i < 8) {
-            return {
-              value,
-              itemStyle: {
-                color: {
-                  type: 'linear',
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [
-                    {
-                      offset: 0,
-                      color: '#FFB763' // 0% 处的颜色
-                    },
-                    {
-                      offset: 1,
-                      color: '#E04660' // 100% 处的颜色
-                    }
-                  ]
-                }
-              }
-            }
-          }
-
-          return value
-        })
-        var options = {
-          tooltip: {
-            show: true
-          },
-          color: ['#3FE3D3', '#5E83F2'],
-          title: {
-            text: '设备生产数据'
-          },
-          xAxis: {
-            name: '设备',
-            type: 'category',
-            axisLabel: { interval: 0, rotate: -45 }
-          },
-          yAxis: {
-            name: '百分比',
-            nameLocation: 'center',
-            nameGap: 50,
-            type: 'value',
-            scale: true,
-            axisLabel: {
-              formatter: '{value}'
-            }
-          },
-          series: [
-            {
-              type: 'bar',
-              barMaxWidth: 20
-            }
-          ]
-        }
-        var _this = this
-        options.tooltip.formatter = function(params) {
-          return `
-          <div>${params.name}</div>
-          <div>${params.seriesName}：${params.value}${
-            _this.form.yAxis === 'Amount' ? '个' : '%'
-          }</div>
-          `
-        }
-        options.xAxis.data = nv.xAxisData
-        options.series[0].data = values
-        options.yAxis.name = this.yAxisNameMap[this.form.yAxis]
-        if (this.form.yAxis !== 'Amount') {
-          options.yAxis.max = 100
-          options.yAxis.axisLabel.formatter = '{value}%'
-        }
-        options.title.subtext = `${options.yAxis.name}${
-          this.form.sort === 'ASC' ? '最低的' : '最高的'
-        }${this.form.limit}个设备`
-
+        var data = nv.seriesData.data || []
+        var amountData = nv.seriesAmountData.data || []
+        var options = {}
+        options.series = this.setSeries(data)
+        options.yAxis = this.setYAxis(data)
+        options.tooltip = this.setTooltip(amountData)
+        options.title = this.setTitle()
+        options.xAxis = this.setXAxis(nv.xAxisData)
         this.yieldChart.clear()
         this.yieldChart.setOption(options)
       }

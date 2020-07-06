@@ -7,13 +7,10 @@
           class="company-logo"
           @click="$router.push({ path: '/' })"
         />
-        <el-dropdown
-          v-if="$store.state.currentUser"
-          class="float-right user-account"
-        >
+        <el-dropdown v-if="currentUser" class="float-right user-account">
           <span>
             <i class="el-icon-user-solid"></i>
-            <span>{{ $store.state.currentUser.username }}</span>
+            <span>{{ currentUser.username }}</span>
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
@@ -29,7 +26,7 @@
         </el-dropdown>
 
         <el-button
-          v-if="!$store.state.currentUser"
+          v-if="!currentUser"
           class="float-right"
           size="small"
           type="primary"

@@ -114,9 +114,9 @@ export default {
     return {
       echartsFormVisible: false,
       echartsForm: {
-        xAxis: 'Device',
+        xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: undefined,
+        groupBy: 'shift_number',
         duration: [],
         limit: undefined,
         sort: 'ASC'
@@ -152,6 +152,10 @@ export default {
         Yield: '良率',
         UnYield: '不良率'
       },
+      shiftNumberMap: {
+        A: '白班',
+        B: '晚班'
+      },
       echartsResult: {
         xAxisData: [],
         seriesData: {
@@ -168,6 +172,7 @@ export default {
           echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
             xAxisData
             seriesData
+            seriesAmountData
           }
         }
       `,
@@ -184,6 +189,11 @@ export default {
           }
         }
       }
+    }
+  },
+  computed: {
+    isRate() {
+      return this.form.yAxis !== 'Amount'
     }
   },
   methods: {
@@ -214,6 +224,7 @@ export default {
 
       return keys.map((k) => {
         var data = seriesData[k].map((item) => {
+          if (item === 0) return undefined
           if (this.form.yAxis !== 'Amount') return (item * 100).toFixed(2)
           return item
         })
@@ -222,15 +233,20 @@ export default {
           var t = new Date(name)
           name = t.toLocaleDateString()
         }
-        if (this.form.groupBy === 'shift_number') {
-          if (k === 'A') name = '白班'
-          if (k === 'B') name = '晚班'
+
+        var label = {
+          show: true,
+          position: 'top',
+          formatter: this.isRate ? '{c}%' : '{c}个'
         }
+        var isLine = keys.length > 2
 
         return {
           name,
           data,
-          type: 'bar',
+          smooth: true,
+          label: isLine ? undefined : label,
+          type: isLine ? 'line' : 'bar',
           barMaxWidth: 20
         }
       })
@@ -259,35 +275,95 @@ export default {
           formatter: this.form.yAxis !== 'Amount' ? '{value}%' : '{value}'
         }
       }
+    },
+    assmebleToolbox() {
+      return {
+        feature: {
+          magicType: {
+            type: ['line', 'bar']
+          },
+          saveAsImage: {}
+        }
+      }
+    },
+    assembleTooltip(data) {
+      var _this = this
+      var formatter = function(params) {
+        var message = `
+        <div style="font-weight: bolder">${params[0].name} ${
+          _this.yAxisNameMap[_this.form.yAxis]
+        }:</div>
+        `
+        params.forEach((param) => {
+          if (param.data === undefined) return
+          var amount = `（${data[param.seriesName][param.dataIndex]} 个）`
+          var rest = `
+          <div>
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: center; background: ${
+            param.color
+          }"></span>
+          <span>${_this.shiftNumberMap[param.seriesName] ||
+            param.seriesName}: ${param.data}${_this.isRate ? '%' : '个'}${
+            _this.isRate ? amount : ''
+          }</span>
+          </div>
+          `
+          message += rest
+        })
+        return message
+      }
+
+      return {
+        show: true,
+        trigger: 'axis',
+        formatter,
+        axisPointer: {
+          type: 'cross',
+          crossStyle: {
+            color: '#999'
+          }
+        }
+      }
+    },
+    assembleLegend() {
+      var _this = this
+      var formatter = function(name) {
+        if (_this.form.groupBy === 'shift_number') {
+          return _this.shiftNumberMap[name]
+        }
+        return name
+      }
+
+      return { formatter }
+    },
+    assembleTitle() {
+      if (this.form.groupBy) {
+        return {
+          top: 20,
+          left: 'center',
+          text: `按${this.attributesMap[this.form.groupBy]}分组`,
+          textStyle: {
+            color: '#666',
+            fontSize: 14
+          }
+        }
+      }
+
+      return undefined
     }
   },
   watch: {
     echartsResult(nv) {
       if (nv) {
         var options = {
-          legend: {},
-          toolbox: {
-            feature: {
-              magicType: {
-                type: ['line', 'bar']
-              },
-              saveAsImage: {}
-            }
-          },
-          tooltip: {
-            show: true,
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-              crossStyle: {
-                color: '#999'
-              }
-            }
-          }
+          title: this.assembleTitle(),
+          legend: this.assembleLegend(),
+          toolbox: this.assmebleToolbox(),
+          tooltip: this.assembleTooltip(nv.seriesAmountData),
+          xAxis: this.assembleXAxis(nv.xAxisData),
+          yAxis: this.assembleYAxis(),
+          series: this.assembleSeries(nv.seriesData)
         }
-        options.xAxis = this.assembleXAxis(nv.xAxisData)
-        options.yAxis = this.assembleYAxis()
-        options.series = this.assembleSeries(nv.seriesData)
         this.yieldChart.clear()
         this.yieldChart.setOption(options)
       }
