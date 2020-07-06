@@ -45,6 +45,7 @@ export default {
           echartsResult: groupAnalyzeDevice(analyzeInput: $input) {
             xAxisData
             seriesData
+            seriesAmountData
           }
         }
       `,
@@ -72,22 +73,94 @@ export default {
           return item
         })
 
+        var label = {
+          show: true,
+          position: 'top',
+          formatter: this.yAxis === 'Amount' ? '{c}个' : '{c}%'
+        }
+
         return {
           data,
+          label,
           type: 'bar',
           name: k,
           barMaxWidth: 20
         }
       })
     },
-    assembleYAxis() {
+    assembleYAxis(data) {
+      var max, min
+      var formatter = '{value}'
+      if (this.yAxis !== 'Amount') {
+        max = 100
+        formatter = '{value}%'
+        if (data.length > 0) {
+          min = parseInt(data[0] * 70)
+        }
+      }
+
       return {
+        min,
+        max,
         name: this.yAxisNameMap[this.yAxis],
         type: 'value',
         scale: true,
-        max: this.yAxis !== 'Amount' ? 100 : undefined,
+        axisLabel: { formatter }
+      }
+    },
+    assembleXAxis(data) {
+      return {
+        name: '日期',
+        type: 'category',
+        data,
         axisLabel: {
-          formatter: this.yAxis !== 'Amount' ? '{value}%' : '{value}'
+          formatter: function(value) {
+            var date = new Date(value)
+            return date.toLocaleDateString()
+          }
+        }
+      }
+    },
+    assembleTooltip(data) {
+      var _this = this
+      var formatter = function(params) {
+        var param = params[0]
+        var date = new Date(param.name)
+
+        return `
+        <div>
+        <span style="display: inline-block; vertical-align: center; width: 8px; height: 8px; border-radius: 50%; background: ${
+          param.color
+        }"></span>
+        <span>${date.toLocaleDateString()}</span>
+        </div>
+        <div style="display: ${_this.yAxis === 'Amount' ? 'none' : 'block'}">
+          <span>${_this.yAxisNameMap[_this.yAxis]}: ${param.value}%</span>
+        </div>
+        <div>
+          <span>总产量: ${data.data[param.dataIndex]}个</span>
+        </div>
+        `
+      }
+
+      return {
+        show: true,
+        trigger: 'axis',
+        formatter,
+        axisPointer: {
+          type: 'cross',
+          crossStyle: {
+            color: '#999'
+          },
+          label: {
+            formatter: function(param) {
+              if (param.axisDimension === 'x') {
+                var date = new Date(param.value)
+                return date.toLocaleDateString()
+              }
+              return param.value.toFixed(2)
+            }
+          }
         }
       }
     }
@@ -96,7 +169,6 @@ export default {
     echartsResult(nv) {
       if (nv) {
         var options = {
-          legend: {},
           title: {
             text: '近一周生产数据'
           },
@@ -108,30 +180,11 @@ export default {
               saveAsImage: {}
             }
           },
-          tooltip: {
-            show: true,
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-              crossStyle: {
-                color: '#999'
-              }
-            }
-          },
-          xAxis: {
-            name: '日期',
-            type: 'category',
-            axisLabel: {
-              formatter: function(value) {
-                var date = new Date(value)
-                return date.toLocaleDateString()
-              }
-            }
-          }
+          tooltip: this.assembleTooltip(nv.seriesAmountData),
+          xAxis: this.assembleXAxis(nv.xAxisData),
+          yAxis: this.assembleYAxis(nv.seriesData.data || []),
+          series: this.assembleSeries(nv.seriesData)
         }
-        options.xAxis.data = nv.xAxisData
-        options.yAxis = this.assembleYAxis()
-        options.series = this.assembleSeries(nv.seriesData)
         this.chart.clear()
         this.chart.setOption(options)
       }
