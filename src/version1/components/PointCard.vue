@@ -226,6 +226,26 @@ export default {
         if (gt < 0 && values[0] >= point.lowerLimit) {
           gt = 0
         }
+        markLineData.push({
+          xAxis: values.findIndex((i) => i >= val.point.upperLimit),
+          lineStyle: { color: '#E04660', type: 'solid', width: 2 },
+          label: {
+            position: 'insideEndBottom',
+            formatter: function() {
+              return `USL (${val.point.upperLimit.toFixed(3)})`
+            }
+          }
+        })
+        markLineData.push({
+          xAxis: values.findIndex((i) => i <= val.point.lowerLimit),
+          lineStyle: { color: '#E04660', type: 'solid', width: 2 },
+          label: {
+            position: 'insideEndBottom',
+            formatter: function() {
+              return `LSL (${val.point.lowerLimit.toFixed(3)})`
+            }
+          }
+        })
         if (gt >= 0) {
           markLineData.push({
             xAxis: gt,
