@@ -57,7 +57,7 @@ export default {
       echartResults: {},
       yieldChart: undefined,
       form: {
-        yAxis: 'UnYield',
+        yAxis: 'Yield',
         groupBy: 'line_id',
         duration: []
       },
@@ -81,6 +81,7 @@ export default {
           echartResults: groupAnalyzeSize(analyzeInput: $input) {
             xAxisData
             seriesData
+            seriesAmountData
           }
         }
       `,
@@ -104,10 +105,13 @@ export default {
       if (keys.length === 0) {
         return [{ data: [], name: 'data', type: 'bar' }]
       }
-      if (keys.length > 1) type = 'line'
+      if (keys.length > 2) type = 'line'
 
       return keys.map((k) => {
         var data = seriesData[k].map((item) => {
+          if (item === 0) {
+            return undefined
+          }
           return (item * 100).toFixed(2)
         })
         var name = k
@@ -116,13 +120,83 @@ export default {
           name = t.toLocaleDateString()
         }
 
+        var label = {
+          show: true,
+          position: 'top',
+          formatter: '{c}%'
+        }
+
         return {
           name,
           data,
+          label: type === 'bar' ? label : undefined,
+          smooth: true,
           type,
           barMaxWidth: 20
         }
       })
+    },
+    assembleTooltip(data) {
+      var _this = this
+      var formatter = function(params) {
+        var message = `
+        <div>${params[0].name} ${_this.yAxisNameMap[_this.form.yAxis]}</div>
+        `
+        params.forEach((param) => {
+          if (!param.value) {
+            return
+          }
+          message += `
+          <div>
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${
+            param.color
+          };"></span>
+          <span>${param.seriesName}: ${param.value}%（${
+            data[param.seriesName][param.dataIndex]
+          }个）</span>
+          </div>
+          `
+        })
+
+        return message
+      }
+
+      return {
+        show: true,
+        formatter,
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          crossStyle: {
+            color: '#999'
+          }
+        }
+      }
+    },
+    assembleXAxis(xAxisData) {
+      var data = xAxisData.map((i) => {
+        var t = new Date(i)
+        return t.toLocaleDateString()
+      })
+
+      return {
+        data,
+        name: '日期',
+        type: 'category'
+      }
+    },
+    assembleYAxis() {
+      return {
+        name: this.yAxisNameMap[this.form.yAxis],
+        nameLocation: 'center',
+        nameGap: 50,
+        max: this.form.yAxis === 'Yield' ? 100 : undefined,
+        type: 'value',
+        scale: true,
+        axisLabel: {
+          formatter: '{value}%'
+        }
+      }
     }
   },
   watch: {
@@ -138,46 +212,10 @@ export default {
               saveAsImage: {}
             }
           },
-          tooltip: {
-            show: true,
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-              crossStyle: {
-                color: '#999'
-              }
-            }
-          },
-          xAxis: {
-            name: '日期',
-            type: 'category'
-          },
-          yAxis: {
-            name: '百分比',
-            nameLocation: 'center',
-            nameGap: 50,
-            type: 'value',
-            scale: true,
-            axisLabel: {
-              formatter: '{value}%'
-            }
-          },
-          series: [
-            {
-              type: 'bar',
-              barMaxWidth: 20
-            }
-          ]
-        }
-        options.xAxis.data = nv.xAxisData.map((i) => {
-          var t = new Date(i)
-          return t.toLocaleDateString()
-        })
-        options.series = this.assembleSeries(nv.seriesData)
-        options.yAxis.name = this.yAxisNameMap[this.form.yAxis]
-        options.yAxis.axisLabel.formatter = '{value}%'
-        if (this.form.yAxis === 'Yield') {
-          options.yAxis.max = 100
+          tooltip: this.assembleTooltip(nv.seriesAmountData),
+          xAxis: this.assembleXAxis(nv.xAxisData),
+          yAxis: this.assembleYAxis(),
+          series: this.assembleSeries(nv.seriesData)
         }
 
         this.yieldChart.clear()
