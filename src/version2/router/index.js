@@ -11,7 +11,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    redirect: { name: 'data-center' },
+    redirect: { name: 'data-center-home' },
     component: Index
   },
   centerRoutes,
