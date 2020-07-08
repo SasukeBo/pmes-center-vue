@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Store from '../store'
 import Index from '@/version2/index.vue'
-import Center from '@/version2/pages/center'
-import Console from '@/version2/pages/admin'
+import adminRoutes from './admin'
+import centerRoutes from './center'
 
 Vue.use(VueRouter)
 
@@ -10,43 +11,21 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    redirect: { name: 'data-center' },
+    redirect: { name: 'data-center-home' },
     component: Index
   },
-  {
-    path: '/center',
-    name: 'data-center',
-    component: Center
-  },
-  {
-    path: '/console',
-    name: 'console',
-    component: Console,
-    beforeEnter(to, from, next) {
-      setTimeout(() => {
-        router.app.$store
-          .dispatch('fetchCurrentUser', router.app)
-          .then(({ data: { response } }) => {
-            if (response.isAdmin) {
-              next()
-            } else {
-              alert('sorry，you are not admin')
-              next(false)
-            }
-          })
-          .catch((e) => {
-            alert(e.message.replace('GraphQL error:', ''))
-            next({ path: '/' })
-          })
-      }, 200)
-    }
-  }
+  centerRoutes,
+  adminRoutes
 ]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+router.afterEach((to, from) => {
+  Store.commit('SET_PAGE_TITLE', '')
 })
 
 export default router

@@ -11,10 +11,11 @@ Vue.use(VueApollo)
 // Name of the localStorage item
 const AUTH_TOKEN = 'apollo-token'
 
-const APIHost =
-  process.env.NODE_ENV === 'production' ? '192.168.5.146' : 'localhost'
+// const APIHost =
+//   process.env.NODE_ENV === 'production' ? '192.168.5.146' : 'localhost'
 
-const httpEndpoint = 'http://' + APIHost + '/api/v1'
+// const httpEndpoint = 'http://' + APIHost + '/api/v1'
+const httpEndpoint = '/api/v1'
 
 // Files URL root
 export const filesRoot =
@@ -55,31 +56,33 @@ const defaultOptions = {
 }
 
 const adminOptions = {
-  httpEndpoint: 'http://' + APIHost + '/api/v1/admin'
+  // httpEndpoint: 'http://' + APIHost + '/api/v1/admin'
+  httpEndpoint: '/api/v1/admin'
 }
 
 // Call this in the Vue app file
 export function createProvider(options = {}) {
   const adminClient = createApolloClient({
     ...defaultOptions,
-    ...adminOptions
+    ...adminOptions,
+    ...options
   })
-  adminClient.apolloClient.wsClient = adminClient.wsClient
+  // adminClient.apolloClient.wsClient = adminClient.wsClient
 
   // Create apollo client
-  const { apolloClient, wsClient } = createApolloClient({
+  const defaultClient = createApolloClient({
     ...defaultOptions,
     ...options
   })
-  apolloClient.wsClient = wsClient
+  // apolloClient.wsClient = wsClient
 
   // Create vue apollo provider
   const apolloProvider = new VueApollo({
-    defaultClient: apolloClient,
     clients: {
-      adminClient,
-      apolloClient
+      adminClient: adminClient.apolloClient,
+      defaultClient: defaultClient.apolloClient
     },
+    defaultClient: defaultClient.apolloClient,
     defaultOptions: {
       $query: {
         // fetchPolicy: 'cache-and-network',

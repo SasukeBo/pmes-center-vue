@@ -1,0 +1,134 @@
+.material-manage .material-manage__listview {
+  height: 100%;
+
+  .material-manage__listview-empty {
+    text-align: center;
+
+    img {
+      margin: auto;
+      display: block;
+      padding-top: 160px;
+    }
+
+    .material-no-content__tip {
+      font-size: 12px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .add-material-btn.el-button {
+      margin: 26px 0;
+      color: #fff;
+      border-radius: 900px;
+      border: none;
+      background: linear-gradient(-52deg, #3fe3d3 0%, #5e83f2 100%);
+      box-shadow: 0 3px 20px rgba(94, 131, 242, 0.3);
+    }
+  }
+
+  .material-manage__listview-list {
+    height: 100%;
+  }
+
+  .material-manage__listview-header {
+    position: absolute;
+    padding-left: 264px;
+    display: flex;
+    top: -48px;
+    box-sizing: border-box;
+    width: 100%;
+
+    .add-button {
+      flex: 1;
+      text-align: right;
+      margin-right: 32px;
+
+      .el-button {
+        background: linear-gradient(
+          218deg,
+          rgba(63, 227, 211, 1) 0%,
+          rgba(94, 131, 242, 1) 100%
+        );
+        box-shadow: 0px 3px 20px rgba(94, 131, 242, 0.3);
+        border-radius: 900px;
+        color: #fff;
+      }
+    }
+
+    .search-input {
+      position: relative;
+
+      .el-button {
+        position: absolute;
+        border: none;
+        background: rgba(94, 131, 242, 1);
+        color: #fff;
+        border-radius: 900px;
+        margin: 3px 4px;
+        right: -1px;
+        box-shadow: 0px 0px 5px rgba(94, 131, 242, 0.48);
+      }
+    }
+
+    .el-input {
+      width: 240px;
+      position: relative;
+
+      .el-input__inner {
+        border-radius: 900px;
+        border: none;
+        padding-right: 60px;
+      }
+
+      .el-input-group__append {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 24px;
+        margin: 4px;
+      }
+    }
+  }
+
+  .material-manage__listview-body {
+    height: calc(100% - 64px);
+    padding: 32px 32px 0 32px;
+    box-sizing: border-box;
+
+    .el-table__header tr th {
+      background: #5e83f2;
+      height: 64px;
+      border: none;
+      color: #fff;
+
+      .cell {
+        font-size: 14px;
+        font-weight: bold;
+      }
+    }
+
+    .el-table .cell {
+      padding-left: 32px;
+    }
+
+    .el-table td {
+      border: none;
+    }
+
+    .el-table.el-table--enable-row-hover .el-table__body tr:hover > td {
+      background: rgba(94, 131, 242, 0.16);
+    }
+
+    .el-table td.config-column .cell {
+      color: rgba(63, 227, 211, 1);
+
+      .link {
+        cursor: pointer;
+      }
+    }
+
+    .el-table::before {
+      display: none;
+    }
+  }
+}
