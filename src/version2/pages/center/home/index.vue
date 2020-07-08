@@ -4,24 +4,9 @@
       <img src="~@/assets/banner@2x.png" />
     </div>
 
-    <div class="search-form">
-      <el-input
-        placeholder="请输入产品料号"
-        v-model="inputValue"
-        @keydown.native.enter.prevent="materialSearch = inputValue"
-      >
-        <el-button
-          slot="append"
-          type="primary"
-          @click="materialSearch = inputValue"
-          >搜索</el-button
-        >
-      </el-input>
-    </div>
-
-    <div class="header-block" v-if="materials.length">
+    <div class="header-block" v-if="materials.length && recent">
       <el-row :gutter="24">
-        <el-col :span="24" v-if="recent" class="recent-view-col">
+        <el-col :span="24" class="recent-view-col">
           <div>
             <div class="col-title">最近预览</div>
             <div class="col-card">
@@ -34,10 +19,24 @@
 
     <TopYieldMaterial></TopYieldMaterial>
 
-    <div class="materials-block" v-if="materials.length">
-      <div class="block-title">最近一年数据</div>
+    <div class="materials-block">
+      <div class="block-title">
+        <span class="block-title__content">料号列表</span>
+        <el-input
+          placeholder="请输入产品料号"
+          v-model="inputValue"
+          @keydown.native.enter.prevent="materialSearch = inputValue"
+        >
+          <el-button
+            slot="append"
+            type="info"
+            @click="materialSearch = inputValue"
+            >搜索</el-button
+          >
+        </el-input>
+      </div>
 
-      <div class="block-body">
+      <div class="block-body" v-if="materials.length">
         <el-row :gutter="24">
           <el-col
             :span="6"
@@ -45,15 +44,16 @@
             :key="'material_' + m.id"
             class="material-card-col"
           >
-            <MaterialCard
-              :materialID="m.id"
-              :pending.sync="m.pending"
-              :fileIDs.sync="m.fileIDs"
-              @edit="editMaterial"
-              @delete="deleteMaterial"
-            ></MaterialCard>
+            <MaterialCard :material="m"></MaterialCard>
           </el-col>
         </el-row>
+      </div>
+
+      <div class="empty-block" v-else>
+        <img src="~@/assets/empty-material@2x.png" />
+        <div class="information">
+          暂无料号
+        </div>
       </div>
 
       <div
@@ -76,28 +76,22 @@
 import MaterialCard from './MaterialCard.vue'
 import RecentMaterial from './RecentMaterial.vue'
 import TopYieldMaterial from './TopYieldMaterial.vue'
-
 import gql from 'graphql-tag'
+
 export default {
   name: 'Home',
-  components: {
-    MaterialCard,
-    RecentMaterial,
-    TopYieldMaterial
-  },
+  components: { MaterialCard, RecentMaterial, TopYieldMaterial },
   apollo: {
     materialWrap: {
       query: gql`
-        query($offset: Int!, $limit: Int!, $search: String) {
-          materialWrap: materialsWithSearch(
-            offset: $offset
-            limit: $limit
-            search: $search
-          ) {
+        query($page: Int!, $limit: Int!, $search: String) {
+          materialWrap: materials(page: $page, limit: $limit, search: $search) {
             total
             materials {
               id
               name
+              ok
+              ng
               customerCode
               projectRemark
             }
@@ -107,7 +101,7 @@ export default {
       variables() {
         return {
           search: this.materialSearch,
-          offset: this.offset,
+          page: Math.floor(this.offset, this.limit) + 1,
           limit: this.limit
         }
       },
@@ -116,7 +110,6 @@ export default {
   },
   data() {
     return {
-      recent: undefined,
       offset: 0,
       limit: 20,
       isEdit: false,
@@ -144,7 +137,15 @@ export default {
     }
   },
   created() {
-    this.recent = localStorage.getItem('recent_view_material_id')
+    var recentMaterialID = parseInt(
+      localStorage.getItem('recent_view_material_id')
+    )
+    if (isNaN(recentMaterialID)) {
+      this.recent = undefined
+    } else {
+      this.recent = recentMaterialID
+    }
+
     var _this = this
     window.onscroll = function() {
       var scrollTop = document.documentElement.scrollTop
@@ -162,6 +163,9 @@ export default {
     }
   },
   methods: {
+    openLoginDialog() {
+      this.$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)
+    },
     scrollTop() {
       var timer = setInterval(function() {
         var osTop =
@@ -254,6 +258,15 @@ export default {
       font-weight: bold;
       line-height: 1;
       padding: 16px 0;
+      display: flex;
+
+      .block-title__content {
+        flex: 1;
+      }
+
+      .el-input-group {
+        width: 300px;
+      }
     }
   }
 
@@ -297,39 +310,6 @@ export default {
     width: 100%;
     height: 160px;
     display: block;
-  }
-
-  .search-form {
-    width: 60%;
-    margin: auto;
-    position: relative;
-
-    .el-input {
-      top: -28px;
-
-      .el-input__inner {
-        height: 56px;
-        border-top-left-radius: 900px;
-        border-bottom-left-radius: 900px;
-        padding: 0 32px;
-        font-size: 24px;
-        border: none;
-      }
-
-      .el-input-group__append {
-        border-top-right-radius: 900px;
-        border-bottom-right-radius: 900px;
-        border: none;
-        background: #5e83f2;
-        font-size: 24px;
-        color: #fff;
-        font-weight: 400;
-
-        .el-button {
-          background: transparent;
-        }
-      }
-    }
   }
 }
 

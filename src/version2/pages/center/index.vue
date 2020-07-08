@@ -7,21 +7,25 @@
           class="company-logo"
           @click="$router.push({ path: '/' })"
         />
-        <el-dropdown v-if="currentUser" class="float-right user-account">
+        <el-dropdown
+          v-if="currentUser"
+          class="float-right user-account"
+          trigger="click"
+          @command="handleDropdown"
+        >
           <span>
-            <i class="el-icon-user-solid"></i>
-            <span>{{ currentUser.username }}</span>
+            <i class="el-icon-user-solid" style="padding-right: 4px"></i>
+            <span>{{ currentUser.account }}</span>
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-if="currentUser.admin"
-              ><router-link :to="{ name: 'admin-page' }"
-                >后台管理</router-link
-              ></el-dropdown-item
-            >
-            <el-dropdown-item @click="logout"
-              ><span>退出登录</span></el-dropdown-item
-            >
+            <el-dropdown-item v-if="currentUser.isAdmin" command="toConsole"
+              ><span>后台管理</span>
+            </el-dropdown-item>
+
+            <el-dropdown-item command="logout">
+              <span>退出登录</span>
+            </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
 
@@ -44,37 +48,32 @@
   </div>
 </template>
 <script>
-import LoginDialog from '@/version1/components/LoginDialog.vue'
+import LoginDialog from '@/version2/components/LoginDialog.vue'
+import { mapState } from 'vuex'
 import gql from 'graphql-tag'
 
 export default {
   components: { LoginDialog },
-  apollo: {
-    currentUser: {
-      query: gql`
-        query {
-          currentUser {
-            id
-            username
-            admin
-          }
-        }
-      `
-    }
-  },
-  data() {
-    return {
-      currentUser: undefined
-    }
-  },
-  watch: {
-    currentUser(nv) {
-      if (nv) {
-        this.$store.commit('LOGIN', nv)
-      }
-    }
+  computed: {
+    ...mapState({
+      currentUser: (state) => state.currentUser
+    })
   },
   methods: {
+    handleDropdown(command) {
+      switch (command) {
+        case 'toConsole':
+          this.toConsole()
+          break
+        case 'logout':
+          this.logout()
+          break
+      }
+    },
+    toConsole() {
+      console.log('hello world')
+      this.$router.push({ name: 'console' })
+    },
     logout() {
       this.$confirm('确定退出登录吗？', '提示', {
         confirmButtonText: '确定',

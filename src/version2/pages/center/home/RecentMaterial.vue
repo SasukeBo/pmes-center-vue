@@ -3,25 +3,23 @@
     <div ref="chart" class="pie-chart"></div>
     <div
       class="yield"
-      v-if="analyzeMaterial && analyzeMaterial.ok && analyzeMaterial.ng"
+      v-if="material && material.ok && material.ng"
     >
       Yield:
       {{
         (
-          (analyzeMaterial.ok * 100) /
-          (analyzeMaterial.ok + analyzeMaterial.ng)
+          (material.ok * 100) /
+          (material.ok + material.ng)
         ).toFixed(2)
       }}%
     </div>
-    <div class="data-block" v-if="analyzeMaterial">
+    <div class="data-block" v-if="material">
       <div class="title">
-        {{ analyzeMaterial.material.customerCode }} ({{
-          analyzeMaterial.material.name
-        }})
+        {{ material.customerCode }} ({{ material.name }})
       </div>
-      <div class="sub-title">{{ analyzeMaterial.material.projectRemark }}</div>
+      <div class="sub-title">{{ material.projectRemark }}</div>
       <div class="sub-title">
-        近一年产量：{{ analyzeMaterial.ok + analyzeMaterial.ng }}
+        近一年产量：{{ material.ok + material.ng }}
       </div>
 
       <div class="view-btn">
@@ -45,40 +43,33 @@ import gql from 'graphql-tag'
 import echarts from 'echarts'
 
 export default {
-  props: ['materialID'],
+  props: {
+    materialID: [Number, String]
+  },
   apollo: {
-    analyzeMaterial: {
+    material: {
       query: gql`
-        query($input: Search!) {
-          analyzeMaterial(searchInput: $input) {
-            material {
-              id
-              name
-              customerCode
-              projectRemark
-            }
+        query($id: Int!) {
+          material(id: $id) {
+            id
+            name
+            customerCode
+            projectRemark
             ok
             ng
           }
         }
       `,
       variables() {
-        var end = new Date()
-        var begin = new Date()
-        begin.setMonth(begin.getMonth() - 12)
         return {
-          input: {
-            materialID: this.materialID,
-            beginTime: begin,
-            endTime: end
-          }
+          id: this.materialID
         }
       }
     }
   },
   data() {
     return {
-      analyzeMaterial: undefined,
+      material: undefined,
       mychart: undefined,
       option: {
         color: ['#3FE3D3', '#E04660'],
@@ -112,7 +103,7 @@ export default {
     this.mychart = echarts.init(this.$refs.chart)
   },
   watch: {
-    analyzeMaterial(nv) {
+    material(nv) {
       this.option.series[0].data = [
         { name: 'OK', value: nv.ok },
         { name: 'NG', value: nv.ng }

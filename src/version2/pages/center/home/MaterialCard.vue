@@ -1,33 +1,19 @@
 <template>
-  <div
-    class="material-card"
-    v-loading="$apollo.queries.analyzeMaterial.loading"
-  >
+  <div class="material-card">
     <div class="card-title">
-      {{ analyzeMaterial.material.customerCode }} ({{
-        analyzeMaterial.material.name
-      }})
+      {{ material.customerCode }} ({{ material.name }})
     </div>
     <div class="card-sub-title">
-      {{ analyzeMaterial.material.projectRemark }}
-      <span
-        v-if="analyzeMaterial && analyzeMaterial.ok + analyzeMaterial.ng > 0"
-        >总产出：{{ analyzeMaterial.ok + analyzeMaterial.ng }}</span
-      >
+      {{ material.projectRemark }}
+      <span>总产出：{{ material.ok + material.ng }}</span>
     </div>
 
     <div ref="chart-mount" class="percent-pie-chart"></div>
-    <div
-      class="yield-rate"
-      v-if="analyzeMaterial && analyzeMaterial.ok + analyzeMaterial.ng > 0"
-    >
+    <div class="yield-rate" v-if="material.ok + material.ng > 0">
       <span class="rate yield"
         >Yield:
         {{
-          (
-            (analyzeMaterial.ok * 100) /
-            (analyzeMaterial.ok + analyzeMaterial.ng)
-          ).toFixed(2)
+          ((material.ok * 100) / (material.ok + material.ng)).toFixed(2)
         }}%</span
       >
     </div>
@@ -41,50 +27,15 @@
 </template>
 <script>
 import echarts from 'echarts'
-import gql from 'graphql-tag'
-// import MoreOptionPopover from '@/version1/components/MoreOptionPopover.vue'
+
 export default {
   name: 'MaterialCard',
-  // components: { MoreOptionPopover },
   props: {
-    materialID: [Number, String],
-    fileIDs: Array
-  },
-  apollo: {
-    analyzeMaterial: {
-      query: gql`
-        query($input: Search!) {
-          analyzeMaterial(searchInput: $input) {
-            material {
-              id
-              name
-              customerCode
-              projectRemark
-            }
-            ok
-            ng
-          }
-        }
-      `,
-      variables() {
-        var end = new Date()
-        var begin = new Date()
-        begin.setMonth(begin.getMonth() - 12)
-        return {
-          input: {
-            materialID: this.materialID,
-            beginTime: begin,
-            endTime: end
-          }
-        }
-      }
-    }
+    material: Object
   },
   data() {
     return {
       mychart: undefined,
-      finished: 0,
-      interval: undefined,
       option: {
         color: ['#3FE3D3', '#E04660'],
         series: [
@@ -112,45 +63,28 @@ export default {
             data: []
           }
         ]
-      },
-      analyzeMaterial: {
-        material: {}
-      },
-      needFetch: undefined
-    }
-  },
-  watch: {
-    analyzeMaterial(nv) {
-      if (nv) {
-        this.renderChart()
       }
     }
   },
-  mounted() {
-    this.mychart = echarts.init(this.$refs['chart-mount'])
-  },
   methods: {
-    // editMaterial() {
-    //   this.$emit('edit', this.analyzeMaterial.material)
-    // },
-    // deleteMaterial() {
-    //   this.$emit('delete', this.materialID)
-    // },
     renderChart() {
-      var result = this.analyzeMaterial
       this.option.series[0].data = [
-        { name: 'OK', value: result.ok },
-        { name: 'NG', value: result.ng }
+        { name: 'OK', value: this.material.ok },
+        { name: 'NG', value: this.material.ng }
       ]
       this.mychart.setOption(this.option)
     },
     goToDetail() {
-      localStorage.setItem('recent_view_material_id', this.materialID)
+      localStorage.setItem('recent_view_material_id', this.material.id)
       this.$router.push({
         name: 'MaterialView',
-        params: { id: this.materialID }
+        params: { id: this.material.id }
       })
     }
+  },
+  mounted() {
+    this.mychart = echarts.init(this.$refs['chart-mount'])
+    this.renderChart()
   }
 }
 </script>
