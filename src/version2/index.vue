@@ -1,5 +1,5 @@
 <template>
-  <div class="index">
+  <div class="app">
     <router-view></router-view>
   </div>
 </template>
@@ -25,7 +25,7 @@ html {
   font-family: source-han-sans-simplified-c, sans-serif;
 }
 
-.index {
+.app {
   height: 100%;
 }
 </style>

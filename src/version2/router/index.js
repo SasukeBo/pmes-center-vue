@@ -4,18 +4,24 @@ import Store from '../store'
 import Index from '@/version2/index.vue'
 import adminRoutes from './admin'
 import centerRoutes from './center'
+import ErrorPage from '@/version2/pages/errorPage'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    redirect: { name: 'data-center-home' },
+    name: 'index',
+    redirect: { name: 'data-center' },
     component: Index
   },
   centerRoutes,
-  adminRoutes
+  adminRoutes,
+  {
+    path: '/*',
+    name: 'error-page',
+    component: ErrorPage
+  }
 ]
 
 const router = new VueRouter({
