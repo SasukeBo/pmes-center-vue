@@ -22,11 +22,14 @@
       >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="echartsForm.xAxis" placeholder="请选择X轴属性">
+            <el-option label="设备" value="Device"></el-option>
+            <el-option label="日期" value="Date"></el-option>
+            <el-option label="班别" value="Shift"></el-option>
             <el-option
-              v-for="(k, v) in attributesMap"
-              :key="'xaxis_' + v"
-              :label="k"
-              :value="v"
+              v-for="a in attributes"
+              :key="a.name"
+              :label="a.label"
+              :value="a.name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -45,11 +48,14 @@
             placeholder="请选择分组字段"
             clearable
           >
+            <el-option label="设备" value="Device"></el-option>
+            <el-option label="日期" value="Date"></el-option>
+            <el-option label="班别" value="Shift"></el-option>
             <el-option
-              v-for="(k, v) in attributesMap"
-              :key="'groupby_' + v"
-              :label="k"
-              :value="v"
+              v-for="a in attributes"
+              :key="a.name"
+              :label="a.label"
+              :value="a.name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -116,7 +122,7 @@ export default {
       echartsForm: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: 'shift_number',
+        groupBy: 'Shift',
         duration: [],
         limit: undefined,
         sort: 'ASC'
@@ -134,19 +140,12 @@ export default {
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: 'shift_number',
+        groupBy: 'Shift',
         duration: [],
         limit: undefined,
         sort: 'ASC'
       },
-      attributesMap: {
-        Device: '设备',
-        Date: '日期',
-        jig_id: '冶具号',
-        shift_number: '班别',
-        line_id: '线体号',
-        mould_id: '模具号'
-      },
+      attributes: [],
       yAxisNameMap: {
         Amount: '产量',
         Yield: '良率',
@@ -166,9 +165,24 @@ export default {
     }
   },
   apollo: {
+    attributes: {
+      query: gql`
+        query($materialID: Int!) {
+          attributes: productAttributes(materialID: $materialID) {
+            label
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.id
+        }
+      }
+    },
     echartsResult: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
+        query($input: GraphInput!) {
           echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
             xAxisData
             seriesData
@@ -177,12 +191,27 @@ export default {
         }
       `,
       variables() {
+        var category = ['Device', 'Date', 'Shift']
+        var attributeXAxis, attributeGroup
+
+        var xAxis = this.form.xAxis
+        if (!category.includes(xAxis)) {
+          attributeXAxis = xAxis
+          xAxis = 'Attribute'
+        }
+        var groupBy = this.form.groupBy
+        if (!category.includes(groupBy)) {
+          attributeGroup = groupBy
+          groupBy = 'Attribute'
+        }
         return {
           input: {
             targetID: this.id,
-            xAxis: this.form.xAxis,
+            xAxis,
+            attributeXAxis,
             yAxis: this.form.yAxis,
-            groupBy: this.form.groupBy,
+            groupBy,
+            attributeGroup,
             duration: this.form.duration,
             limit: this.form.limit,
             sort: this.form.sort
@@ -255,7 +284,8 @@ export default {
       }
       return {
         data,
-        name: this.attributesMap[this.form.xAxis],
+        // TODO
+        // name: this.attributesMap[this.form.xAxis],
         type: 'category',
         axisLabel: { interval: 0, rotate: -45 }
       }
@@ -294,8 +324,8 @@ export default {
           var amount = `（${data[param.seriesName][param.dataIndex]} 个）`
           var seriesName
           switch (_this.form.groupBy) {
-            case 'shift_number':
-              seriesName = _this.shiftNumberMap[param.seriesName]
+            case 'Shift':
+              seriesName = param.seriesName === '1' ? '白班' : '晚班'
               break
             case 'Date':
               var date = new Date(param.seriesName)
@@ -336,8 +366,8 @@ export default {
       var _this = this
       var formatter = function(name) {
         switch (_this.form.groupBy) {
-          case 'shift_number':
-            return _this.shiftNumberMap[name]
+          case 'Shift':
+            return name === '1' ? '白班' : '晚班'
           case 'Date':
             var date = new Date(name)
             return date.toLocaleDateString()
@@ -353,7 +383,8 @@ export default {
         return {
           top: 20,
           left: 'center',
-          text: `按${this.attributesMap[this.form.groupBy]}分组`,
+          // TODO
+          // text: `按${this.attributesMap[this.form.groupBy]}分组`,
           textStyle: {
             color: '#666',
             fontSize: 14

@@ -116,7 +116,7 @@ export default {
     },
     sizeUnYieldResult: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
+        query($input: GraphInput!) {
           sizeUnYieldResult: sizeUnYieldTop(groupInput: $input) {
             xAxisData
             seriesData
