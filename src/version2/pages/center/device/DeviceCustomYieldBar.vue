@@ -14,11 +14,13 @@
       <el-form :model="form" ref="custom-graph-form" :rules="rules">
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
+            <el-option label="日期" value="Date"></el-option>
+            <el-option label="班别" value="Shift"></el-option>
             <el-option
-              v-for="(k, v) in attributesMap"
-              :key="'xaxis_' + v"
-              :label="k"
-              :value="v"
+              v-for="a in attributes"
+              :key="a.name"
+              :label="a.label"
+              :value="a.name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -37,11 +39,13 @@
             placeholder="请选择分组字段"
             clearable
           >
+            <el-option label="日期" value="Date"></el-option>
+            <el-option label="班别" value="Shift"></el-option>
             <el-option
-              v-for="(k, v) in attributesMap"
-              :key="'groupby_' + v"
-              :label="k"
-              :value="v"
+              v-for="a in attributes"
+              :key="a.name"
+              :label="a.label"
+              :value="a.name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -90,7 +94,8 @@ import gql from 'graphql-tag'
 export default {
   name: 'DeviceCustomYieldBar',
   props: {
-    id: [String, Number]
+    id: [String, Number],
+    materialID: [String, Number]
   },
   data() {
     var checkUniqueAttributeForXAxisAndGroupBy = (rule, value, callback) => {
@@ -105,7 +110,7 @@ export default {
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: 'jig_id',
+        groupBy: 'Shift',
         duration: [],
         limit: 20,
         sort: 'ASC'
@@ -120,21 +125,14 @@ export default {
           { validator: checkUniqueAttributeForXAxisAndGroupBy, trigger: 'blur' }
         ]
       },
-      attributesMap: {
-        Date: '日期',
-        jig_id: '冶具号',
-        shift_number: '班别',
-        line_id: '线体号',
-        mould_id: '模具号'
-      },
       yAxisNameMap: {
         Amount: '产量',
         Yield: '良率',
         UnYield: '不良率'
       },
-      shiftNumberMap: {
-        A: '白班',
-        B: '晚班'
+      categoryMap: {
+        Date: '日期',
+        Shift: '班别'
       },
       echartsResult: {
         xAxisData: [],
@@ -142,13 +140,29 @@ export default {
           data: []
         }
       },
-      yieldChart: undefined
+      yieldChart: undefined,
+      attributes: []
     }
   },
   apollo: {
+    attributes: {
+      query: gql`
+        query($materialID: Int!) {
+          attributes: productAttributes(materialID: $materialID) {
+            label
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.materialID
+        }
+      }
+    },
     echartsResult: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
+        query($input: GraphInput!) {
           echartsResult: groupAnalyzeDevice(analyzeInput: $input) {
             xAxisData
             seriesData
@@ -157,15 +171,30 @@ export default {
         }
       `,
       variables() {
+        var category = ['Date', 'Shift']
+        var attributeXAxis, attributeGroup
+
+        var xAxis = this.form.xAxis || undefined
+        if (!category.includes(xAxis) && xAxis) {
+          attributeXAxis = xAxis
+          xAxis = 'Attribute'
+        }
+        var groupBy = this.form.groupBy || undefined
+        if (!category.includes(groupBy) && groupBy) {
+          attributeGroup = groupBy
+          groupBy = 'Attribute'
+        }
         return {
           input: {
             targetID: this.id,
-            xAxis: this.form.xAxis || undefined,
-            yAxis: this.form.yAxis || undefined,
-            groupBy: this.form.groupBy || undefined,
-            duration: this.form.duration || undefined,
-            limit: this.form.limit || undefined,
-            sort: this.form.sort || undefined
+            xAxis,
+            attributeXAxis,
+            yAxis: this.form.yAxis,
+            groupBy,
+            attributeGroup,
+            duration: this.form.duration,
+            limit: this.form.limit,
+            sort: this.form.sort
           }
         }
       },
@@ -231,10 +260,22 @@ export default {
           var t = new Date(d)
           return t.toLocaleDateString()
         })
+      } else if (this.form.xAxis === 'Shift') {
+        data = data.map((d) => {
+          return d === '1' ? '白班' : '晚班'
+        })
       }
+      var name = this.categoryMap[this.form.xAxis]
+      if (!name) {
+        var index = this.attributes.findIndex((a) => a.name === this.form.xAxis)
+        if (index >= 0) {
+          name = this.attributes[index].label
+        }
+      }
+
       return {
         data,
-        name: this.attributesMap[this.form.xAxis],
+        name,
         type: 'category'
       }
     },
@@ -263,8 +304,8 @@ export default {
           var amount = `（${data[param.seriesName][param.dataIndex]} 个）`
           var seriesName
           switch (_this.form.groupBy) {
-            case 'shift_number':
-              seriesName = _this.shiftNumberMap[param.seriesName]
+            case 'Shift':
+              seriesName = param.seriesName === '1' ? '白班' : '晚班'
               break
             case 'Date':
               var date = new Date(param.seriesName)
@@ -310,12 +351,18 @@ export default {
         subtext
       }
     },
-    assembleLegend() {
+    assembleLegend(seriesData) {
+      if (Object.keys(seriesData).length <= 1) {
+        return {
+          show: false
+        }
+      }
+
       var _this = this
       var formatter = function(name) {
         switch (_this.form.groupBy) {
-          case 'shift_number':
-            return _this.shiftNumberMap[name]
+          case 'Shift':
+            return name === '1' ? '白班' : '晚班'
           case 'Date':
             var date = new Date(name)
             return date.toLocaleDateString()

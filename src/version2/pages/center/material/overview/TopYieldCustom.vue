@@ -155,6 +155,11 @@ export default {
         A: '白班',
         B: '晚班'
       },
+      categoryMap: {
+        Date: '日期',
+        Device: '设备',
+        Shift: '班别'
+      },
       echartsResult: {
         xAxisData: [],
         seriesData: {
@@ -194,13 +199,13 @@ export default {
         var category = ['Device', 'Date', 'Shift']
         var attributeXAxis, attributeGroup
 
-        var xAxis = this.form.xAxis
-        if (!category.includes(xAxis)) {
+        var xAxis = this.form.xAxis || undefined
+        if (!category.includes(xAxis) && xAxis) {
           attributeXAxis = xAxis
           xAxis = 'Attribute'
         }
-        var groupBy = this.form.groupBy
-        if (!category.includes(groupBy)) {
+        var groupBy = this.form.groupBy || undefined
+        if (!category.includes(groupBy) && groupBy) {
           attributeGroup = groupBy
           groupBy = 'Attribute'
         }
@@ -282,10 +287,16 @@ export default {
           return t.toLocaleDateString()
         })
       }
+      var name = this.categoryMap[this.form.xAxis]
+      if (!name) {
+        var index = this.attributes.findIndex((a) => a.name === this.form.xAxis)
+        if (index >= 0) {
+          name = this.attributes[index].label
+        }
+      }
       return {
         data,
-        // TODO
-        // name: this.attributesMap[this.form.xAxis],
+        name,
         type: 'category',
         axisLabel: { interval: 0, rotate: -45 }
       }
@@ -380,11 +391,20 @@ export default {
     },
     assembleTitle() {
       if (this.form.groupBy) {
+        var name = this.categoryMap[this.form.groupBy]
+        if (!name) {
+          var index = this.attributes.findIndex(
+            (a) => a.name === this.form.xAxis
+          )
+          if (index >= 0) {
+            name = this.attributes[index].label
+          }
+        }
+
         return {
           top: 20,
           left: 'center',
-          // TODO
-          // text: `按${this.attributesMap[this.form.groupBy]}分组`,
+          text: `按${name}分组`,
           textStyle: {
             color: '#666',
             fontSize: 14

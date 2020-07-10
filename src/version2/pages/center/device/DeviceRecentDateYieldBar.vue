@@ -41,7 +41,7 @@ export default {
   apollo: {
     echartsResult: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
+        query($input: GraphInput!) {
           echartsResult: groupAnalyzeDevice(analyzeInput: $input) {
             xAxisData
             seriesData
