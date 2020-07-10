@@ -39,17 +39,13 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="线体号">
-          <el-input v-model="form.line_id" style="width: 300px"></el-input>
+
+        <el-form-item :label="a.label" v-for="a in attributes" :key="a.name">
+          <el-input v-model="form[a.name]" style="width: 300px"></el-input>
         </el-form-item>
-        <el-form-item label="冶具号">
-          <el-input v-model="form.jig_id" style="width: 300px"></el-input>
-        </el-form-item>
-        <el-form-item label="模具号">
-          <el-input v-model="form.mould_id" style="width: 300px"></el-input>
-        </el-form-item>
+
         <el-form-item label="班别">
-          <el-select v-model="form.shift_number" clearable>
+          <el-select v-model="form.shift" clearable>
             <el-option label="白班" value="A"></el-option>
             <el-option label="晚班" value="B"></el-option>
           </el-select>
@@ -96,15 +92,28 @@ export default {
         limit: 20,
         sort: true,
         device_id: undefined,
-        line_id: undefined,
-        jig_id: undefined,
-        shift_number: undefined,
-        mould_id: undefined
+        shift: undefined
       },
-      devices: []
+      devices: [],
+      attributes: []
     }
   },
   apollo: {
+    attributes: {
+      query: gql`
+        query($materialID: Int!) {
+          attributes: productAttributes(materialID: $materialID) {
+            label
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.id
+        }
+      }
+    },
     sizeUnYieldResult: {
       query: gql`
         query($input: GroupAnalyzeInput!) {
@@ -115,6 +124,14 @@ export default {
         }
       `,
       variables() {
+        var filters = {}
+        var _this = this
+        this.attributes.forEach((a) => {
+          filters[a.name] = _this.form[a.name] || undefined
+        })
+        filters.device_id = this.form.device_id || undefined
+        filters.shift = this.form.shift || undefined
+
         return {
           input: {
             targetID: this.id,
@@ -123,13 +140,7 @@ export default {
             duration: this.form.duration,
             limit: this.form.limit,
             sort: this.form.sort ? 'DESC' : 'ASC',
-            filters: {
-              device_id: this.form.device_id || undefined,
-              line_id: this.form.line_id || undefined,
-              jig_id: this.form.jig_id || undefined,
-              shift_number: this.form.shift_number || undefined,
-              mould_id: this.form.mould_id || undefined
-            }
+            filters
           }
         }
       },

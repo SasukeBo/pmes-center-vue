@@ -64,50 +64,54 @@ export default {
         }
       ]
     },
-    assembleXAxis() {
-
+    assembleXAxis(data) {
+      return {
+        data,
+        name: '料号',
+        type: 'category',
+        axisLabel: { interval: 0, rotate: -45 }
+      }
+    },
+    assembleYAxis() {
+      return {
+        name: '百分比',
+        nameLocation: 'center',
+        nameGap: 50,
+        type: 'value',
+        scale: true,
+        axisLabel: {
+          formatter: '{value}%'
+        }
+      }
+    },
+    assembleTooltip() {
+      return {
+        show: true,
+        formatter(params) {
+          return `
+          <div>${params.name}</div>
+          <div>${params.seriesName}：${params.value}%</div>
+          `
+        }
+      }
     }
   },
   watch: {
     echartsResult(nv) {
       if (nv) {
         var options = {
-          tooltip: {
-            show: true
-          },
+          tooltip: this.assembleTooltip(),
           color: ['#3FE3D3', '#5E83F2'],
           title: {
             text: '料号监测',
             subtext: '前20最低良率料号'
           },
-          xAxis: {
-            name: '料号',
-            type: 'category',
-            axisLabel: { interval: 0, rotate: -45 }
-          },
-          yAxis: [
-            {
-              name: '百分比',
-              nameLocation: 'center',
-              nameGap: 50,
-              type: 'value',
-              scale: true,
-              axisLabel: {
-                formatter: '{value}%'
-              }
-            }
-          ],
+          yAxis: this.assembleYAxis(),
+          xAxis: this.assembleXAxis(nv.xAxisData),
           series: this.assembleSeries(nv.seriesData)
         }
-        this.options.tooltip.formatter = function(params) {
-          return `
-          <div>${params.name}</div>
-          <div>${params.seriesName}：${params.value}%</div>
-          `
-        }
-        this.options.xAxis.data = nv.xAxisData
-        this.options.series[0].data = values
-        this.chart.setOption(this.options)
+        this.chart.clear()
+        this.chart.setOption(options)
       }
     }
   },
