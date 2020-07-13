@@ -98,6 +98,7 @@ export default {
             createdAtColumnIndex
             productColumns {
               name
+              label
               index
               type
             }
