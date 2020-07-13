@@ -66,7 +66,7 @@
               <TableCellForm
                 :row="scope.row"
                 :index="scope.$index"
-                prop="name"
+                prop="label"
                 @update="editCell"
               ></TableCellForm>
             </template>
@@ -263,7 +263,9 @@ export default {
       this.form.productColumns.splice(index, 1)
     },
     appendProductColumn() {
-      this.form.productColumns.push({})
+      this.form.productColumns.push({
+        name: `attr_${this.form.productColumns.length}`
+      })
     }
   },
   watch: {
