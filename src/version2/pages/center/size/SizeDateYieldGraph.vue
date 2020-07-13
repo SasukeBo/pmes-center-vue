@@ -9,11 +9,13 @@
       <el-form inline size="mini">
         <el-form-item label="分组">
           <el-select v-model="form.groupBy" clearable>
+            <el-option label="设备" value="Device"></el-option>
+            <el-option label="班别" value="Shift"></el-option>
             <el-option
-              v-for="(v, k) in attributesMap"
-              :key="k"
-              :label="v"
-              :value="k"
+              v-for="a in attributes"
+              :key="a.name"
+              :label="a.label"
+              :value="a.name"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -50,7 +52,8 @@ import echarts from 'echarts'
 export default {
   name: 'SizeDateYieldGraph',
   props: {
-    id: [Number, String]
+    id: [Number, String],
+    materialID: [Number, String]
   },
   data() {
     return {
@@ -58,27 +61,36 @@ export default {
       yieldChart: undefined,
       form: {
         yAxis: 'Yield',
-        groupBy: 'line_id',
+        groupBy: 'Shift',
         duration: []
       },
       yAxisNameMap: {
         Yield: '良率',
         UnYield: '不良率'
       },
-      attributesMap: {
-        Device: '设备',
-        jig_id: '冶具号',
-        shift_number: '班别',
-        line_id: '线体号',
-        mould_id: '模具号'
-      }
+      attributes: []
     }
   },
   apollo: {
+    attributes: {
+      query: gql`
+        query($materialID: Int!) {
+          attributes: productAttributes(materialID: $materialID) {
+            label
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.materialID
+        }
+      }
+    },
     echartResults: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
-          echartResults: groupAnalyzeSize(analyzeInput: $input) {
+        query($input: GraphInput!) {
+          echartResults: groupAnalyzePoint(analyzeInput: $input) {
             xAxisData
             seriesData
             seriesAmountData
@@ -86,12 +98,22 @@ export default {
         }
       `,
       variables() {
+        var category = ['Device', 'Shift']
+        var attributeGroup
+
+        var groupBy = this.form.groupBy || undefined
+        if (!category.includes(groupBy) && groupBy) {
+          attributeGroup = groupBy
+          groupBy = 'Attribute'
+        }
+
         return {
           input: {
+            groupBy,
+            attributeGroup,
             targetID: this.id,
             xAxis: 'Date',
             yAxis: this.form.yAxis,
-            groupBy: this.form.groupBy,
             duration: this.form.duration
           }
         }
@@ -146,12 +168,16 @@ export default {
           if (!param.value) {
             return
           }
+          var seriesName = param.seriesName
+          if (_this.form.groupBy === 'Shift') {
+            seriesName = seriesName === '1' ? '白班' : '晚班'
+          }
           message += `
           <div>
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${
             param.color
           };"></span>
-          <span>${param.seriesName}: ${param.value}%（${
+          <span>${seriesName}: ${param.value}%（${
             data[param.seriesName][param.dataIndex]
           }个）</span>
           </div>
@@ -197,13 +223,23 @@ export default {
           formatter: '{value}%'
         }
       }
+    },
+    assembleLegend() {
+      if (this.form.groupBy === 'Shift') {
+        return {
+          formatter(params) {
+            return params === '1' ? '白班' : '晚班'
+          }
+        }
+      } else {
+        return {}
+      }
     }
   },
   watch: {
     echartResults(nv) {
       if (nv) {
         var options = {
-          legend: {},
           toolbox: {
             feature: {
               magicType: {
@@ -212,6 +248,7 @@ export default {
               saveAsImage: {}
             }
           },
+          legend: this.assembleLegend(),
           tooltip: this.assembleTooltip(nv.seriesAmountData),
           xAxis: this.assembleXAxis(nv.xAxisData),
           yAxis: this.assembleYAxis(),

@@ -1,7 +1,10 @@
 <template>
-  <div class="size-view">
-    <PointCard :id="id"></PointCard>
-    <SizeDateYieldGraph :id="id"></SizeDateYieldGraph>
+  <div class="size-view" v-if="point">
+    <PointCard :id="id" :materialID="point.material.id"></PointCard>
+    <SizeDateYieldGraph
+      :id="id"
+      :materialID="point.material.id"
+    ></SizeDateYieldGraph>
   </div>
 </template>
 <script>
@@ -17,27 +20,23 @@ export default {
   },
   data() {
     return {
-      sizeUnYieldResult: []
+      point: undefined
     }
   },
   apollo: {
-    sizeUnYieldResult: {
+    point: {
       query: gql`
-        query($input: GroupAnalyzeInput!) {
-          sizeUnYieldResult: sizeUnYieldTop(groupInput: $input) {
-            xAxisData
-            seriesData
+        query($id: Int!) {
+          point(id: $id) {
+            material {
+              id
+            }
           }
         }
       `,
       variables() {
         return {
-          input: {
-            targetID: 7,
-            yAxis: 'UnYield',
-            xAxis: 'Date',
-            groupBy: 'jig_id'
-          }
+          id: this.id
         }
       }
     }

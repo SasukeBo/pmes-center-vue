@@ -37,7 +37,65 @@
       </div>
     </div>
 
-    <div class="analyze-chart" ref="chart"></div>
+    <div class="analyze-chart">
+      <div class="filter-btn">
+        <el-button
+          size="small"
+          type="primary"
+          @click="filterDialogVisble = true"
+          >过滤条件</el-button
+        >
+      </div>
+      <div ref="chart" style="height: 100%"></div>
+    </div>
+
+    <el-dialog title="过滤条件" :visible.sync="filterDialogVisble">
+      <el-form
+        size="small"
+        label-width="100px"
+        label-position="left"
+        ref="filterForm"
+      >
+        <el-form-item label="日期范围">
+          <el-date-picker
+            size="mini"
+            clearable
+            v-model="form.duration"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="选择设备">
+          <el-select v-model="form.device_id" clearable>
+            <el-option
+              v-for="d in devices"
+              :key="'device_' + d.id"
+              :label="d.name"
+              :value="d.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item :label="a.label" v-for="a in attributes" :key="a.name">
+          <el-input v-model="form[a.name]" style="width: 300px"></el-input>
+        </el-form-item>
+
+        <el-form-item label="班别">
+          <el-select v-model="form.shift" clearable>
+            <el-option label="白班" value="A"></el-option>
+            <el-option label="晚班" value="B"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submit">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -45,16 +103,23 @@ import echarts from 'echarts'
 import gql from 'graphql-tag'
 export default {
   props: {
-    id: [Number, String]
+    id: [Number, String],
+    materialID: [Number, String]
   },
   data() {
     return {
+      attributes: [],
+      devices: [],
       pointResult: undefined,
       mychart: undefined,
       gt: 0,
       lt: 0,
-      duration: [],
-      filters: {},
+      form: {
+        duration: [],
+        device_id: undefined,
+        shift: undefined
+      },
+      filterDialogVisble: false,
       option: {
         title: {
           padding: [0, 24],
@@ -165,6 +230,36 @@ export default {
     }
   },
   apollo: {
+    devices: {
+      query: gql`
+        query($materialID: Int!) {
+          devices(materialID: $materialID) {
+            id
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.materialID
+        }
+      }
+    },
+    attributes: {
+      query: gql`
+        query($materialID: Int!) {
+          attributes: productAttributes(materialID: $materialID) {
+            label
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          materialID: this.materialID
+        }
+      }
+    },
     pointResult: {
       query: gql`
         query($id: Int!, $duration: [Time]!, $filters: Map!) {
@@ -194,12 +289,34 @@ export default {
         }
       `,
       variables() {
+        var filters = {}
+        Object.keys(this.form).forEach((k) => {
+          filters[k] = this.form[k] || undefined
+        })
+
+        delete filters.duration
         return {
           id: this.id,
-          duration: this.duration,
-          filters: this.filters
+          duration: this.form.duration || [],
+          filters
         }
+      },
+      skip() {
+        return this.filterDialogVisble
       }
+    }
+  },
+  methods: {
+    cancel() {
+      this.form = {
+        duration: [],
+        device_id: undefined,
+        shift: undefined
+      }
+      this.filterDialogVisble = false
+    },
+    submit() {
+      this.filterDialogVisble = false
     }
   },
   watch: {
@@ -314,6 +431,7 @@ export default {
         }
 
         if (this.mychart) {
+          this.mychart.clear()
           this.mychart.setOption(this.option)
         }
       }
@@ -365,6 +483,12 @@ export default {
 
   .analyze-chart {
     flex: 4;
+
+    .filter-btn {
+      text-align: right;
+      margin-right: 16px;
+      margin-top: 16px;
+    }
   }
 }
 </style>
