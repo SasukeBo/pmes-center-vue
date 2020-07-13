@@ -33,7 +33,8 @@ export default new Vuex.Store({
               isAdmin
             }
           }
-        `
+        `,
+        client: 'adminClient'
       })
     }
   },

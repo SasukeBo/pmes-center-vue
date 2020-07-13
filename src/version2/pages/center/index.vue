@@ -7,58 +7,21 @@
           class="company-logo"
           @click="$router.push({ path: '/' })"
         />
-        <el-dropdown
-          v-if="currentUser"
-          class="float-right user-account"
-          trigger="click"
-          @command="handleDropdown"
-        >
-          <span>
-            <i class="el-icon-user-solid" style="padding-right: 4px"></i>
-            <span>{{ currentUser.account }}</span>
-            <i class="el-icon-arrow-down el-icon--right"></i>
-          </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-if="currentUser.isAdmin" command="toConsole"
-              ><span>后台管理</span>
-            </el-dropdown-item>
-
-            <el-dropdown-item command="logout">
-              <span>退出登录</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-
-        <el-button
-          v-if="!currentUser"
-          class="float-right"
-          size="small"
-          type="primary"
-          @click="$store.commit('SET_LOGIN_DIALOG_VISIBLE', true)"
-          >登录</el-button
-        >
       </div>
     </div>
 
     <div class="app-body">
       <router-view></router-view>
+      <div class="go-back-btn" @click="$router.go(-1)">
+        <div class="btn_content">
+          <i class="el-icon-back"></i><span>返回</span>
+        </div>
+      </div>
     </div>
-
-    <LoginDialog></LoginDialog>
   </div>
 </template>
 <script>
-import LoginDialog from '@/version2/components/LoginDialog.vue'
-import { mapState } from 'vuex'
-import gql from 'graphql-tag'
-
 export default {
-  components: { LoginDialog },
-  computed: {
-    ...mapState({
-      currentUser: (state) => state.currentUser
-    })
-  },
   methods: {
     handleDropdown(command) {
       switch (command) {
@@ -71,34 +34,7 @@ export default {
       }
     },
     toConsole() {
-      console.log('hello world')
       this.$router.push({ name: 'console' })
-    },
-    logout() {
-      this.$confirm('确定退出登录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
-      }).then(() => {
-        this.$apollo
-          .mutate({
-            mutation: gql`
-              mutation {
-                logout
-              }
-            `
-          })
-          .then(() => {
-            this.$message({ type: 'success', message: '退出登录成功' })
-            this.$store.commit('LOGIN', undefined)
-          })
-          .catch((e) => {
-            this.$message({
-              type: 'error',
-              message: e.message.replace('GraphQL error:', '')
-            })
-          })
-      })
     }
   }
 }
@@ -122,7 +58,7 @@ html {
   }
 
   .app-header {
-    z-index: 2001;
+    z-index: 2000;
     height: 64px;
     background: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);
@@ -143,31 +79,39 @@ html {
       display: inline-block;
       cursor: pointer;
     }
-
-    .float-right {
-      float: right;
-      margin: 16px 0px;
-    }
-
-    .user-account {
-      float: right;
-      height: 100%;
-      line-height: 64px;
-      margin: 0;
-      padding: 0 8px;
-      cursor: pointer;
-      transition: color 0.3s ease;
-
-      &:hover {
-        color: #999;
-      }
-    }
   }
 
   .app-body {
     max-width: 1200px;
     margin: auto;
     padding-top: 64px;
+    position: relative;
+
+    .go-back-btn {
+      position: fixed;
+      border-radius: 9px;
+      background: #5e82f2;
+      width: 80px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      bottom: 20px;
+      right: 20px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0px 0px 13px rgba(0, 0, 0, 0.5);
+      font-size: 14px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(94, 130, 242, 0.8);
+      }
+
+      .btn_content {
+        flex: auto;
+        color: #fff;
+      }
+    }
   }
 }
 

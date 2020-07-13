@@ -94,7 +94,7 @@ export default {
                     })
                     .catch((e) => console.log(e))
                   _this.$message({ type: 'success', message: '登录成功' })
-                  _this.$store.commit('SET_LOGIN_DIALOG_VISIBLE', false)
+                  document.location.href = '/console'
                 }
               } else {
                 _this.$message({ type: 'error', message: req.statusText })
@@ -118,7 +118,7 @@ export default {
 </script>
 
 <style lang="scss">
-.theme_1-app .login-dialog {
+.app .login-dialog {
   background: transparent !important;
   position: relative;
   box-shadow: none;
