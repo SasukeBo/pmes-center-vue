@@ -254,7 +254,7 @@ export default {
     position: absolute;
     right: 20px;
     top: 20px;
-    z-index: 2000;
+    z-index: 1999;
   }
 
   .yield-chart-mount {

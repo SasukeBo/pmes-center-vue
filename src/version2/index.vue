@@ -1,22 +1,18 @@
 <template>
   <div class="app">
     <router-view></router-view>
+
+    <LoginDialog></LoginDialog>
   </div>
 </template>
 <script>
 import Vue from 'vue'
 import GraphQLError from './utils/graphql_error'
+import LoginDialog from '@/version2/components/LoginDialog.vue'
 Vue.prototype.$GraphQLError = GraphQLError
 export default {
-  created() {
-    var _this = this
-    this.$store
-      .dispatch('fetchCurrentUser', _this)
-      .then(({ data: { response } }) => {
-        _this.$store.commit('LOGIN', response)
-      })
-      .catch((e) => console.log(e))
-  }
+  name: 'App',
+  components: { LoginDialog }
 }
 </script>
 <style lang="scss">

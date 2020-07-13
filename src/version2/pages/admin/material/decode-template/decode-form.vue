@@ -242,10 +242,7 @@ export default {
                 })
                 .catch((e) => {
                   _this.saving = false
-                  _this.$message({
-                    type: 'error',
-                    message: e.message.replace('GraphQL error:', '"')
-                  })
+                  _this.$GraphQLError(e)
                 })
             }
           })
