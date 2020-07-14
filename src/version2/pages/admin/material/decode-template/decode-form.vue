@@ -71,6 +71,7 @@
               ></TableCellForm>
             </template>
           </el-table-column>
+          <el-table-column label="属性Token" prop="name"> </el-table-column>
           <el-table-column label="所在列" prop="index">
             <template slot-scope="scope">
               <TableCellForm
