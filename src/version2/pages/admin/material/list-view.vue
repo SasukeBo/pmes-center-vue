@@ -55,8 +55,12 @@
             label="创建日期"
             :formatter="timeFormatter"
           ></el-table-column>
-          <el-table-column label="配置" class-name="config-column" width="350">
+          <el-table-column label="配置" class-name="config-column" width="400">
             <template slot-scope="scope">
+              <span class="link" @click="fetchData(scope.row.id)"
+                >拉取Ftp数据</span
+              >
+              <span> | </span>
               <span
                 class="link"
                 @click="
@@ -188,6 +192,24 @@ export default {
     }
   },
   methods: {
+    fetchData(id) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              materialFetch(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: { id }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '拉取成功' })
+        })
+        .catch((e) => {
+          this.$GraphQLError(e)
+        })
+    },
     handleSizeChange(val) {
       this.limit = val
     },
