@@ -1,6 +1,10 @@
 <template>
   <div class="console-decode-template">
     <div class="decode-template-table">
+      <div class="default-template-tip">
+        <i class="el-icon-warning"></i>
+        默认模板会影响数据的解析和设备的数据上传，设置时请谨慎。
+      </div>
       <el-table
         border
         height="100%"
@@ -257,6 +261,13 @@ export default {
     height: calc(100% - 64px);
     padding: 56px 106px;
     box-sizing: border-box;
+
+    .default-template-tip {
+      font-size: 14px;
+      color: #666;
+      position: absolute;
+      top: 30px;
+    }
 
     .append-template-btn {
       height: 64px;
