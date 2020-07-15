@@ -107,6 +107,8 @@ export default {
     materialID: [Number, String]
   },
   data() {
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       attributes: [],
       devices: [],
@@ -115,7 +117,7 @@ export default {
       gt: 0,
       lt: 0,
       form: {
-        duration: [],
+        duration: [t, new Date()],
         device_id: undefined,
         shift: undefined
       },

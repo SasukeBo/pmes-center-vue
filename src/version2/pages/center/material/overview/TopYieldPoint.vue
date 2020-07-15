@@ -83,12 +83,14 @@ export default {
     id: [Number, String]
   },
   data() {
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       filterFormVisible: false,
       yieldChart: undefined,
       sizeUnYieldResult: [],
       form: {
-        duration: [],
+        duration: [t, new Date()],
         limit: 20,
         sort: true,
         device_id: undefined,

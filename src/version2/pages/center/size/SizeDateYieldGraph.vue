@@ -56,13 +56,15 @@ export default {
     materialID: [Number, String]
   },
   data() {
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       echartResults: {},
       yieldChart: undefined,
       form: {
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: []
+        duration: [t, new Date()]
       },
       yAxisNameMap: {
         Yield: '良率',
