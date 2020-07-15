@@ -224,29 +224,41 @@ export default {
       return t.toLocaleString()
     },
     remove(material) {
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($id: Int!) {
-              response: deleteMaterial(id: $id)
-            }
-          `,
-          variables: {
-            id: material.id
-          },
-          client: 'adminClient'
-        })
-        .then(({ data: { response } }) => {
-          if (response === 'OK') {
-            this.$apollo.queries.materialsWrap.refetch()
-          }
-        })
-        .catch((e) => {
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphiQL error:', '')
+      var _this = this
+      this.$confirm(
+        '删除料号将会删除系统中的数据，但不会删除FTP服务器数据源文件，确定要删除吗？',
+        '确认信息',
+        {
+          type: 'warning',
+          distinguishCancelAndClose: true,
+          confirmButtonText: '确定',
+          cancelButtonText: '放弃'
+        }
+      ).then(() => {
+        _this.$apollo
+          .mutate({
+            mutation: gql`
+              mutation($id: Int!) {
+                response: deleteMaterial(id: $id)
+              }
+            `,
+            variables: {
+              id: material.id
+            },
+            client: 'adminClient'
           })
-        })
+          .then(({ data: { response } }) => {
+            if (response === 'OK') {
+              _this.$apollo.queries.materialsWrap.refetch()
+            }
+          })
+          .catch((e) => {
+            _this.$message({
+              type: 'error',
+              message: e.message.replace('GraphiQL error:', '')
+            })
+          })
+      })
     }
   },
   created() {
