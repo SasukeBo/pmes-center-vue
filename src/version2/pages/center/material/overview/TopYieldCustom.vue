@@ -117,13 +117,15 @@ export default {
         callback()
       }
     }
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       echartsFormVisible: false,
       echartsForm: {
         xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: [],
+        duration: [t, new Date()],
         limit: undefined,
         sort: 'ASC'
       },
@@ -141,7 +143,7 @@ export default {
         xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: [],
+        duration: [t, new Date()],
         limit: undefined,
         sort: 'ASC'
       },

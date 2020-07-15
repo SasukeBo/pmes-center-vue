@@ -69,17 +69,19 @@ export default {
     id: [String, Number]
   },
   data() {
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       formVisible: false,
       echartsForm: {
         yAxis: 'Yield',
-        duration: [],
+        duration: [t, new Date()],
         limit: 20,
         sort: 'ASC'
       },
       form: {
         yAxis: 'Yield',
-        duration: [],
+        duration: [t, new Date()],
         limit: 20,
         sort: 'ASC'
       },

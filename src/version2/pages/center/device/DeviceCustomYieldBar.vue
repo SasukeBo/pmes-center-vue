@@ -105,13 +105,15 @@ export default {
         callback()
       }
     }
+    var t = new Date()
+    t.setMonth(t.getMonth() - 1)
     return {
       formVisible: false,
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: [],
+        duration: [t, new Date()],
         limit: 20,
         sort: 'ASC'
       },

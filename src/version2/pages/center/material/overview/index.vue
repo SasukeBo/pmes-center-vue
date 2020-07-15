@@ -97,8 +97,8 @@
       </el-row>
     </div>
 
-    <TopYieldDevice :id="id"></TopYieldDevice>
     <TopYieldPoint :id="id"></TopYieldPoint>
+    <TopYieldDevice :id="id"></TopYieldDevice>
     <TopYieldCustom :id="id"></TopYieldCustom>
 
     <MaterialDialog
