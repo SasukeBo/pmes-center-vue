@@ -47,6 +47,18 @@
           prop="createdAt"
           min-width="150px"
         ></el-table-column>
+        <el-table-column label="数据良率" prop="yield">
+          <template slot-scope="scope">
+            <span
+              :style="{
+                color: scope.row.yield < 0.8 ? '#FB5D62' : '#3FE3D3',
+                fontWeight: 'bold'
+              }"
+            >
+              {{ (scope.row.yield * 100).toFixed(2) }}%
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column label="是否完成">
           <template slot-scope="scope">
             <el-tooltip
@@ -63,6 +75,10 @@
                 ]"
               >
                 {{ statusMap[scope.row.status] }}
+                <i
+                  class="el-icon-loading"
+                  v-if="scope.row.status === 'Loading'"
+                ></i>
               </span>
             </el-tooltip>
           </template>
@@ -78,6 +94,9 @@
                 :record="scope.row"
                 :rowFinishedCount.sync="scope.row.rowFinishedCount"
                 :status.sync="scope.row.status"
+                :yield.sync="scope.row.yield"
+                :rowCount.sync="scope.row.rowCount"
+                :fileSize.sync="scope.row.fileSize"
                 @update-list="updateList"
               ></ImportProgress>
             </div>
@@ -128,7 +147,8 @@ export default {
       statusMap: {
         Finished: '已完成',
         Failed: '失败',
-        Loading: '导入中',
+        Loading: '解析中',
+        Importing: '导入中',
         Reverted: '已撤销'
       },
       drawerVisible: false,
@@ -166,6 +186,7 @@ export default {
               errorMessage
               originErrorMessage
               fileSize
+              blocked
               user {
                 id
                 account
@@ -175,6 +196,7 @@ export default {
                 id
                 name
               }
+              yield
               createdAt
             }
           }

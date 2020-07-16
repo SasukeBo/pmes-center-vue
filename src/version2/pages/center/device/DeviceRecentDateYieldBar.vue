@@ -51,7 +51,7 @@ export default {
       `,
       variables() {
         var t = new Date()
-        t.setDate(t.getDate() - 7)
+        t.setMonth(t.getMonth() - 3)
 
         return {
           input: {
@@ -170,7 +170,7 @@ export default {
       if (nv) {
         var options = {
           title: {
-            text: '近一周生产数据'
+            text: '近三个月生产数据'
           },
           toolbox: {
             feature: {

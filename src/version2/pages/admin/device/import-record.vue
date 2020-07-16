@@ -46,9 +46,32 @@
           prop="createdAt"
         ></el-table-column>
         <el-table-column label="数据总行数" prop="rowCount"></el-table-column>
+        <el-table-column label="数据良率" prop="yield">
+          <template slot-scope="scope">
+            <span
+              :style="{
+                color: scope.row.yield < 0.8 ? '#FB5D62' : '#3FE3D3',
+                fontWeight: 'bold'
+              }"
+            >
+              {{ (scope.row.yield * 100).toFixed(2) }}%
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column label="状态">
           <template slot-scope="scope">
             {{ statusMap[scope.row.status] }}
+          </template>
+        </el-table-column>
+        <el-table-column label="屏蔽数据">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.blocked"
+              @change="toggleBlockRecord(scope.row)"
+              active-color="#ffb764"
+              inactive-color="#666"
+            >
+            </el-switch>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -143,6 +166,7 @@ export default {
                 id
                 name
               }
+              blocked
               rowCount
               rowFinishedCount
               status
@@ -158,6 +182,7 @@ export default {
                 id
                 name
               }
+              yield
               createdAt
             }
           }
@@ -178,6 +203,30 @@ export default {
     }
   },
   methods: {
+    toggleBlockRecord(record) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: toggleBlockImport(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: record.id
+          }
+        })
+        .then(() => {
+          this.$message({
+            type: 'success',
+            message: '已屏蔽此次导入的文件数据'
+          })
+        })
+        .catch((e) => {
+          this.$GraphQLError(e)
+          record.blocked = false
+        })
+    },
     revert(record) {
       var btn = this.$refs[`revert_btn${record.id}`]
       btn.loading = true
@@ -232,6 +281,8 @@ export default {
 }
 </script>
 <style lang="scss">
+@import '@/version2/assets/scss/variables.scss';
+
 .console-import-record {
   height: 100%;
 
@@ -279,7 +330,7 @@ export default {
     }
 
     .import-record-revert {
-      color: #3fe3d3;
+      color: $--color-red;
       font-size: 12px;
     }
   }

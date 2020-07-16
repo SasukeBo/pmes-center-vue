@@ -2,7 +2,7 @@
   <div class="material-view">
     <div class="header-block">
       <el-row :gutter="24">
-        <el-col :span="14" class="chart-panel-col">
+        <el-col :span="14" class="chart-panel-col" style="padding-right: 0">
           <div class="block-card chart-panel">
             <div class="chart-block" ref="chart-mount"></div>
             <div class="data-block" v-if="materialResult">
@@ -29,7 +29,7 @@
             </div>
           </div>
         </el-col>
-        <el-col :span="10" class="search-form-col">
+        <el-col :span="10" class="search-form-col" style="padding-left: 0">
           <div class="block-card filter-form">
             <div class="form-header">条件筛选</div>
 
@@ -48,34 +48,6 @@
                   >
                 </el-select>
               </el-form-item>
-              <el-form-item label="冶具号：">
-                <el-input
-                  placeholder="请输入冶具号"
-                  v-model="searchForm.jigID"
-                ></el-input>
-              </el-form-item>
-
-              <el-form-item label="班别：">
-                <el-input
-                  placeholder="请输入班别"
-                  v-model="searchForm.shiftNumber"
-                ></el-input>
-              </el-form-item>
-
-              <el-form-item label="线体号：">
-                <el-input
-                  placeholder="请输入线体号"
-                  v-model="searchForm.lineID"
-                ></el-input>
-              </el-form-item>
-
-              <el-form-item label="模具号：">
-                <el-input
-                  placeholder="请输入模具号"
-                  v-model="searchForm.mouldID"
-                ></el-input>
-              </el-form-item>
-
               <el-form-item label="日期范围：" class="flex-form-item">
                 <el-date-picker
                   v-model="searchForm.beginTime"
@@ -369,6 +341,8 @@ export default {
 
   .header-block {
     margin-bottom: 16px;
+    border-radius: 4px;
+    background: #fff;
 
     .search-form-col {
       min-width: 486px;
@@ -419,9 +393,7 @@ export default {
     }
 
     .block-card {
-      background: #fff;
       height: 316px;
-      border-radius: 4px;
     }
 
     .filter-form .form-header {
@@ -431,8 +403,6 @@ export default {
       line-height: 56px;
       font-size: 20px;
       background: #5e83f2;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
     }
 
     .filter-form .el-form {

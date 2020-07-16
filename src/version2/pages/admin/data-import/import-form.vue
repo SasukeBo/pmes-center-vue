@@ -312,8 +312,10 @@ export default {
 
   .import-form__body {
     height: calc(100% - 128px);
-    width: 420px;
     margin: auto;
+    overflow: auto;
+    padding-bottom: 32px;
+    box-sizing: border-box;
 
     .el-form {
       width: 420px;
@@ -337,6 +339,8 @@ export default {
 
     .data-file-upload {
       padding-left: 100px;
+      width: 420px;
+      margin: auto;
 
       .data-file-upload__tip {
         font-size: 12px;
