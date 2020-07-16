@@ -13,7 +13,17 @@
           label="序号"
           width="80px"
         ></el-table-column>
-        <el-table-column label="文件名" prop="fileName"></el-table-column>
+        <el-table-column label="文件名" prop="fileName">
+          <template slot-scope="scope">
+            <a
+              v-if="scope.row.file"
+              :href="'/downloads/xlsx?file_token=' + scope.row.file.token"
+              target="_blank"
+              >{{ scope.row.file.name }}</a
+            >
+            <span v-else>{{ scope.row.fileName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="导入者">
           <template slot-scope="scope">
             {{ scope.row.user ? scope.row.user.name : '-' }}
@@ -124,6 +134,11 @@ export default {
             importRecords {
               id
               fileName
+              file {
+                id
+                name
+                token
+              }
               material {
                 id
                 name

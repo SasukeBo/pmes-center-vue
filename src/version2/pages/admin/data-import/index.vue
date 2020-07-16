@@ -20,6 +20,7 @@
             <a
               v-if="scope.row.file"
               :href="'/downloads/xlsx?file_token=' + scope.row.file.token"
+              target="_blank"
               >{{ scope.row.file.name }}</a
             >
             <span v-else>{{ scope.row.fileName }}</span>

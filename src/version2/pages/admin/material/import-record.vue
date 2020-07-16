@@ -13,7 +13,17 @@
           label="序号"
           width="80px"
         ></el-table-column>
-        <el-table-column label="文件名" prop="fileName"></el-table-column>
+        <el-table-column label="文件名" prop="fileName">
+          <template slot-scope="scope">
+            <a
+              v-if="scope.row.file"
+              :href="'/downloads/xlsx?file_token=' + scope.row.file.token"
+              target="_blank"
+              >{{ scope.row.file.name }}</a
+            >
+            <span v-else>{{ scope.row.fileName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="设备">
           <template slot-scope="scope">
             {{ scope.row.device ? scope.row.device.name : '-' }}
@@ -137,6 +147,11 @@ export default {
               device {
                 id
                 name
+              }
+              file {
+                id
+                name
+                token
               }
               rowCount
               rowFinishedCount

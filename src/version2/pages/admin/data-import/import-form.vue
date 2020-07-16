@@ -263,6 +263,7 @@ export default {
             }
           `,
           client: 'adminClient',
+          fetchPolicy: 'network-only',
           variables
         })
         .then(({ data: { response } }) => {
