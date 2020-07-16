@@ -17,7 +17,7 @@
         {{ deviceResult.device.name }}
       </div>
       <div class="sub-title">
-        近一周产量：{{ deviceResult.ok + deviceResult.ng }}个
+        近三个月产量：{{ deviceResult.ok + deviceResult.ng }}个
       </div>
     </div>
   </div>
@@ -79,7 +79,7 @@ export default {
       `,
       variables() {
         var t = new Date()
-        t.setDate(t.getDate() - 7)
+        t.setMonth(t.getMonth() - 3)
         return {
           input: {
             deviceID: this.id,
@@ -94,7 +94,6 @@ export default {
   },
   watch: {
     deviceResult(nv) {
-      console.log(nv)
       this.option.series[0].data = [
         { name: 'OK', value: nv.ok },
         { name: 'NG', value: nv.ng }

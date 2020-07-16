@@ -10,7 +10,7 @@
       <div class="status-icon">
         <img
           src="~@/version2/assets/images/pi-quxiao.png"
-          v-if="status === 'Loading'"
+          v-if="status === 'Loading' && false"
           @click="cancel"
         />
         <img
@@ -43,6 +43,7 @@ export default {
   name: 'ImportProgress',
   props: {
     record: Object,
+    rowCount: Number,
     rowFinishedCount: Number,
     status: String
   },
@@ -53,16 +54,10 @@ export default {
   },
   computed: {
     percent() {
-      if (this.record && this.record.rowCount && this.rowFinishedCount) {
-        var v = ((this.rowFinishedCount * 100) / this.record.rowCount).toFixed(
-          2
-        )
+      if (this.record && this.rowCount && this.rowFinishedCount) {
+        var v = ((this.rowFinishedCount * 100) / this.rowCount).toFixed(2)
 
         return parseFloat(v)
-      }
-
-      if (this.record && this.record.rowCount === 0) {
-        return 100
       }
 
       return 0
@@ -103,6 +98,9 @@ export default {
                   query($id: Int!) {
                     response: importStatus(id: $id) {
                       status
+                      yield
+                      rowCount
+                      fileSize
                       finishedRowCount
                     }
                   }
@@ -114,14 +112,16 @@ export default {
                 }
               })
               .then(({ data: { response } }) => {
-                this.$emit('update:rowFinishedCount', response.finishedRowCount)
-                this.$emit('update:status', response.status)
-                if (response.status !== 'Loading') {
-                  clearInterval(this.percentageInterval)
-                }
+                _this.$emit('update:rowFinishedCount', response.finishedRowCount)
+                _this.$emit('update:status', response.status)
+                _this.$emit('update:yield', response.yield)
+                _this.$emit('update:rowCount', response.rowCount)
+                _this.$emit('update:fileSize', response.fileSize)
               })
           }, 300)
-        } else {
+        }
+
+        if (['Finished', 'Failed'].includes(val)) {
           clearInterval(this.percentageInterval)
         }
       }
