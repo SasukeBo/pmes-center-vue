@@ -46,6 +46,7 @@
 import AdminMenu from '@/version2/pages/admin/components/AdminMenu.vue'
 import { mapState } from 'vuex'
 export default {
+  name: 'AdminPageRoot',
   components: {
     AdminMenu
   },
@@ -64,28 +65,30 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'info'
-      }).then(() => {
-        var _this = this
-        var req = new XMLHttpRequest()
-        req.open('GET', '/auth/logout')
-        req.onreadystatechange = function() {
-          if (req.readyState === 4) {
-            if (req.status >= 200 && req.status < 400) {
-              var res = JSON.parse(req.responseText || '')
-              if (res.errors) {
-                _this.$GraphQLError(res.errors[0])
+      })
+        .then(() => {
+          var _this = this
+          var req = new XMLHttpRequest()
+          req.open('GET', '/auth/logout')
+          req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+              if (req.status >= 200 && req.status < 400) {
+                var res = JSON.parse(req.responseText || '')
+                if (res.errors) {
+                  _this.$GraphQLError(res.errors[0])
+                } else {
+                  _this.$message({ type: 'success', message: '退出登录成功' })
+                  _this.$store.commit('LOGIN', undefined)
+                  _this.$router.push({ path: '/' })
+                }
               } else {
-                _this.$message({ type: 'success', message: '退出登录成功' })
-                _this.$store.commit('LOGIN', undefined)
-                _this.$router.push({ path: '/' })
+                _this.$message({ type: 'error', message: req.statusText })
               }
-            } else {
-              _this.$message({ type: 'error', message: req.statusText })
             }
           }
-        }
-        req.send()
-      })
+          req.send()
+        })
+        .catch(() => undefined)
     }
   },
   created() {
@@ -106,6 +109,17 @@ export default {
   display: flex;
   background: #f3f4f4;
 
+  .el-button--primary {
+    background-color: #5e83f2;
+    border-color: #5e83f2;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: rgba(94, 131, 242, 0.7);
+      border-color: rgba(94, 131, 242, 0.7);
+    }
+  }
+
   .admin-main {
     flex: 1;
 
@@ -113,6 +127,7 @@ export default {
       display: flex;
       align-items: center;
       padding: 16px 32px;
+      padding-right: 64px;
 
       .login-entry {
         min-width: 100px;
@@ -122,9 +137,11 @@ export default {
           color: #666;
           height: 100%;
           margin: 0;
-          padding: 0 8px;
           cursor: pointer;
           transition: color 0.3s ease;
+          width: 100%;
+          display: inline-block;
+          text-align: right;
 
           &:hover {
             color: #999;

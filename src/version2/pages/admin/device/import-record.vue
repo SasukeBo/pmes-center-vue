@@ -1,13 +1,31 @@
 <template>
   <div class="console-import-record">
+    <div class="record-operation-btn">
+      <el-button type="primary" size="small" @click="revertSelected()"
+        >撤销已选</el-button
+      >
+      <el-button type="primary" size="small" @click="blockSelected(true)"
+        >屏蔽已选</el-button
+      >
+      <el-button type="primary" size="small" @click="blockSelected(false)"
+        >取消屏蔽已选</el-button
+      >
+      <el-button type="primary" size="small" @click="searchFormVisible = true"
+        >过滤条件</el-button
+      >
+    </div>
+
     <div class="import-record-table">
       <el-table
         stripe
+        v-if="forceUpdateTable"
         :data="importRecordsWrap.importRecords"
         height="100%"
         header-row-class-name="import-record-table__header"
         row-class-name="import-record-table__row"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column type="selection" width="55"> </el-table-column>
         <el-table-column
           type="index"
           label="序号"
@@ -26,7 +44,7 @@
         </el-table-column>
         <el-table-column label="导入者">
           <template slot-scope="scope">
-            {{ scope.row.user ? scope.row.user.name : '-' }}
+            {{ scope.row.user ? scope.row.user.account : '-' }}
           </template>
         </el-table-column>
         <el-table-column label="导入方式" prop="importType"></el-table-column>
@@ -97,21 +115,35 @@
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     ></Pagination>
+
+    <ImportRecordFilterDialog
+      :visible.sync="searchFormVisible"
+      :form.sync="searchForm"
+    ></ImportRecordFilterDialog>
   </div>
 </template>
 <script>
 import Pagination from '@/version2/pages/admin/components/Pagination.vue'
+import ImportRecordFilterDialog from '@/version2/pages/admin/components/ImportRecordFilterDialog.vue'
 import gql from 'graphql-tag'
 export default {
+  name: 'DeviceImportRecords',
   props: {
     id: [Number, String]
   },
-  components: { Pagination },
+  components: { Pagination, ImportRecordFilterDialog },
   data() {
     return {
       device: undefined,
       page: 1,
       limit: 20,
+      forceUpdateTable: true,
+      searchFormVisible: false,
+      searchForm: {
+        duration: [],
+        status: []
+      },
+      selectedRecords: [],
       statusMap: {
         Finished: '已完成',
         Failed: '失败',
@@ -146,12 +178,19 @@ export default {
     },
     importRecordsWrap: {
       query: gql`
-        query($materialID: Int!, $deviceID: Int, $page: Int!, $limit: Int!) {
+        query(
+          $materialID: Int!
+          $deviceID: Int
+          $page: Int!
+          $limit: Int!
+          $search: ImportRecordSearch!
+        ) {
           importRecordsWrap: importRecords(
             materialID: $materialID
             deviceID: $deviceID
             page: $page
             limit: $limit
+            search: $search
           ) {
             total
             importRecords {
@@ -194,37 +233,40 @@ export default {
           materialID: this.device.material.id,
           deviceID: this.device.id,
           page: this.page,
-          limit: this.limit
+          limit: this.limit,
+          search: this.searchForm
         }
       },
       skip() {
-        return !this.device
+        return !this.device || this.searchFormVisible
       }
     }
   },
   methods: {
     toggleBlockRecord(record) {
+      var block = record.blocked
       this.$apollo
         .mutate({
           mutation: gql`
-            mutation($id: Int!) {
-              response: toggleBlockImport(id: $id)
+            mutation($ids: [Int!]!, $block: Boolean!) {
+              response: toggleBlockImports(ids: $ids, block: $block)
             }
           `,
           client: 'adminClient',
           variables: {
-            id: record.id
+            ids: [record.id],
+            block
           }
         })
         .then(() => {
           this.$message({
             type: 'success',
-            message: '已屏蔽此次导入的文件数据'
+            message: `已${block ? '' : '取消'}屏蔽此次导入的文件数据`
           })
         })
         .catch((e) => {
           this.$GraphQLError(e)
-          record.blocked = false
+          record.blocked = !block
         })
     },
     revert(record) {
@@ -233,13 +275,13 @@ export default {
       this.$apollo
         .mutate({
           mutation: gql`
-            mutation($id: Int!) {
-              response: revertImport(id: $id)
+            mutation($ids: [Int!]!) {
+              response: revertImports(ids: $ids)
             }
           `,
           client: 'adminClient',
           variables: {
-            id: record.id
+            ids: [record.id]
           }
         })
         .then(() => {
@@ -249,10 +291,7 @@ export default {
         })
         .catch((e) => {
           btn.loading = false
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '')
-          })
+          this.$$GraphQLError(e)
         })
     },
     handleSizeChange(val) {
@@ -264,9 +303,104 @@ export default {
     timeFormatter() {
       var t = new Date(arguments[2])
       return t.toLocaleString()
+    },
+    handleSelectionChange(values) {
+      this.selectedRecords = values
+    },
+    revertSelected() {
+      var length = this.selectedRecords.length
+      if (length === 0) return
+      var ids = this.selectedRecords.map((r) => r.id)
+
+      this.$confirm(
+        `此操作将撤销 ${length} 条导入记录的数据，确定继续吗？`,
+        '确认信息',
+        {
+          type: 'warning',
+          distinguishCancelAndClose: true,
+          confirmButtonText: '继续',
+          cancelButtonText: '放弃'
+        }
+      )
+        .then(() => {
+          this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($ids: [Int!]!) {
+                  response: revertImports(ids: $ids)
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                ids
+              }
+            })
+            .then(() => {
+              this.$message({ type: 'success', message: '撤销导入成功' })
+              this.$apollo.queries.importRecordsWrap.refetch()
+              this.selectedRecords = []
+            })
+            .catch((e) => {
+              this.$message({
+                type: 'error',
+                message: e.message.replace('GraphQL error:', '')
+              })
+            })
+        })
+        .catch(() => undefined)
+    },
+    blockSelected(block) {
+      var length = this.selectedRecords.length
+      if (length === 0) return
+      var ids = this.selectedRecords.map((r) => r.id)
+
+      this.$confirm(
+        `此操作将${
+          block ? '' : '取消'
+        }屏蔽 ${length} 条导入记录的数据，确定继续吗？`,
+        '确认信息',
+        {
+          type: 'warning',
+          distinguishCancelAndClose: true,
+          confirmButtonText: '继续',
+          cancelButtonText: '放弃'
+        }
+      )
+        .then(() => {
+          this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($ids: [Int!]!, $block: Boolean!) {
+                  response: toggleBlockImports(ids: $ids, block: $block)
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                ids,
+                block
+              }
+            })
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: '操作成功'
+              })
+              this.$apollo.queries.importRecordsWrap.refetch()
+            })
+            .catch((e) => {
+              this.$GraphQLError(e)
+            })
+        })
+        .catch(() => undefined)
     }
   },
   watch: {
+    importRecordsWrap() {
+      this.forceUpdateTable = false
+      setTimeout(() => {
+        this.forceUpdateTable = true
+      })
+    },
     device: {
       immediate: true,
       handler: function(val) {
@@ -285,6 +419,17 @@ export default {
 
 .console-import-record {
   height: 100%;
+  position: relative;
+
+  .record-operation-btn {
+    position: absolute;
+    right: 32px;
+    top: -48px;
+
+    .el-button {
+      box-shadow: 1px 1px 10px rgba(94, 131, 242, 0.8);
+    }
+  }
 
   .import-record-table {
     padding: 32px;
