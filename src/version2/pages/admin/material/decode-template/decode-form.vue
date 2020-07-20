@@ -95,21 +95,6 @@
               ></TableCellForm>
             </template>
           </el-table-column>
-          <el-table-column label="操作">
-            <template slot-scope="scope">
-              <el-button type="text" @click="removeProductColumn(scope.row)"
-                >删除</el-button
-              >
-            </template>
-          </el-table-column>
-          <template slot="append">
-            <div
-              class="product-columns-table__append-btns"
-              @click="appendProductColumn"
-            >
-              + 添加
-            </div>
-          </template>
         </el-table>
 
         <div class="item-label">
@@ -256,15 +241,6 @@ export default {
     },
     editCell(val) {
       this.form.productColumns[val.index][val.prop] = val.data[val.prop]
-    },
-    removeProductColumn(row) {
-      var index = this.form.productColumns.findIndex((i) => i.name === row.name)
-      this.form.productColumns.splice(index, 1)
-    },
-    appendProductColumn() {
-      this.form.productColumns.push({
-        name: `attr_${this.form.productColumns.length}`
-      })
     }
   },
   watch: {
