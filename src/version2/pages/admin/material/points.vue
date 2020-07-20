@@ -134,7 +134,6 @@ export default {
         }
       `,
       client: 'adminClient',
-      fetchPolicy: 'network-only',
       variables() {
         return {
           materialID: this.id

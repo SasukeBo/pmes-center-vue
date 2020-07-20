@@ -135,8 +135,7 @@ export default {
           offset: this.offset,
           limit: this.limit
         }
-      },
-      fetchPolicy: 'network-only'
+      }
     }
   },
   data() {

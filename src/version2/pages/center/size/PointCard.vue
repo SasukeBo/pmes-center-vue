@@ -109,6 +109,8 @@ export default {
   data() {
     var t = new Date()
     t.setMonth(t.getMonth() - 1)
+    t.setHours(0, 0, 0, 0)
+
     return {
       attributes: [],
       devices: [],

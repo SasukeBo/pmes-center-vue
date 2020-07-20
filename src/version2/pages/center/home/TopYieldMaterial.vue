@@ -35,6 +35,7 @@ export default {
       variables() {
         var t = new Date()
         t.setDate(t.getDate() - 30)
+        t.setHours(0, 0, 0, 0)
         return {
           duration: [t],
           limit: 20
