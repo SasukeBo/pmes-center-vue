@@ -97,9 +97,9 @@ export default {
         }
       },
       yAxisNameMap: {
-        Amount: '总产量',
-        Yield: '良率',
-        UnYield: '不良率'
+        Amount: '产量(Amount)',
+        Yield: '良率(Yield)',
+        UnYield: '不良率(Reject Ratio)'
       },
       yieldChart: undefined,
       yields: []
@@ -245,7 +245,7 @@ export default {
     },
     setXAxis(data) {
       return {
-        name: '生产设备',
+        name: '生产设备(Devices)',
         type: 'category',
         axisLabel: { interval: 0, rotate: -45 },
         data

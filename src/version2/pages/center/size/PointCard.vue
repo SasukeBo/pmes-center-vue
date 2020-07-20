@@ -79,8 +79,8 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item :label="a.label" v-for="a in attributes" :key="a.name">
-          <el-input v-model="form[a.name]" style="width: 300px"></el-input>
+        <el-form-item :label="a.label" v-for="a in attributes" :key="a.token">
+          <el-input v-model="form[a.token]" style="width: 300px"></el-input>
         </el-form-item>
 
         <el-form-item label="班别">
@@ -252,7 +252,8 @@ export default {
         query($materialID: Int!) {
           attributes: productAttributes(materialID: $materialID) {
             label
-            name
+            token
+            prefix
           }
         }
       `,

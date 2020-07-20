@@ -1,7 +1,18 @@
 <template>
   <div class="device-custom-yield-bar">
     <div class="custom-chart__head">
-      <el-button size="small" @click="formVisible = true">自定义</el-button>
+      <div class="title">
+        <div class="text">自定义数据图表</div>
+        <div class="subtext">
+          {{ form.sort === 'ASC' ? '最小' : '最大'
+          }}{{ form.limit ? '前' + form.limit + '项' : '前N项'
+          }}{{ yAxisNameMap[form.yAxis] }}
+        </div>
+      </div>
+
+      <div class="custom-btn">
+        <el-button size="small" @click="formVisible = true">自定义</el-button>
+      </div>
     </div>
 
     <div
@@ -18,9 +29,9 @@
             <el-option label="班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
-              :key="a.name"
+              :key="a.token"
               :label="a.label"
-              :value="a.name"
+              :value="a.token"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -43,14 +54,14 @@
             <el-option label="班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
-              :key="a.name"
+              :key="a.token"
               :label="a.label"
-              :value="a.name"
+              :value="a.token"
             ></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="日期范围">
+        <el-form-item label="日期范围" prop="duration">
           <el-date-picker
             clearable
             v-model="form.duration"
@@ -62,11 +73,11 @@
           </el-date-picker>
         </el-form-item>
 
-        <el-form-item label="数据项数上限">
+        <el-form-item label="数据项数上限" prop="limit">
           <el-input-number v-model="form.limit" :min="1"></el-input-number>
         </el-form-item>
 
-        <el-form-item label="排序">
+        <el-form-item label="排序" prop="sort">
           <el-switch
             v-model="form.sort"
             active-text="递减"
@@ -112,7 +123,8 @@ export default {
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        groupBy: 'Shift',
+        // groupBy: 'Shift',
+        groupBy: 'line',
         duration: [t, new Date()],
         limit: 20,
         sort: 'ASC'
@@ -128,13 +140,13 @@ export default {
         ]
       },
       yAxisNameMap: {
-        Amount: '产量',
-        Yield: '良率',
-        UnYield: '不良率'
+        Amount: '产量(Amount)',
+        Yield: '良率(Yield)',
+        UnYield: '不良率(Reject Ratio)'
       },
       categoryMap: {
-        Date: '日期',
-        Shift: '班别'
+        Date: '日期(Date)',
+        Shift: '班别(Shift)'
       },
       echartsResult: {
         xAxisData: [],
@@ -152,7 +164,8 @@ export default {
         query($materialID: Int!) {
           attributes: productAttributes(materialID: $materialID) {
             label
-            name
+            token
+            prefix
           }
         }
       `,
@@ -208,11 +221,33 @@ export default {
   computed: {
     isRate() {
       return this.form.yAxis !== 'Amount'
+    },
+    groupAttribute() {
+      var index = this.attributes.findIndex((a) => {
+        return a.token === this.form.groupBy
+      })
+
+      if (index >= 0) {
+        return this.attributes[index]
+      }
+
+      return undefined
+    },
+    xAxisAttribute() {
+      var index = this.attributes.findIndex((a) => {
+        return a.token === this.form.xAxis
+      })
+
+      if (index >= 0) {
+        return this.attributes[index]
+      }
+
+      return undefined
     }
   },
   methods: {
     cancel() {
-      // this.$refs['custom-graph-form'].resetFields()
+      this.$refs['custom-graph-form'].resetFields()
       this.formVisible = false
     },
     submit() {
@@ -266,13 +301,15 @@ export default {
         data = data.map((d) => {
           return d === '1' ? '白班' : '晚班'
         })
+      } else if (this.xAxisAttribute) {
+        data = data.map((d) => {
+          return `${this.xAxisAttribute.prefix} - ${d}`
+        })
       }
+
       var name = this.categoryMap[this.form.xAxis]
-      if (!name) {
-        var index = this.attributes.findIndex((a) => a.name === this.form.xAxis)
-        if (index >= 0) {
-          name = this.attributes[index].label
-        }
+      if (!name && this.xAxisAttribute) {
+        name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
       }
 
       return {
@@ -314,7 +351,11 @@ export default {
               seriesName = date.toLocaleDateString()
               break
             default:
-              seriesName = param.seriesName
+              if (_this.groupAttribute) {
+                seriesName = `${_this.groupAttribute.prefix} - ${param.seriesName}`
+              } else {
+                seriesName = param.seriesName
+              }
               break
           }
           var rest = `
@@ -345,13 +386,7 @@ export default {
       }
     },
     assembleTitle() {
-      var subtext = `${this.form.sort === 'ASC' ? '最小' : '最大'}${
-        this.form.limit ? '前' + this.form.limit + '项' : '前N项'
-      }${this.yAxisNameMap[this.form.yAxis]}`
-      return {
-        text: '自定义数据图表',
-        subtext
-      }
+      return undefined
     },
     assembleLegend(seriesData) {
       if (Object.keys(seriesData).length <= 1) {
@@ -369,11 +404,14 @@ export default {
             var date = new Date(name)
             return date.toLocaleDateString()
           default:
+            if (_this.groupAttribute) {
+              return `${_this.groupAttribute.prefix} - ${name}`
+            }
             return name
         }
       }
 
-      return { formatter }
+      return { formatter, type: 'scroll', width: '60%', top: 0, left: 'center' }
     }
   },
   watch: {
@@ -427,12 +465,19 @@ export default {
   }
 
   .custom-chart__head {
-    text-align: right;
+    display: flex;
 
     .title {
-      color: #666;
+      color: #333;
       flex: 1;
-      font-size: 20px;
+
+      .text {
+        font-size: 20px;
+      }
+
+      .subtext {
+        font-size: 12px;
+      }
     }
   }
 }

@@ -32,9 +32,9 @@ export default {
       yAxis: 'Yield',
       chart: undefined,
       yAxisNameMap: {
-        Amount: '产量',
-        Yield: '良率',
-        UnYield: '不良率'
+        Amount: '产量(Amount)',
+        Yield: '良率(Yield)',
+        UnYield: '不良率(Reject Ratio)'
       }
     }
   },
@@ -110,7 +110,7 @@ export default {
     },
     assembleXAxis(data) {
       return {
-        name: '日期',
+        name: '日期(Date)',
         type: 'category',
         data,
         axisLabel: {
