@@ -226,7 +226,7 @@ export default {
       var _this = this
       this.$confirm(
         '删除料号将会删除系统中的数据，但不会删除FTP服务器数据源文件，确定要删除吗？',
-        '确认信息',
+        `您正在删除${material.name}`,
         {
           type: 'warning',
           distinguishCancelAndClose: true,
