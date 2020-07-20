@@ -127,7 +127,7 @@ export default {
         yAxis: 'Yield',
         // groupBy: 'Shift',
         groupBy: 'line',
-        duration: [t, new Date()],
+        duration: [t],
         limit: 20,
         sort: 'ASC'
       },

@@ -92,7 +92,7 @@ export default {
       yieldChart: undefined,
       sizeUnYieldResult: [],
       form: {
-        duration: [t, new Date()],
+        duration: [t],
         limit: 20,
         sort: true,
         device_id: undefined,
