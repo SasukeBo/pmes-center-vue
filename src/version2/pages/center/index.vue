@@ -36,6 +36,9 @@ export default {
     toConsole() {
       this.$router.push({ name: 'console' })
     }
+  },
+  created() {
+    document.title = '数据中心'
   }
 }
 </script>

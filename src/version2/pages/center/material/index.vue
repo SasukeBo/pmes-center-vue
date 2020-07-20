@@ -28,6 +28,7 @@ export default {
     }
   },
   created() {
+    document.title = '数据中心 - 料号'
     this.activePanel = this.$route.name
   }
 }

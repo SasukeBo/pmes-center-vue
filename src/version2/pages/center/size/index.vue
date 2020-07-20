@@ -40,6 +40,9 @@ export default {
         }
       }
     }
+  },
+  created() {
+    document.title = '数据中心 - 尺寸'
   }
 }
 </script>

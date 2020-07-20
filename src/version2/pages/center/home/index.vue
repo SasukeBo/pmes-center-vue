@@ -137,6 +137,7 @@ export default {
     }
   },
   created() {
+    document.title = '数据中心 - 首页'
     var recentMaterialID = parseInt(
       localStorage.getItem('recent_view_material_id')
     )
