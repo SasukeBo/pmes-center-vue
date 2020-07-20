@@ -66,7 +66,7 @@ export default {
       form: {
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: [t, new Date()]
+        duration: [t]
       },
       yAxisNameMap: {
         Yield: '良率(Yield)',

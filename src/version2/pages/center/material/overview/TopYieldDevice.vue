@@ -77,13 +77,13 @@ export default {
       formVisible: false,
       echartsForm: {
         yAxis: 'Yield',
-        duration: [t, new Date()],
+        duration: [t],
         limit: 20,
         sort: 'ASC'
       },
       form: {
         yAxis: 'Yield',
-        duration: [t, new Date()],
+        duration: [t],
         limit: 20,
         sort: 'ASC'
       },

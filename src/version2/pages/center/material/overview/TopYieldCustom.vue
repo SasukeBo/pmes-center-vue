@@ -134,7 +134,7 @@ export default {
         xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: 'Shift',
-        duration: [t, new Date()],
+        duration: [t],
         limit: undefined,
         sort: 'ASC'
       },
