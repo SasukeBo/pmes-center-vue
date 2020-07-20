@@ -181,7 +181,6 @@ export default {
         }
       `,
       client: 'adminClient',
-      fetchPolicy: 'network-only',
       variables() {
         return {
           pattern: this.pattern,

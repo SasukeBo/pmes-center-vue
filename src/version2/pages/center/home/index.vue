@@ -104,8 +104,7 @@ export default {
           page: Math.floor(this.offset, this.limit) + 1,
           limit: this.limit
         }
-      },
-      fetchPolicy: 'network-only'
+      }
     }
   },
   data() {

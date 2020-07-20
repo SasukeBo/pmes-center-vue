@@ -52,6 +52,7 @@ export default {
       variables() {
         var t = new Date()
         t.setMonth(t.getMonth() - 3)
+        t.setHours(0, 0, 0, 0)
 
         return {
           input: {
