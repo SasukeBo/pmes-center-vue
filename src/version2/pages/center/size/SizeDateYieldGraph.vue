@@ -13,9 +13,9 @@
             <el-option label="班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
-              :key="a.name"
+              :key="a.token"
               :label="a.label"
-              :value="a.name"
+              :value="a.token"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -67,10 +67,23 @@ export default {
         duration: [t, new Date()]
       },
       yAxisNameMap: {
-        Yield: '良率',
-        UnYield: '不良率'
+        Yield: '良率(Yield)',
+        UnYield: '不良率(Reject Ratio)'
       },
       attributes: []
+    }
+  },
+  computed: {
+    groupByAttribute() {
+      var index = this.attributes.findIndex((a) => {
+        return a.token === this.form.groupBy
+      })
+
+      if (index >= 0) {
+        return this.attributes[index]
+      }
+
+      return undefined
     }
   },
   apollo: {
@@ -79,7 +92,8 @@ export default {
         query($materialID: Int!) {
           attributes: productAttributes(materialID: $materialID) {
             label
-            name
+            token
+            prefix
           }
         }
       `,
@@ -173,7 +187,10 @@ export default {
           var seriesName = param.seriesName
           if (_this.form.groupBy === 'Shift') {
             seriesName = seriesName === '1' ? '白班' : '晚班'
+          } else if (_this.groupByAttribute) {
+            seriesName = `${_this.groupByAttribute.prefix} - ${param.seriesName}`
           }
+
           message += `
           <div>
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${
@@ -227,15 +244,18 @@ export default {
       }
     },
     assembleLegend() {
-      if (this.form.groupBy === 'Shift') {
-        return {
-          formatter(params) {
-            return params === '1' ? '白班' : '晚班'
-          }
+      var _this = this
+      var formatter = function(params) {
+        if (_this.form.groupBy === 'Shift') {
+          return params === '1' ? '白班' : '晚班'
+        } else if (_this.groupByAttribute) {
+          return `${_this.groupByAttribute.prefix} - ${params}`
         }
-      } else {
-        return {}
+
+        return params
       }
+
+      return { formatter, type: 'scroll', width: '60%', top: 0, left: 'center' }
     }
   },
   watch: {

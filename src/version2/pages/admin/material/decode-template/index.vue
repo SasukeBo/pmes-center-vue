@@ -101,10 +101,11 @@ export default {
             dataRowIndex
             createdAtColumnIndex
             productColumns {
-              name
+              token
               label
               index
               type
+              prefix
             }
             pointColumns
             default

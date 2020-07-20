@@ -15,27 +15,27 @@
 
     <el-dialog title="自定义图表" :visible.sync="echartsFormVisible">
       <el-form
-        :model="echartsForm"
+        :model="form"
         ref="custom-graph-form"
         :rules="rules"
         label-width="200px"
       >
         <el-form-item label="X轴" prop="xAxis">
-          <el-select v-model="echartsForm.xAxis" placeholder="请选择X轴属性">
+          <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
             <el-option label="设备" value="Device"></el-option>
             <el-option label="日期" value="Date"></el-option>
             <el-option label="班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
-              :key="a.name"
+              :key="a.token"
               :label="a.label"
-              :value="a.name"
+              :value="a.token"
             ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="Y轴" prop="yAxis">
-          <el-select v-model="echartsForm.yAxis" placeholder="请选择Y轴属性">
+          <el-select v-model="form.yAxis" placeholder="请选择Y轴属性">
             <el-option label="产量" value="Amount"></el-option>
             <el-option label="良率" value="Yield"></el-option>
             <el-option label="不良率" value="UnYield"></el-option>
@@ -44,7 +44,7 @@
 
         <el-form-item label="分组字段" prop="groupBy">
           <el-select
-            v-model="echartsForm.groupBy"
+            v-model="form.groupBy"
             placeholder="请选择分组字段"
             clearable
           >
@@ -53,9 +53,9 @@
             <el-option label="班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
-              :key="a.name"
+              :key="a.token"
               :label="a.label"
-              :value="a.name"
+              :value="a.token"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -63,7 +63,7 @@
         <el-form-item label="日期范围">
           <el-date-picker
             clearable
-            v-model="echartsForm.duration"
+            v-model="form.duration"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -73,15 +73,12 @@
         </el-form-item>
 
         <el-form-item label="数据项数上限">
-          <el-input-number
-            v-model="echartsForm.limit"
-            :min="1"
-          ></el-input-number>
+          <el-input-number v-model="form.limit" :min="1"></el-input-number>
         </el-form-item>
 
         <el-form-item label="排序(无分组时有效)">
           <el-switch
-            v-model="echartsForm.sort"
+            v-model="form.sort"
             active-text="递减"
             inactive-text="递增"
             active-color="#13ce66"
@@ -111,7 +108,7 @@ export default {
   },
   data() {
     var checkUniqueAttributeForXAxisAndGroupBy = (rule, value, callback) => {
-      if (this.echartsForm.xAxis === this.echartsForm.groupBy) {
+      if (this.form.xAxis === this.form.groupBy) {
         callback(new Error('X轴属性与分组属性不能相同'))
       } else {
         callback()
@@ -121,14 +118,6 @@ export default {
     t.setMonth(t.getMonth() - 1)
     return {
       echartsFormVisible: false,
-      echartsForm: {
-        xAxis: 'Date',
-        yAxis: 'Yield',
-        groupBy: 'Shift',
-        duration: [t, new Date()],
-        limit: undefined,
-        sort: 'ASC'
-      },
       rules: {
         xAxis: [
           { required: true, message: 'X轴属性必选', trigger: 'blur' },
@@ -149,18 +138,18 @@ export default {
       },
       attributes: [],
       yAxisNameMap: {
-        Amount: '产量',
-        Yield: '良率',
-        UnYield: '不良率'
+        Amount: '产量(Amount)',
+        Yield: '良率(Yield)',
+        UnYield: '不良率(Reject Ratio)'
       },
       shiftNumberMap: {
         A: '白班',
         B: '晚班'
       },
       categoryMap: {
-        Date: '日期',
-        Device: '设备',
-        Shift: '班别'
+        Date: '日期(Date)',
+        Device: '设备(Device)',
+        Shift: '班别(Shift)'
       },
       echartsResult: {
         xAxisData: [],
@@ -177,7 +166,8 @@ export default {
         query($materialID: Int!) {
           attributes: productAttributes(materialID: $materialID) {
             label
-            name
+            token
+            prefix
           }
         }
       `,
@@ -224,30 +214,37 @@ export default {
             sort: this.form.sort
           }
         }
+      },
+      skip() {
+        return this.echartsFormVisible
       }
     }
   },
   computed: {
     isRate() {
       return this.form.yAxis !== 'Amount'
+    },
+    groupAttribute() {
+      var index = this.attributes.findIndex(
+        (a) => a.token === this.form.groupBy
+      )
+      if (index >= 0) return this.attributes[index]
+      return undefined
+    },
+    xAxisAttribute() {
+      var index = this.attributes.findIndex((a) => a.token === this.form.xAxis)
+      if (index >= 0) return this.attributes[index]
+      return undefined
     }
   },
   methods: {
     cancel() {
-      // this.$refs['custom-graph-form'].resetFields()
+      this.$refs['custom-graph-form'].resetFields()
       this.echartsFormVisible = false
     },
     submit() {
       this.$refs['custom-graph-form'].validate((valid) => {
         if (valid) {
-          this.form.xAxis = this.echartsForm.xAxis
-          this.form.yAxis = this.echartsForm.yAxis
-          this.form.groupBy = this.echartsForm.groupBy
-            ? this.echartsForm.groupBy
-            : undefined
-          this.form.duration = this.echartsForm.duration
-          this.form.limit = this.echartsForm.limit
-          this.form.sort = this.echartsForm.sort
           this.echartsFormVisible = false
         }
       })
@@ -283,19 +280,28 @@ export default {
       })
     },
     assembleXAxis(data) {
+      var name = this.categoryMap[this.form.xAxis]
+      if (!name && this.xAxisAttribute) {
+        name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+      }
+
       if (this.form.xAxis === 'Date') {
         data = data.map((d) => {
           var t = new Date(d)
           return t.toLocaleDateString()
         })
       }
-      var name = this.categoryMap[this.form.xAxis]
-      if (!name) {
-        var index = this.attributes.findIndex((a) => a.name === this.form.xAxis)
-        if (index >= 0) {
-          name = this.attributes[index].label
-        }
+
+      if (this.xAxisAttribute) {
+        data = data.map((d) => {
+          if (!this.xAxisAttribute.prefix) {
+            var prefix = d.slice(0, 1).toLocaleUpperCase()
+            return `${prefix} - ${d}`
+          }
+          return `${this.xAxisAttribute.prefix} - ${d}`
+        })
       }
+
       return {
         data,
         name,
@@ -345,7 +351,11 @@ export default {
               seriesName = date.toLocaleDateString()
               break
             default:
-              seriesName = param.seriesName
+              if (_this.groupAttribute) {
+                seriesName = `${_this.groupAttribute.prefix} - ${param.seriesName}`
+              } else {
+                seriesName = param.seriesName
+              }
               break
           }
           var rest = `
@@ -385,26 +395,30 @@ export default {
             var date = new Date(name)
             return date.toLocaleDateString()
           default:
+            if (_this.groupAttribute) {
+              name = `${_this.groupAttribute.prefix} - ${name}`
+            }
             return name
         }
       }
 
-      return { formatter }
+      return {
+        formatter,
+        type: 'scroll',
+        width: '60%',
+        top: 0,
+        left: 'center'
+      }
     },
     assembleTitle() {
       if (this.form.groupBy) {
         var name = this.categoryMap[this.form.groupBy]
-        if (!name) {
-          var index = this.attributes.findIndex(
-            (a) => a.name === this.form.xAxis
-          )
-          if (index >= 0) {
-            name = this.attributes[index].label
-          }
+        if (!name && this.groupAttribute) {
+          name = `${this.groupAttribute.label}(${this.groupAttribute.token})`
         }
 
         return {
-          top: 20,
+          top: 30,
           left: 'center',
           text: `按${name}分组`,
           textStyle: {
@@ -461,6 +475,7 @@ export default {
 
   .custom-chart__head {
     display: flex;
+    margin-bottom: 16px;
 
     .title {
       color: #666;

@@ -52,7 +52,7 @@
           ></el-table-column>
           <el-table-column
             prop="updatedAt"
-            label="创建日期"
+            label="更新日期"
             :formatter="timeFormatter"
           ></el-table-column>
           <el-table-column label="配置" class-name="config-column" width="400">
