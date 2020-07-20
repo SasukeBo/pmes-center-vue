@@ -18,6 +18,11 @@ import gql from 'graphql-tag'
 
 export default {
   name: 'DeviceView',
+  components: {
+    DeviceRecentYieldPie,
+    DeviceRecentDateYieldBar,
+    DeviceCustomYieldBar
+  },
   props: {
     id: [Number, String]
   },
@@ -45,10 +50,8 @@ export default {
       }
     }
   },
-  components: {
-    DeviceRecentYieldPie,
-    DeviceRecentDateYieldBar,
-    DeviceCustomYieldBar
+  created() {
+    document.title = '数据中心 - 设备'
   }
 }
 </script>

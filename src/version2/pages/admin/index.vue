@@ -92,6 +92,7 @@ export default {
     }
   },
   created() {
+    document.title = '数据中心 - 后台管理'
     var _this = this
     this.$store
       .dispatch('fetchCurrentUser', _this)
