@@ -36,7 +36,7 @@
             {{ scope.row.material.name }}
           </template>
         </el-table-column>
-        <el-table-column label="设备">
+        <el-table-column label="检测设备">
           <template slot-scope="scope">
             {{ scope.row.device.name }}
           </template>

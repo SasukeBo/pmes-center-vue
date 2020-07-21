@@ -22,7 +22,13 @@
     ></div>
 
     <el-dialog title="自定义图表" :visible.sync="formVisible">
-      <el-form :model="form" ref="custom-graph-form" :rules="rules">
+      <el-form
+        :model="form"
+        ref="custom-graph-form"
+        :rules="rules"
+        label-width="100px"
+        label-position="left"
+      >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
             <el-option label="日期" value="Date"></el-option>

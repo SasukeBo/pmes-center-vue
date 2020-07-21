@@ -18,7 +18,8 @@
         :model="form"
         ref="custom-graph-form"
         :rules="rules"
-        label-width="200px"
+        label-width="150px"
+        label-position="left"
       >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
