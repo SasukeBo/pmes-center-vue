@@ -30,6 +30,7 @@ export default new Vuex.Store({
               id
               uuid
               account
+              name
               isAdmin
             }
           }

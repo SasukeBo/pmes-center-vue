@@ -16,7 +16,7 @@
         <div class="login-entry">
           <span v-if="currentUser" class="user-account" @click="logout">
             <i class="el-icon-user-solid" style="padding-right: 4px"></i>
-            <span>{{ currentUser.account }}</span>
+            <span>{{ currentUser.name || currentUser.account }}</span>
           </span>
 
           <el-button
