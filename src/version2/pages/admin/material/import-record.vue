@@ -49,7 +49,10 @@
         </el-table-column>
         <el-table-column label="导入者">
           <template slot-scope="scope">
-            {{ scope.row.user ? scope.row.user.account : '-' }}
+            <span v-if="scope.row.user">
+              {{ scope.row.user.name || scope.row.user.account }}
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="导入方式" prop="importType"></el-table-column>
@@ -224,6 +227,7 @@ export default {
               fileSize
               user {
                 id
+                name
                 account
               }
               importType
