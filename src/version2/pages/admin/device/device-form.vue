@@ -1,7 +1,7 @@
 <template>
   <div class="device-form">
     <div class="device-form__header">
-      新增设备
+      新增检测设备
     </div>
 
     <div class="device-form__body">

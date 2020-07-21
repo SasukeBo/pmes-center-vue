@@ -9,7 +9,13 @@
     <div class="yield-chart-mount" ref="chart"></div>
 
     <el-dialog title="筛选条件" :visible.sync="formVisible">
-      <el-form :model="echartsForm" ref="graph-filter-form" :rules="rules">
+      <el-form
+        :model="echartsForm"
+        ref="graph-filter-form"
+        :rules="rules"
+        label-width="100px"
+        label-position="left"
+      >
         <el-form-item label="Y轴" prop="yAxis">
           <el-select v-model="echartsForm.yAxis" placeholder="请选择Y轴属性">
             <el-option label="产量" value="Amount"></el-option>
@@ -160,7 +166,7 @@ export default {
         return value
       })
 
-      var name = `设备${this.yAxisNameMap[this.form.yAxis]}`
+      var name = `设备检测${this.yAxisNameMap[this.form.yAxis]}`
       var label = {
         show: true,
         position: 'top',
@@ -226,7 +232,7 @@ export default {
           <span>${params.value}%</span>
           </div>
           <div>
-          <span style="font-size: 12px; font-weight: bold">设备总产量:</span>
+          <span style="font-size: 12px; font-weight: bold">设备总检测量(Amount):</span>
           <span>${amountData[params.dataIndex]}个</span>
           </div>
           `
@@ -241,13 +247,13 @@ export default {
         this.form.sort === 'ASC' ? '最低的' : '最高的'
       }${this.form.limit}个设备`
       return {
-        text: '设备生产数据',
+        text: '检测设备数据',
         subtext
       }
     },
     setXAxis(data) {
       return {
-        name: '生产设备(Devices)',
+        name: '检测设备(Devices)',
         type: 'category',
         axisLabel: { interval: 0, rotate: -45 },
         data

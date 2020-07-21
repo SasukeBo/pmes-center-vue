@@ -32,7 +32,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="设备:" prop="deviceID">
+        <el-form-item label="检测设备:" prop="deviceID">
           <el-select
             clearable
             size="small"

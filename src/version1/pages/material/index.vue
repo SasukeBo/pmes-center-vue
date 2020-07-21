@@ -38,7 +38,7 @@
             <div class="form-header">条件筛选</div>
 
             <el-form size="mini" label-position="right" label-width="90px">
-              <el-form-item label="设备：">
+              <el-form-item label="检测设备：">
                 <el-select
                   v-model="searchForm.deviceID"
                   placeholder="请选择设备"

@@ -153,6 +153,7 @@ export default {
           axisPointer: {
             show: true,
             snap: true,
+            status: 'hide',
             lineStyle: {
               color: '#004E52',
               opacity: 0.5,
@@ -160,12 +161,6 @@ export default {
             },
             label: {
               show: true
-            },
-            handle: {
-              show: true,
-              color: '#004E52',
-              size: 20,
-              margin: 36
             }
           }
         },

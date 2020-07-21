@@ -14,6 +14,9 @@
     </div>
     <div class="data-block" v-if="deviceResult">
       <div class="title">
+        <div style="padding-bottom: 16px; font-size: 18px;">
+          检测设备(Device)
+        </div>
         {{ deviceResult.device.name }}
       </div>
       <div class="sub-title">
@@ -132,7 +135,7 @@ export default {
 
   .data-block {
     flex: 1;
-    padding: 60px 0;
+    padding: 32px 0;
 
     .title {
       font-size: 24px;

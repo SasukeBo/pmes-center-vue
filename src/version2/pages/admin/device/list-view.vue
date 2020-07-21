@@ -3,7 +3,7 @@
     <div class="device-manage__listview-header">
       <div class="search-input">
         <el-input
-          placeholder="搜索设备"
+          placeholder="搜索检测设备"
           v-model="searchForm.pattern"
           size="small"
           @keyup.enter.native.prevent="search = searchForm.pattern"

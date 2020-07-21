@@ -42,7 +42,7 @@
             class="manage-icon"
             src="~@/version2/assets/images/device-manage.png"
           />
-          <div class="manage-label">设备管理</div>
+          <div class="manage-label">检测设备管理</div>
         </div>
       </div>
     </div>
