@@ -3,6 +3,11 @@
     <div class="error-page__body">
       <div class="error-code">404</div>
       <div>对不起，您访问的页面不存在！</div>
+      <div style="margin-top: 16px;">
+        <el-button @click="$router.push({ path: '/' })" type="primary"
+          >返回首页</el-button
+        >
+      </div>
     </div>
   </div>
 </template>

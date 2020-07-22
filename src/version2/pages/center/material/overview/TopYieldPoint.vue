@@ -132,7 +132,7 @@ export default {
         var filters = {}
         var _this = this
         this.attributes.forEach((a) => {
-          filters[a.name] = _this.form[a.name] || undefined
+          filters[a.token] = _this.form[a.token] || undefined
         })
         filters.device_id = this.form.device_id || undefined
         filters.shift = this.form.shift || undefined
