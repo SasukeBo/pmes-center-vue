@@ -34,6 +34,16 @@
               placeholder="请输入专案描述"
             ></el-input>
           </el-form-item>
+
+          <el-form-item label="目标良率：" prop="yieldScore">
+            <el-input
+              v-model="form1.yieldScore"
+              placeholder="请输入目标良率"
+              class="yield-score-input"
+            >
+              <template slot="append">%</template>
+            </el-input>
+          </el-form-item>
         </el-form>
       </div>
 
@@ -166,6 +176,7 @@ export default {
       form1: {
         name: '',
         customerCode: '',
+        yieldScore: 0,
         projectRemark: ''
       },
       points: []
@@ -195,6 +206,7 @@ export default {
               response: addMaterial(input: $input) {
                 id
                 name
+                yieldScore
                 customerCode
                 projectRemark
               }
@@ -205,6 +217,7 @@ export default {
               name: this.form1.name,
               customerCode: this.form1.customerCode,
               projectRemark: this.form1.projectRemark,
+              yieldScore: this.form1.yieldScore,
               points: this.points
             }
           },
@@ -217,10 +230,7 @@ export default {
         })
         .catch((e) => {
           this.submitting = false
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '')
-          })
+          this.$GraphQLError(e)
         })
     },
     addPoint() {

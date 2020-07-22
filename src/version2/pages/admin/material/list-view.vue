@@ -45,6 +45,11 @@
           </el-table-column>
           <el-table-column prop="projectRemark" label="专案描述">
           </el-table-column>
+          <el-table-column prop="yieldScore" label="目标良率">
+            <template slot-scope="scope">
+              {{ scope.row.yieldScore * 100 }}%
+            </template>
+          </el-table-column>
           <el-table-column
             prop="createdAt"
             label="创建日期"
@@ -99,7 +104,7 @@
                 @click="
                   redirect({
                     name: 'console-material-edit',
-                    params: { id: scope.row.id, material: scope.row }
+                    params: { id: scope.row.id }
                   })
                 "
                 >编辑</span
@@ -174,6 +179,7 @@ export default {
               name
               createdAt
               updatedAt
+              yieldScore
               customerCode
               projectRemark
             }

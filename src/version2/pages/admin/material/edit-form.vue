@@ -18,6 +18,15 @@
           placeholder="请输入专案描述"
         ></el-input>
       </el-form-item>
+      <el-form-item label="目标良率" prop="yieldScore">
+        <el-input
+          v-model="form.yieldScore"
+          placeholder="请输入目标良率"
+          class="yield-score-input"
+        >
+          <template slot="append">%</template>
+        </el-input>
+      </el-form-item>
     </el-form>
 
     <div class="footer-btns">
@@ -35,21 +44,25 @@ export default {
   components: {
     FButton
   },
-  props: ['id', 'material'],
+  props: {
+    id: [String, Number]
+  },
   data() {
     return {
       saving: false,
       form: {
         name: '',
         customerCode: '',
-        projectRemark: ''
+        projectRemark: '',
+        yieldScore: 0
       }
     }
   },
   methods: {
     save() {
       this.saving = true
-      var data = { ...this.form }
+      var yieldScore = parseFloat(this.form.yieldScore) / 100
+      var data = { ...this.form, yieldScore }
       delete data.name
       this.$apollo
         .mutate({
@@ -83,40 +96,33 @@ export default {
     }
   },
   created() {
-    var data = this.material
-    if (!data) {
-      this.$apollo
-        .query({
-          query: gql`
-            query($id: Int!) {
-              response: material(id: $id) {
-                id
-                name
-                customerCode
-                projectRemark
-              }
+    this.$apollo
+      .query({
+        query: gql`
+          query($id: Int!) {
+            response: material(id: $id) {
+              id
+              name
+              yieldScore
+              customerCode
+              projectRemark
             }
-          `,
-          client: 'adminClient',
-          variabels: {
-            id: this.id
           }
-        })
-        .then(({ data: { response } }) => {
-          data = response
-          delete data.__typename
-        })
-        .catch((e) => {
-          this.message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '')
-          })
-        })
-    }
-
-    this.form.name = data.name
-    this.form.customerCode = data.customerCode
-    this.form.projectRemark = data.projectRemark
+        `,
+        client: 'adminClient',
+        variables: {
+          id: this.id
+        }
+      })
+      .then(({ data: { response } }) => {
+        this.form.name = response.name
+        this.form.customerCode = response.customerCode
+        this.form.projectRemark = response.projectRemark
+        this.form.yieldScore = response.yieldScore * 100
+      })
+      .catch((e) => {
+        this.$GraphQLError(e)
+      })
   }
 }
 </script>
@@ -136,6 +142,13 @@ export default {
       box-sizing: border-box;
       border-radius: 8px;
       transition: all 0.3s ease;
+    }
+
+    .yield-score-input .el-input-group__append {
+      background: none;
+      color: #333;
+      font-weight: bold;
+      border: none;
     }
 
     .el-input:not(.is-disabled) .el-input__inner {

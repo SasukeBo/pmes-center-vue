@@ -82,7 +82,7 @@ $--points-form-table-border: 1px solid rgba(229, 229, 229, 1);
     padding-top: 64px;
     height: calc(100% - 129px);
     box-sizing: border-box;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
 
     .material-form {
@@ -96,6 +96,13 @@ $--points-form-table-border: 1px solid rgba(229, 229, 229, 1);
 
       .el-form-item {
         margin-bottom: 24px;
+      }
+
+      .yield-score-input .el-input-group__append {
+        background: none;
+        color: #333;
+        font-weight: bold;
+        border: none;
       }
 
       .el-input__inner {

@@ -69,6 +69,7 @@
       </el-row>
     </div>
 
+    <TopYieldByLine :id="id"></TopYieldByLine>
     <TopYieldPoint :id="id"></TopYieldPoint>
     <TopYieldDevice :id="id"></TopYieldDevice>
     <TopYieldCustom :id="id"></TopYieldCustom>
@@ -88,6 +89,7 @@ import MaterialDialog from './MaterialDialog.vue'
 import TopYieldDevice from './TopYieldDevice.vue'
 import TopYieldPoint from './TopYieldPoint.vue'
 import TopYieldCustom from './TopYieldCustom.vue'
+import TopYieldByLine from './TopYieldByLine.vue'
 
 export default {
   name: 'Material',
@@ -96,7 +98,8 @@ export default {
     MaterialDialog,
     TopYieldDevice,
     TopYieldPoint,
-    TopYieldCustom
+    TopYieldCustom,
+    TopYieldByLine
   },
   apollo: {
     devices: {

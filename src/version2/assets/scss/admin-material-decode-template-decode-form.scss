@@ -31,7 +31,7 @@
   }
 
   .decode-template-form__body {
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     height: calc(100% - 128px);
 
