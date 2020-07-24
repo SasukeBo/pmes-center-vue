@@ -82,6 +82,16 @@
             ></TableCellForm>
           </template>
         </el-table-column>
+        <el-table-column label="所在列" prop="index">
+          <template slot-scope="scope">
+            <TableCellForm
+              :row="scope.row"
+              :index="scope.$index"
+              prop="index"
+              @update="editCell"
+            ></TableCellForm>
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template slot="header">
             <el-button @click="addPoint()" size="small" type="primary">
@@ -119,14 +129,18 @@ export default {
     FButton,
     TableCellForm
   },
-  props: ['id', 'material'],
+  props: {
+    id: [String, Number],
+    versionID: [String, Number]
+  },
   apollo: {
     points: {
       query: gql`
-        query($materialID: Int!) {
-          points: listMaterialPoints(materialID: $materialID) {
+        query($id: Int!) {
+          points: listMaterialPoints(materialVersionID: $id) {
             id
             name
+            index
             upperLimit
             nominal
             lowerLimit
@@ -136,7 +150,7 @@ export default {
       client: 'adminClient',
       variables() {
         return {
-          materialID: this.id
+          id: this.versionID
         }
       }
     }

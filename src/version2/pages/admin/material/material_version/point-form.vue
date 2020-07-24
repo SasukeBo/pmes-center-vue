@@ -1,6 +1,6 @@
 <template>
   <div class="decode-tempalate-form__point-form">
-    <span class="point-label">{{ label }}:</span>
+    <span class="point-label">{{ value.name }}:</span>
     <el-input
       size="small"
       class="decode-template-form-cell"
@@ -11,24 +11,21 @@
 </template>
 <script>
 export default {
-  props: ['label', 'value'],
+  props: {
+    value: Object
+  },
   data() {
     return {
       columnValue: ''
     }
   },
-  watch: {
-    value: {
-      immediate: true,
-      handler: function(val) {
-        this.columnValue = val
-      }
-    }
-  },
   methods: {
     handleValueChange(value) {
-      this.$emit('change', { key: this.label, value })
+      this.$emit('change', { id: this.value.id, value })
     }
+  },
+  created() {
+    this.columnValue = this.value.index
   }
 }
 </script>

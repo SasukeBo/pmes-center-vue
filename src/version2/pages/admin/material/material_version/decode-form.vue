@@ -1,29 +1,17 @@
 <template>
   <div class="decode-template-form">
     <div class="decode-template-form__header">
-      {{ isEdit ? '编辑' : '新增' }}模板
+      编辑解析模板
     </div>
 
     <div class="decode-template-form__body">
       <div class="scroll-inner">
-        <div class="block-title">解析模板</div>
-        <el-form :model="form" inline size="small" :rules="rules1" ref="form1">
-          <el-form-item label="模板名称：" prop="name">
-            <el-input
-              class="decode-template-form-cell"
-              v-model="form.name"
-            ></el-input>
-          </el-form-item>
-
-          <el-form-item label="备注：" prop="description">
-            <el-input
-              class="decode-template-form-cell description"
-              v-model="form.description"
-            ></el-input>
-          </el-form-item>
-        </el-form>
-
-        <div class="block-title">配置</div>
+        <div class="block-title">
+          配置
+          <span v-if="template && template.materialVersion">
+            版本：{{ template.materialVersion.version }}
+          </span>
+        </div>
         <el-form :model="form" inline size="small" ref="form2" :rules="rules2">
           <el-form-item label="数据起始行：" prop="dataRowIndex">
             <div class="cell-input">
@@ -107,25 +95,14 @@
           <PointForm
             v-for="p in points"
             :key="'point_' + p.id"
-            :label="p.name"
-            :value="form.pointColumns[p.name]"
+            :value="p"
             @change="handlePointColumnChange"
           ></PointForm>
-        </div>
-
-        <div class="item-label">
-          设置为默认模板：
-          <el-switch
-            v-model="form.default"
-            active-color="#3FE3D3"
-            inactive-color="#CACACA"
-          >
-          </el-switch>
         </div>
       </div>
     </div>
     <div class="decode-template-form__footer">
-      <FButton size="small" @click="cancel" type="plain">取消</FButton>
+      <FButton size="small" @click="closeForm" type="plain">关闭</FButton>
       <FButton size="small" @click="save" :loading="saving">保存</FButton>
     </div>
   </div>
@@ -138,20 +115,16 @@ import gql from 'graphql-tag'
 export default {
   components: { FButton, PointForm, TableCellForm },
   props: {
-    materialID: [Number, String],
-    isEdit: {
-      type: Boolean,
-      default: false
-    },
-    data: Object,
+    versionID: [Number, String],
     visible: {
       type: Boolean,
       default: false
-    },
-    points: Array
+    }
   },
   data() {
     return {
+      points: [],
+      template: undefined,
       saving: false,
       columnTypeOptions: [
         { label: '字符型', value: 'String' },
@@ -159,9 +132,6 @@ export default {
         { label: '浮点数', value: 'Float' },
         { label: '日期', value: 'Datetime' }
       ],
-      rules1: {
-        name: [{ required: true, message: '此为必填项', trigger: 'blur' }]
-      },
       rules2: {
         dataRowIndex: [
           { required: true, message: '此为必填项', trigger: 'blur' }
@@ -171,94 +141,115 @@ export default {
         ]
       },
       form: {
-        default: false,
-        name: '',
-        description: '',
         createdAtColumnIndex: undefined,
         dataRowIndex: undefined,
-        pointColumns: {},
+        pointColumns: [],
         productColumns: []
       }
     }
   },
-  methods: {
-    cancel() {
-      this.$emit('update:visible', false)
-      this.clearFormData()
+  apollo: {
+    template: {
+      query: gql`
+        query($id: Int!) {
+          template: decodeTemplateWithVersionID(id: $id) {
+            id
+            materialVersion {
+              id
+              version
+            }
+            dataRowIndex
+            createdAtColumnIndex
+            productColumns {
+              prefix
+              label
+              token
+              index
+              type
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      fetchPolicy: 'network-only',
+      variables() {
+        return {
+          id: this.versionID
+        }
+      }
     },
-    clearFormData() {
-      this.form.default = false
-      this.form.name = ''
-      this.form.description = ''
-      this.form.pointColumns = {}
-      this.form.productColumns = []
-      this.form.createdAtColumnIndex = undefined
-      this.form.dataRowIndex = undefined
+    points: {
+      query: gql`
+        query($id: Int!) {
+          points: listMaterialPoints(materialVersionID: $id) {
+            id
+            name
+            index
+          }
+        }
+      `,
+      client: 'adminClient',
+      fetchPolicy: 'network-only',
+      variables() {
+        return {
+          id: this.versionID
+        }
+      }
+    }
+  },
+  methods: {
+    closeForm() {
+      this.$emit('update:visible', false)
     },
     save() {
       var _this = this
-      _this.$refs.form1.validate((valid) => {
+      this.$refs.form2.validate((valid) => {
         if (valid) {
-          _this.$refs.form2.validate((valid) => {
-            if (valid) {
-              _this.saving = true
-              _this.$apollo
-                .mutate({
-                  mutation: gql`
-                    mutation($input: DecodeTemplateInput!) {
-                      response: saveDecodeTemplate(input: $input) {
-                        id
-                      }
-                    }
-                  `,
-                  client: 'adminClient',
-                  variables: {
-                    input: {
-                      ..._this.form,
-                      id:
-                        _this.isEdit && _this.data ? _this.data.id : undefined,
-                      materialID: _this.materialID
-                    }
-                  }
-                })
-                .then(({ data: { response } }) => {
-                  _this.saving = false
-                  _this.$message({ type: 'success', message: '保存成功' })
-                  _this.$emit('update-list')
-                  _this.$emit('update:visible', false)
-                })
-                .catch((e) => {
-                  _this.saving = false
-                  _this.$GraphQLError(e)
-                })
-            }
-          })
+          _this.saving = true
+          _this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($input: DecodeTemplateInput!) {
+                  response: saveDecodeTemplate(input: $input)
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                input: {
+                  ..._this.form,
+                  id: _this.template.id
+                }
+              }
+            })
+            .then(() => {
+              _this.saving = false
+              _this.$message({ type: 'success', message: '保存成功' })
+            })
+            .catch((e) => {
+              _this.saving = false
+              _this.$GraphQLError(e)
+            })
         }
       })
     },
-    handlePointColumnChange({ key, value }) {
-      this.form.pointColumns[key] = value
+    handlePointColumnChange({ id, value }) {
+      var index = this.form.pointColumns.findIndex((p) => p.id === id)
+      if (index >= 0) {
+        this.form.pointColumns[index].index = value
+      } else {
+        this.form.pointColumns.push({ id, index: value })
+      }
     },
     editCell(val) {
       this.form.productColumns[val.index][val.prop] = val.data[val.prop]
     }
   },
   watch: {
-    visible: {
-      immediate: true,
-      handler: function(val) {
-        if (this.visible && this.isEdit && this.data) {
-          this.form.default = this.data.default
-          this.form.name = this.data.name
-          this.form.description = this.data.description
-          this.form.dataRowIndex = this.data.dataRowIndex
-          this.form.createdAtColumnIndex = this.data.createdAtColumnIndex
-          this.form.pointColumns = this.data.pointColumns
-          this.form.productColumns = this.data.productColumns.map((column) => {
-            delete column.__typename
-            return column
-          })
-        }
+    template(val) {
+      if (val) {
+        this.form.createdAtColumnIndex = val.createdAtColumnIndex
+        this.form.dataRowIndex = val.dataRowIndex
+        this.form.productColumns = val.productColumns
       }
     }
   }

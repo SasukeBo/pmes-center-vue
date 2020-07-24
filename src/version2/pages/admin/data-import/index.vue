@@ -26,9 +26,12 @@
             <span v-else>{{ scope.row.fileName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="解析模板">
+        <el-table-column label="版本号">
           <template slot-scope="scope">
-            {{ scope.row.decodeTemplate.name }}
+            <span v-if="scope.row.materialVersion">
+              {{ scope.row.materialVersion.version }}
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="料号">
@@ -36,7 +39,7 @@
             {{ scope.row.material.name }}
           </template>
         </el-table-column>
-        <el-table-column label="检测设备">
+        <el-table-column label="检测设备" width="100px">
           <template slot-scope="scope">
             {{ scope.row.device.name }}
           </template>
@@ -192,9 +195,9 @@ export default {
                 account
               }
               importType
-              decodeTemplate {
+              materialVersion {
                 id
-                name
+                version
               }
               yield
               createdAt

@@ -80,6 +80,7 @@
             <div class="table-cell">USL</div>
             <div class="table-cell">Nominal</div>
             <div class="table-cell">LSL</div>
+            <div class="table-cell">所在列</div>
           </div>
 
           <div class="table-body" ref="table-body">
@@ -113,6 +114,13 @@
                 <TableCellForm
                   :row="p"
                   prop="lowerLimit"
+                  @update="editCell"
+                ></TableCellForm>
+              </div>
+              <div class="table-cell">
+                <TableCellForm
+                  :row="p"
+                  prop="index"
                   @update="editCell"
                 ></TableCellForm>
               </div>
@@ -264,6 +272,7 @@ export default {
               response: parseImportPoints(file: $file) {
                 id
                 name
+                index
                 nominal
                 upperLimit
                 lowerLimit

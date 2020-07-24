@@ -64,5 +64,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 .theme_1-app .material-view .top-yield-by-line-chart {
+  .hello {
+    color: #fff;
+  }
 }
 </style>
