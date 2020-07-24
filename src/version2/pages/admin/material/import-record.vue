@@ -155,7 +155,12 @@
     ></Pagination>
 
     <div class="go-back">
-      <el-button type="primary" size="small" @click="$router.go(-1)">
+      <el-button
+        type="primary"
+        size="small"
+        @click="$router.go(-1)"
+        style="width: 100px"
+      >
         返回</el-button
       >
     </div>

@@ -1,10 +1,10 @@
 <template>
-  <div class="decode-template-form">
-    <div class="decode-template-form__header">
+  <div class="admin-drawer-form decode-template-form">
+    <div class="admin-drawer-form__header">
       编辑解析模板
     </div>
 
-    <div class="decode-template-form__body">
+    <div class="admin-drawer-form__body">
       <div class="scroll-inner">
         <div class="block-title">
           配置
@@ -16,7 +16,7 @@
           <el-form-item label="数据起始行：" prop="dataRowIndex">
             <div class="cell-input">
               <el-input
-                class="decode-template-form-cell"
+                class="admin-drawer-form-cell"
                 placeholder="例：15"
                 v-model="form.dataRowIndex"
               ></el-input>
@@ -27,7 +27,7 @@
           <el-form-item label="生产日期数据列：" prop="createdAtColumnIndex">
             <div class="cell-input">
               <el-input
-                class="decode-template-form-cell"
+                class="admin-drawer-form-cell"
                 placeholder="例：B"
                 v-model="form.createdAtColumnIndex"
               ></el-input>
@@ -101,7 +101,7 @@
         </div>
       </div>
     </div>
-    <div class="decode-template-form__footer">
+    <div class="admin-drawer-form__footer">
       <FButton size="small" @click="closeForm" type="plain">关闭</FButton>
       <FButton size="small" @click="save" :loading="saving">保存</FButton>
     </div>
@@ -256,5 +256,65 @@ export default {
 }
 </script>
 <style lang="scss">
-@import '@/version2/assets/scss/admin-material-decode-template-decode-form.scss';
+@import '@/version2/assets/scss/admin/admin_drawer_form.scss';
+.decode-template-drawer {
+  .product-columns-table {
+    margin-top: 8px;
+
+    .product-columns-table__row {
+      height: 64px;
+
+      td {
+        padding: 0;
+      }
+
+      .cell {
+        text-align: center;
+      }
+    }
+
+    .table-cell-form__show {
+      text-align: center;
+    }
+
+    .product-columns-table__header {
+      height: 64px;
+      box-sizing: border-box;
+
+      th {
+        color: #666;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: center;
+        background: #f3f4f4;
+      }
+    }
+
+    .el-table__empty-block {
+      display: none;
+    }
+
+    .product-columns-table__append-btns {
+      height: 64px;
+      box-sizing: border-box;
+      line-height: 64px;
+      text-align: center;
+      color: #5e83f2;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: rgba(94, 131, 242, 0.7);
+      }
+    }
+  }
+
+  .points-form {
+    display: flex;
+    flex-flow: wrap;
+    padding-top: 8px;
+  }
+}
 </style>

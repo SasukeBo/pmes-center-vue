@@ -30,13 +30,20 @@
               {{ (scope.row.yield * 100).toFixed(2) }}%
             </template>
           </el-table-column>
+          <el-table-column
+            label="创建日期"
+            prop="createdAt"
+            width="160px"
+            :formatter="timeFormatter"
+          >
+          </el-table-column>
           <el-table-column label="当前启用">
             <template slot-scope="scope">
               <el-switch
                 v-model="scope.row.active"
                 active-color="#3FE3D3"
                 inactive-color="#CACACA"
-                @change="changeActive"
+                @change="changeActive(scope.row)"
               >
               </el-switch>
             </template>
@@ -89,28 +96,47 @@
       :visible.sync="templateFormVisible"
     >
       <DecodeForm
-        :versionID="editVersionID"
+        :versionID="scopeVersionID"
         :visible.sync="templateFormVisible"
         v-if="templateFormVisible"
       ></DecodeForm>
+    </el-drawer>
+
+    <el-drawer
+      :withHeader="false"
+      direction="rtl"
+      :close-on-press-escape="false"
+      custom-class="new-version-drawer"
+      :visible.sync="versionFormVisible"
+    >
+      <VersionForm
+        :versionID="scopeVersionID"
+        :materialID="id"
+        :visible.sync="versionFormVisible"
+        @update-list="$apollo.queries.versions.refetch()"
+        v-if="versionFormVisible"
+      ></VersionForm>
     </el-drawer>
   </div>
 </template>
 <script>
 import gql from 'graphql-tag'
 import DecodeForm from './decode-form.vue'
+import VersionForm from './version-form'
+import { timeFormatter } from '@/helpers.js'
 
 export default {
   name: 'MaterialVersion',
   props: {
     id: [String, Number]
   },
-  components: { DecodeForm },
+  components: { DecodeForm, VersionForm },
   data() {
     return {
       versions: [],
       templateFormVisible: false,
-      editVersionID: undefined
+      versionFormVisible: false,
+      scopeVersionID: undefined
     }
   },
   apollo: {
@@ -128,6 +154,7 @@ export default {
             active
             amount
             yield
+            createdAt
             description
           }
         }
@@ -141,31 +168,72 @@ export default {
     }
   },
   methods: {
+    remove(id) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!) {
+              response: deleteMaterialVersion(id: $id)
+            }
+          `,
+          client: 'adminClient',
+          variables: { id }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '删除成功' })
+          var index = this.versions.findIndex((v) => v.id === id)
+          this.versions.splice(index, 1)
+        })
+        .catch((e) => this.$GraphQLError(e))
+    },
     editTemplate(id) {
-      this.editVersionID = id
+      this.scopeVersionID = id
       this.templateFormVisible = true
     },
     newVersion() {
-      alert('not implement newVersion')
+      this.versionFormVisible = true
     },
-    changeActive() {
-      alert('not implement changeActive')
+    changeActive(val) {
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($id: Int!, $active: Boolean!) {
+              response: changeMaterialVersionActive(id: $id, active: $active)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            id: val.id,
+            active: val.active
+          }
+        })
+        .then(() => {
+          this.$message({ type: 'success', message: '修改成功' })
+          this.$apollo.queries.versions.refetch()
+        })
+        .catch((e) => this.$GraphQLError(e))
     },
     redirect(route) {
       this.$router.push(route)
+    },
+    timeFormatter() {
+      return timeFormatter(arguments[2])
     }
   }
 }
 </script>
 <style lang="scss">
-.material-versions .decode-template-drawer {
+.material-versions .decode-template-drawer,
+.material-versions .new-version-drawer {
   width: 83% !important;
-
-  &:focus {
-    outline: none;
+  .el-drawer__body {
+    height: 100%;
+    &:focus {
+      outline: none;
+    }
   }
 
-  .el-drawer__body:focus {
+  &:focus {
     outline: none;
   }
 }
