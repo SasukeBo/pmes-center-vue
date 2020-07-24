@@ -1,7 +1,21 @@
 <template>
   <div class="app-body-home">
     <div class="page-banner">
-      <img src="~@/assets/banner@2x.png" />
+      <img src="~@/version2/assets/images/banner.png" />
+    </div>
+
+    <div class="header-block" v-if="materials.length && recent">
+      <div class="header-block__inner">
+        <div class="header-block__inner-title">最近预览</div>
+        <div class="header-block__inner-flex">
+          <div class="header-block__inner-left">
+            <RecentMaterialPie :materialID="recent"></RecentMaterialPie>
+          </div>
+          <div class="header-block__inner-right">
+            <RecentMaterialBar :materialID="recent"></RecentMaterialBar>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="header-block" v-if="materials.length && recent">
@@ -76,11 +90,19 @@
 import MaterialCard from './MaterialCard.vue'
 import RecentMaterial from './RecentMaterial.vue'
 import TopYieldMaterial from './TopYieldMaterial.vue'
+import RecentMaterialBar from './RecentMaterialBar'
+import RecentMaterialPie from './RecentMaterialPie'
 import gql from 'graphql-tag'
 
 export default {
   name: 'Home',
-  components: { MaterialCard, RecentMaterial, TopYieldMaterial },
+  components: {
+    MaterialCard,
+    RecentMaterial,
+    TopYieldMaterial,
+    RecentMaterialPie,
+    RecentMaterialBar
+  },
   apollo: {
     materialWrap: {
       query: gql`
@@ -184,7 +206,6 @@ export default {
 </script>
 <style lang="scss">
 .theme_1-app .app-body .app-body-home {
-  padding-top: 32px;
   margin-bottom: 70px;
 
   .loading {
@@ -271,6 +292,31 @@ export default {
   }
 
   .header-block {
+    background: #fff;
+    height: 500px;
+
+    .header-block__inner {
+      max-width: 1200px;
+      margin: auto;
+      height: 100%;
+    }
+
+    .header-block__inner-title {
+      font-size: 16px;
+      color: #666;
+      padding-top: 31px;
+      line-height: 16px;
+      font-weight: bold;
+    }
+
+    .header-block__inner-flex {
+      display: flex;
+    }
+
+    .header-block__inner-right {
+      flex: auto;
+    }
+
     .col-title {
       line-height: 16px;
       padding: 16px 0;
@@ -308,7 +354,7 @@ export default {
 
   .page-banner img {
     width: 100%;
-    height: 160px;
+    height: 350px;
     display: block;
   }
 }
