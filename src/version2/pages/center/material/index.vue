@@ -35,6 +35,8 @@ export default {
 </script>
 <style lang="scss">
 .material-page {
+  max-width: 1200px;
+  margin: auto;
   margin-bottom: 32px;
 
   .tab-panels-header {

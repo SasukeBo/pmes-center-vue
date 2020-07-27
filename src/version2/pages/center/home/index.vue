@@ -18,63 +18,52 @@
       </div>
     </div>
 
-    <div class="header-block" v-if="materials.length && recent">
-      <el-row :gutter="24">
-        <el-col :span="24" class="recent-view-col">
-          <div>
-            <div class="col-title">最近预览</div>
-            <div class="col-card">
-              <RecentMaterial :materialID="recent"></RecentMaterial>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
+    <div class="body-block">
+      <TopYieldMaterial></TopYieldMaterial>
 
-    <TopYieldMaterial></TopYieldMaterial>
-
-    <div class="materials-block">
-      <div class="block-title">
-        <span class="block-title__content">料号列表</span>
-        <el-input
-          placeholder="请输入产品料号"
-          v-model="inputValue"
-          @keydown.native.enter.prevent="materialSearch = inputValue"
-        >
-          <el-button
-            slot="append"
-            type="info"
-            @click="materialSearch = inputValue"
-            >搜索</el-button
+      <div class="materials-block">
+        <div class="block-title">
+          <span class="block-title__content">料号列表</span>
+          <el-input
+            placeholder="请输入产品料号"
+            v-model="inputValue"
+            @keydown.native.enter.prevent="materialSearch = inputValue"
           >
-        </el-input>
-      </div>
-
-      <div class="block-body" v-if="materials.length">
-        <el-row :gutter="24">
-          <el-col
-            :span="6"
-            v-for="m in materials"
-            :key="'material_' + m.id"
-            class="material-card-col"
-          >
-            <MaterialCard :material="m"></MaterialCard>
-          </el-col>
-        </el-row>
-      </div>
-
-      <div class="empty-block" v-else>
-        <img src="~@/assets/empty-material@2x.png" />
-        <div class="information">
-          暂无料号
+            <el-button
+              slot="append"
+              type="info"
+              @click="materialSearch = inputValue"
+              >搜索</el-button
+            >
+          </el-input>
         </div>
-      </div>
 
-      <div
-        class="loading"
-        v-show="$apollo.queries.materialWrap.loading"
-        v-loading="$apollo.queries.materialWrap.loading"
-      ></div>
+        <div class="block-body" v-if="materials.length">
+          <el-row :gutter="24">
+            <el-col
+              :span="6"
+              v-for="m in materials"
+              :key="'material_' + m.id"
+              class="material-card-col"
+            >
+              <MaterialCard :material="m"></MaterialCard>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div class="empty-block" v-else>
+          <img src="~@/assets/empty-material@2x.png" />
+          <div class="information">
+            暂无料号
+          </div>
+        </div>
+
+        <div
+          class="loading"
+          v-show="$apollo.queries.materialWrap.loading"
+          v-loading="$apollo.queries.materialWrap.loading"
+        ></div>
+      </div>
     </div>
 
     <div class="footer">
@@ -88,7 +77,6 @@
 </template>
 <script>
 import MaterialCard from './MaterialCard.vue'
-import RecentMaterial from './RecentMaterial.vue'
 import TopYieldMaterial from './TopYieldMaterial.vue'
 import RecentMaterialBar from './RecentMaterialBar'
 import RecentMaterialPie from './RecentMaterialPie'
@@ -98,7 +86,6 @@ export default {
   name: 'Home',
   components: {
     MaterialCard,
-    RecentMaterial,
     TopYieldMaterial,
     RecentMaterialPie,
     RecentMaterialBar
@@ -289,6 +276,11 @@ export default {
         width: 300px;
       }
     }
+  }
+
+  .body-block {
+    max-width: 1200px;
+    margin: auto;
   }
 
   .header-block {

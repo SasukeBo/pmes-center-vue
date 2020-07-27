@@ -72,7 +72,7 @@ export default {
       material: undefined,
       chart: undefined,
       option: {
-        color: ['#FFBA30', '#353333'],
+        color: ['#FFBA30', 'rgba(255, 186, 48, 0.21)'],
         series: [
           {
             name: '产量',

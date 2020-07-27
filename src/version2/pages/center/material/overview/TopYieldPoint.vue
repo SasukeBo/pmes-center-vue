@@ -174,12 +174,19 @@ export default {
       var values = data.map((value, i) => {
         if (value === 0) return
         value = (value * 100).toFixed(2)
+        var itemStyle
         if (i < 3) {
-          return SeriesDataValueItemStyle(value, '#D92622', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#D92622', '#E04660', 'linear')
         } else if (i < 8) {
-          return SeriesDataValueItemStyle(value, '#FFB763', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#FFB763', '#E04660', 'linear')
+        } else {
+          return value
         }
-        return value
+
+        return {
+          value,
+          itemStyle
+        }
       })
 
       var label = {
