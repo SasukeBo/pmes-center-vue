@@ -51,15 +51,13 @@ export default {
   },
   computed: {
     trackPath() {
-      var cosa = Math.cos(Math.PI * this.version.yield)
-      if (cosa < 0) {
-        cosa = 1 - cosa
-      }
-      var sina = Math.sin(Math.PI * this.version.yield)
-      var pbx = 48 * cosa + 2
+      var yieldRatio = this.version.yield
+      var cosa = Math.cos(Math.PI * yieldRatio)
+      var sina = Math.sin(Math.PI * yieldRatio)
+      var pbx = 50 - 48 * cosa
       var pby = 50 - sina * 48
-      var pax = 38 * cosa + 12
-      var pay = 50 - 38 * sina
+      var pax = 50 - 38 * cosa
+      var pay = 50 - sina * 38
 
       return `
       M 0 0

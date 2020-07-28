@@ -33,13 +33,11 @@ export default {
         }
       `,
       variables() {
-        // TODO: 还原此处
-        // var t = new Date()
-        // t.setDate(t.getDate() - 30)
-        // t.setHours(0, 0, 0, 0)
+        var t = new Date()
+        t.setDate(t.getDate() - 30)
+        t.setHours(0, 0, 0, 0)
         return {
-          duration: [],
-          // duration: [t],
+          duration: [t],
           limit: 20
         }
       }
@@ -121,7 +119,6 @@ export default {
           xAxis: this.assembleXAxis(nv.xAxisData),
           series: this.assembleSeries(nv.seriesData)
         }
-        console.log(options)
         this.chart.clear()
         this.chart.setOption(options)
       }
