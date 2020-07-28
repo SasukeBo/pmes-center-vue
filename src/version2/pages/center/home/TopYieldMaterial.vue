@@ -68,7 +68,7 @@ export default {
         {
           data: values,
           type: 'bar',
-          name: '点位不良率',
+          name: '料号不良率',
           barMaxWidth: 20
         }
       ]
