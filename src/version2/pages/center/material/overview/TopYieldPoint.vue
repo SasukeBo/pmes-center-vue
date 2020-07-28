@@ -80,7 +80,8 @@ import { SeriesDataValueItemStyle } from '@/helpers.js'
 export default {
   name: 'TopYieldPoint',
   props: {
-    id: [Number, String]
+    id: [Number, String],
+    versionID: [Number, String]
   },
   data() {
     var t = new Date()
@@ -105,8 +106,11 @@ export default {
   apollo: {
     attributes: {
       query: gql`
-        query($materialID: Int!) {
-          attributes: productAttributes(materialID: $materialID) {
+        query($materialID: Int!, $versionID: Int) {
+          attributes: productAttributes(
+            materialID: $materialID
+            versionID: $versionID
+          ) {
             label
             token
             prefix
@@ -115,14 +119,18 @@ export default {
       `,
       variables() {
         return {
-          materialID: this.id
+          materialID: this.id,
+          versionID: this.versionID
         }
       }
     },
     sizeUnYieldResult: {
       query: gql`
-        query($input: GraphInput!) {
-          sizeUnYieldResult: sizeUnYieldTop(groupInput: $input) {
+        query($input: GraphInput!, $versionID: Int) {
+          sizeUnYieldResult: sizeUnYieldTop(
+            groupInput: $input
+            versionID: $versionID
+          ) {
             xAxisData
             seriesData
           }
@@ -131,9 +139,11 @@ export default {
       variables() {
         var filters = {}
         var _this = this
-        this.attributes.forEach((a) => {
-          filters[a.token] = _this.form[a.token] || undefined
-        })
+        if (this.attributes) {
+          this.attributes.forEach((a) => {
+            filters[a.token] = _this.form[a.token] || undefined
+          })
+        }
         filters.device_id = this.form.device_id || undefined
         filters.shift = this.form.shift || undefined
 
@@ -146,7 +156,8 @@ export default {
             limit: this.form.limit,
             sort: this.form.sort ? 'DESC' : 'ASC',
             filters
-          }
+          },
+          versionID: this.versionID
         }
       },
       skip() {

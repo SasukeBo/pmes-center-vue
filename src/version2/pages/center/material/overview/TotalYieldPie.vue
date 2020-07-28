@@ -5,21 +5,14 @@
       <div class="chart-content">
         <div class="yield-ratio">Yield:{{ yieldRatio }}%</div>
 
-        <div class="item" v-if="materialResult.material">
-          <span v-if="materialResult.material.customerCode"
-            >{{ materialResult.material.customerCode }}({{
-              materialResult.material.name
-            }})</span
+        <div class="item" v-if="materialResult">
+          <span v-if="materialResult.customerCode"
+            >{{ materialResult.customerCode }}({{ materialResult.name }})</span
           >
-          <span v-else>{{ materialResult.material.name }}</span>
+          <span v-else>{{ materialResult.name }}</span>
         </div>
-        <div
-          class="item"
-          v-if="
-            materialResult.material && materialResult.material.projectRemark
-          "
-        >
-          {{ materialResult.material.projectRemark }}
+        <div class="item" v-if="materialResult && materialResult.projectRemark">
+          {{ materialResult.projectRemark }}
         </div>
 
         <div class="item" v-if="materialResult">
@@ -69,27 +62,53 @@ import echarts from 'echarts'
 
 export default {
   props: {
-    id: [Number, String]
+    id: [Number, String],
+    versionID: [Number, String]
   },
   data() {
     return {
       form: {
         deviceID: undefined,
-        duration: [],
-        beginTime: undefined,
-        endTime: undefined
+        duration: []
       },
       chart: undefined,
       devices: [],
       materialResult: {},
-      version: {
-        version: 'V1.0.0',
-        description:
-          '关于版本：版本，最初指一种书籍经过多次传抄、刻印或以其他方式而形成的各种不同本子。随着时代的发展，版本也开始应用于影视、软件等事物上，形容对象相同但介绍方法等不同的两个事物。'
-      }
+      version: {}
     }
   },
   apollo: {
+    version: {
+      query() {
+        if (this.versionID) {
+          return gql`
+            query($versionID: Int!) {
+              version: materialVersion(id: $versionID) {
+                id
+                version
+                description
+              }
+            }
+          `
+        } else {
+          return gql`
+            query($id: Int!) {
+              version: materialActiveVersion(id: $id) {
+                id
+                version
+                description
+              }
+            }
+          `
+        }
+      },
+      variables() {
+        return {
+          versionID: this.versionID,
+          id: this.id
+        }
+      }
+    },
     devices: {
       query: gql`
         query($materialID: Int!) {
@@ -107,33 +126,37 @@ export default {
     },
     materialResult: {
       query: gql`
-        query($input: Search!) {
-          materialResult: analyzeMaterial(searchInput: $input) {
-            material {
-              id
-              name
-              customerCode
-              projectRemark
-            }
+        query($id: Int!, $deviceID: Int, $versionID: Int, $duration: [Time]!) {
+          materialResult: analyzeMaterial(
+            id: $id
+            deviceID: $deviceID
+            versionID: $versionID
+            duration: $duration
+          ) {
+            id
+            name
+            customerCode
+            projectRemark
             ok
             ng
           }
         }
       `,
+      fetchPolicy: 'network-only',
       variables() {
         return {
-          input: {
-            materialID: this.id,
-            deviceID: this.form.deviceID || undefined,
-            beginTime: this.form.beginTime || undefined,
-            endTime: this.form.endTime || undefined,
-            extra: {}
-          }
+          id: this.id,
+          deviceID: this.form.deviceID || undefined,
+          versionID: this.versionID,
+          duration: this.duration
         }
       }
     }
   },
   computed: {
+    duration() {
+      return this.form.duration || []
+    },
     yieldRatio() {
       if (!this.materialResult) {
         return 0

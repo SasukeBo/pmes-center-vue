@@ -1,6 +1,6 @@
 <template>
   <div class="material-size">
-    <TopYieldPoint :id="id"></TopYieldPoint>
+    <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
 
     <div class="size-tables" v-loading="$apollo.queries.pointListWrap.loading">
       <el-table
@@ -75,12 +75,23 @@ export default {
       pointListWrap: undefined
     }
   },
+  computed: {
+    selectedVersionID() {
+      var versionID = this.$route.query.version_id
+      if (versionID && !isNaN(parseInt(versionID))) {
+        return versionID
+      }
+
+      return undefined
+    }
+  },
   apollo: {
     pointListWrap: {
       query: gql`
-        query($materialID: Int!, $limit: Int!, $page: Int!) {
+        query($materialID: Int!, $versionID: Int, $limit: Int!, $page: Int!) {
           pointListWrap: pointListWithYield(
             materialID: $materialID
+            versionID: $versionID
             limit: $limit
             page: $page
           ) {
@@ -102,6 +113,7 @@ export default {
       variables() {
         return {
           materialID: this.id,
+          versionID: this.selectedVersionID,
           limit: this.limit,
           page: this.page
         }

@@ -2,12 +2,12 @@
   <div class="material-page">
     <div class="material-page__header">
       <div class="material-page__header-inner">
-        <div class="recent-versions">
+        <div class="recent-versions" v-if="versions.length > 0">
           <div class="recent-versions__inner">
             <VersionCard
-              v-for="i in 3"
-              :key="'versions_' + i"
-              :version="version"
+              v-for="v in versions"
+              :key="'versions_' + v.id"
+              :version="v"
             ></VersionCard>
           </div>
         </div>
@@ -18,7 +18,8 @@
               <el-select
                 remote
                 filterable
-                :loading="loading"
+                :loading="searchVersionLoading"
+                @change="changeVersion"
                 v-model="versionID"
                 placeholder="输入版本关键字"
                 :remote-method="remoteMethod"
@@ -70,6 +71,7 @@
 </template>
 <script>
 import VersionCard from './VersionCard'
+import gql from 'graphql-tag'
 
 export default {
   name: 'MaterialPage',
@@ -80,38 +82,83 @@ export default {
   data() {
     return {
       activePanel: 'material-overview',
-      // TODO: remove fate data
-      version: {
-        version: 'v1.0.0',
-        yield: 0.75,
-        amount: 65536,
-        description:
-          '版本，最初指一种书籍经过多次传抄、刻印或以其他方式而形成的各种不同本子。随着时代的发展，版本也开始应用于影视、软件等事物上，形容对象相同但介绍方法等不同的两个事物。'
-      },
-      loading: false,
+      versions: [],
+      searchVersionLoading: false,
       versionID: undefined,
-      options: [
-        {
-          id: 1,
-          version: 'V1.0.0',
-          description:
-            '关于版本：版本，最初指一种书籍经过多次传抄、刻印或以其他方式而形成的各种不同本子。随着时代的发展，版本也开始应用于影视、软件等事物上，形容对象相同但介绍方法等不同的两个事物。'
-        },
-        {
-          id: 2,
-          version: 'V1.0.1',
-          description:
-            '关于版本：版本，最初指一种书籍经过多次传抄、刻印或以其他方式而形成的各种不同本子。随着时代的发展，版本也开始应用于影视、软件等事物上，形容对象相同但介绍方法等不同的两个事物。'
+      options: []
+    }
+  },
+  apollo: {
+    versions: {
+      query: gql`
+        query($id: Int!, $search: String, $limit: Int, $isActive: Boolean) {
+          versions: materialVersions(
+            id: $id
+            search: $search
+            limit: $limit
+            isActive: $isActive
+          ) {
+            id
+            version
+            total
+            yield
+            description
+          }
         }
-      ]
+      `,
+      variables() {
+        return {
+          id: this.id,
+          limit: 3,
+          isActive: false
+        }
+      }
+    }
+  },
+  watch: {
+    versions(val) {
+      if (val) {
+        this.options = val
+      }
     }
   },
   methods: {
-    remoteMethod() {
-      console.log(arguments)
+    remoteMethod(search) {
+      this.$apollo
+        .query({
+          query: gql`
+            query($id: Int!, $search: String, $limit: Int, $isActive: Boolean) {
+              options: materialVersions(
+                id: $id
+                search: $search
+                limit: $limit
+                isActive: $isActive
+              ) {
+                id
+                version
+                description
+              }
+            }
+          `,
+          variables: {
+            id: this.id,
+            search
+          }
+        })
+        .then(({ data: { options } }) => {
+          this.options = options
+        })
+        .catch((e) => console.log(e))
     },
     handlePanelChange(val) {
       this.$router.push({ name: val.name, params: { id: this.id } })
+    },
+    changeVersion(val) {
+      this.$router.push({
+        name: this.$route.name,
+        params: this.$route.params,
+        query: { version_id: val }
+      })
     }
   },
   created() {

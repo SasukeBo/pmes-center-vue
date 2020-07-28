@@ -1,10 +1,10 @@
 <template>
   <div class="material-view">
-    <TotalYieldPie :id="id"></TotalYieldPie>
-    <TopYieldByLine :id="id"></TopYieldByLine>
-    <TopYieldPoint :id="id"></TopYieldPoint>
-    <TopYieldDevice :id="id"></TopYieldDevice>
-    <TopYieldCustom :id="id"></TopYieldCustom>
+    <TotalYieldPie :id="id" :versionID="selectedVersionID"></TotalYieldPie>
+    <TopYieldByLine :id="id" :versionID="selectedVersionID"></TopYieldByLine>
+    <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
+    <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
+    <TopYieldCustom :id="id" :versionID="selectedVersionID"></TopYieldCustom>
 
     <MaterialDialog
       :visible.sync="materialDialogVisible"
@@ -14,8 +14,6 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
-import { pipeToUndefined } from '@/helpers'
 import MaterialDialog from './MaterialDialog.vue'
 import TopYieldDevice from './TopYieldDevice.vue'
 import TopYieldPoint from './TopYieldPoint.vue'
@@ -34,62 +32,11 @@ export default {
     TopYieldByLine,
     TotalYieldPie
   },
-  apollo: {
-    devices: {
-      query: gql`
-        query($materialID: Int!) {
-          devices(materialID: $materialID) {
-            id
-            name
-          }
-        }
-      `,
-      variables() {
-        return {
-          materialID: this.id
-        }
-      }
-    },
-    materialResult: {
-      query: gql`
-        query($input: Search!) {
-          materialResult: analyzeMaterial(searchInput: $input) {
-            material {
-              id
-              name
-              customerCode
-              projectRemark
-            }
-            ok
-            ng
-          }
-        }
-      `,
-      variables() {
-        return {
-          input: {
-            materialID: this.id,
-            deviceID: pipeToUndefined(this.searchForm.deviceID),
-            beginTime: pipeToUndefined(this.searchForm.beginTime),
-            endTime: pipeToUndefined(this.searchForm.endTime),
-            extra: {
-              lineID: pipeToUndefined(this.searchForm.lineID),
-              jigID: pipeToUndefined(this.searchForm.jigID),
-              mouldID: pipeToUndefined(this.searchForm.mouldID),
-              shiftNumber: pipeToUndefined(this.searchForm.shiftNumber)
-            }
-          }
-        }
-      }
-    }
-  },
   data() {
     return {
       mychart: undefined,
       isEdit: false,
-      devices: [],
       materialForm: {},
-      materialResult: undefined,
       materialDialogVisible: false,
       searchForm: {
         deviceID: undefined,
@@ -127,6 +74,16 @@ export default {
           }
         ]
       }
+    }
+  },
+  computed: {
+    selectedVersionID() {
+      var versionID = this.$route.query.version_id
+      if (versionID && !isNaN(parseInt(versionID))) {
+        return versionID
+      }
+
+      return undefined
     }
   },
   created() {

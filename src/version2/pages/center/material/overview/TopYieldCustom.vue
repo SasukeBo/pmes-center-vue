@@ -105,7 +105,8 @@ import gql from 'graphql-tag'
 export default {
   name: 'TopYieldCustom',
   props: {
-    id: [String, Number]
+    id: [String, Number],
+    versionID: [String, Number]
   },
   data() {
     var checkUniqueAttributeForXAxisAndGroupBy = (rule, value, callback) => {
@@ -166,8 +167,11 @@ export default {
   apollo: {
     attributes: {
       query: gql`
-        query($materialID: Int!) {
-          attributes: productAttributes(materialID: $materialID) {
+        query($materialID: Int!, $versionID: Int) {
+          attributes: productAttributes(
+            materialID: $materialID
+            versionID: $versionID
+          ) {
             label
             token
             prefix
@@ -176,14 +180,18 @@ export default {
       `,
       variables() {
         return {
-          materialID: this.id
+          materialID: this.id,
+          versionID: this.versionID
         }
       }
     },
     echartsResult: {
       query: gql`
-        query($input: GraphInput!) {
-          echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
+        query($input: GraphInput!, $versionID: Int) {
+          echartsResult: groupAnalyzeMaterial(
+            analyzeInput: $input
+            versionID: $versionID
+          ) {
             xAxisData
             seriesData
             seriesAmountData
@@ -205,6 +213,7 @@ export default {
           groupBy = 'Attribute'
         }
         return {
+          versionID: this.versionID,
           input: {
             targetID: this.id,
             xAxis,
@@ -228,6 +237,7 @@ export default {
       return this.form.yAxis !== 'Amount'
     },
     groupAttribute() {
+      if (!this.attributes) return undefined
       var index = this.attributes.findIndex(
         (a) => a.token === this.form.groupBy
       )
@@ -235,6 +245,7 @@ export default {
       return undefined
     },
     xAxisAttribute() {
+      if (!this.attributes) return undefined
       var index = this.attributes.findIndex((a) => a.token === this.form.xAxis)
       if (index >= 0) return this.attributes[index]
       return undefined

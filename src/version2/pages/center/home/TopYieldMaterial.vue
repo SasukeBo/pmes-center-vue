@@ -33,11 +33,13 @@ export default {
         }
       `,
       variables() {
-        var t = new Date()
-        t.setDate(t.getDate() - 30)
-        t.setHours(0, 0, 0, 0)
+        // TODO: 还原此处
+        // var t = new Date()
+        // t.setDate(t.getDate() - 30)
+        // t.setHours(0, 0, 0, 0)
         return {
-          duration: [t],
+          duration: [],
+          // duration: [t],
           limit: 20
         }
       }
@@ -47,13 +49,21 @@ export default {
     assembleSeries(seriesData) {
       var data = seriesData.data || []
       var values = data.map((item, i) => {
-        var rate = (item * 100).toFixed(2)
+        var value = (item * 100).toFixed(2)
+        var itemStyle
+
         if (i < 3) {
-          return SeriesDataValueItemStyle(rate, '#D92622', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#D92622', '#E04660', 'linear')
         } else if (i < 8) {
-          return SeriesDataValueItemStyle(rate, '#FFB763', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#FFB763', '#E04660', 'linear')
+        } else {
+          return value
         }
-        return rate
+
+        return {
+          value,
+          itemStyle
+        }
       })
 
       return [
@@ -111,6 +121,7 @@ export default {
           xAxis: this.assembleXAxis(nv.xAxisData),
           series: this.assembleSeries(nv.seriesData)
         }
+        console.log(options)
         this.chart.clear()
         this.chart.setOption(options)
       }
