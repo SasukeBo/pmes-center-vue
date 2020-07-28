@@ -3,6 +3,20 @@
     <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
 
     <div class="size-tables" v-loading="$apollo.queries.pointListWrap.loading">
+      <el-input
+        style="width: 300px"
+        placeholder="请输入内容"
+        v-model="searchInput"
+        class="input-with-select"
+        @keyup.enter.native.prevent="search = searchInput"
+      >
+        <el-button
+          slot="append"
+          icon="el-icon-search"
+          @click="search = searchInput"
+        ></el-button>
+      </el-input>
+
       <el-table
         :data="pointListWrap.list"
         style="width: 100%"
@@ -10,34 +24,27 @@
       >
         <el-table-column label="名称">
           <template slot-scope="scope">
-            {{ scope.row.point.name }}
+            {{ scope.row.name }}
           </template>
         </el-table-column>
         <el-table-column label="USL">
           <template slot-scope="scope">
-            {{ scope.row.point.upperLimit.toFixed(3) }}
+            {{ scope.row.upperLimit.toFixed(3) }}
           </template>
         </el-table-column>
         <el-table-column label="Nominal">
           <template slot-scope="scope">
-            {{ scope.row.point.nominal.toFixed(3) }}
+            {{ scope.row.nominal.toFixed(3) }}
           </template>
         </el-table-column>
         <el-table-column label="LSL">
           <template slot-scope="scope">
-            {{ scope.row.point.lowerLimit.toFixed(3) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="良率">
-          <template slot-scope="scope">
-            {{ ((scope.row.ok * 100) / scope.row.total).toFixed(2) }}%
+            {{ scope.row.lowerLimit.toFixed(3) }}
           </template>
         </el-table-column>
         <el-table-column>
           <template slot-scope="scope">
-            <el-button size="small" @click="view(scope.row.point.id)"
-              >查看</el-button
-            >
+            <el-button size="small" @click="view(scope.row.id)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,6 +79,8 @@ export default {
     return {
       limit: 50,
       page: 1,
+      search: '',
+      searchInput: '',
       pointListWrap: undefined
     }
   },
@@ -85,27 +94,37 @@ export default {
       return undefined
     }
   },
+  watch: {
+    searchInput(val) {
+      if (!val) {
+        this.search = ''
+      }
+    }
+  },
   apollo: {
     pointListWrap: {
       query: gql`
-        query($materialID: Int!, $versionID: Int, $limit: Int!, $page: Int!) {
-          pointListWrap: pointListWithYield(
+        query(
+          $materialID: Int!
+          $versionID: Int
+          $search: String
+          $limit: Int!
+          $page: Int!
+        ) {
+          pointListWrap: pointList(
             materialID: $materialID
             versionID: $versionID
+            search: $search
             limit: $limit
             page: $page
           ) {
             total
             list {
-              point {
-                id
-                name
-                upperLimit
-                lowerLimit
-                nominal
-              }
-              ok
-              total
+              id
+              name
+              upperLimit
+              lowerLimit
+              nominal
             }
           }
         }
@@ -114,6 +133,7 @@ export default {
         return {
           materialID: this.id,
           versionID: this.selectedVersionID,
+          search: this.search,
           limit: this.limit,
           page: this.page
         }

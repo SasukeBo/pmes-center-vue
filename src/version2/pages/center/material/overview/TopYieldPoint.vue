@@ -85,7 +85,7 @@ export default {
   },
   data() {
     var t = new Date()
-    t.setMonth(t.getMonth() - 1)
+    t.setDate(t.getDate() - 7)
     t.setHours(0, 0, 0, 0)
 
     return {
@@ -226,7 +226,7 @@ export default {
           color: ['#3FE3D3', '#5E83F2'],
           title: {
             text: '点位不良率',
-            subtext: '不良率最高的前20个检测点位'
+            subtext: '最近一周点位排名'
           },
           xAxis: {
             name: '点位',
