@@ -249,7 +249,10 @@ export default {
       if (val) {
         this.form.createdAtColumnIndex = val.createdAtColumnIndex
         this.form.dataRowIndex = val.dataRowIndex
-        this.form.productColumns = val.productColumns
+        this.form.productColumns = val.productColumns.map((c) => {
+          delete c.__typename
+          return c
+        })
       }
     }
   }
