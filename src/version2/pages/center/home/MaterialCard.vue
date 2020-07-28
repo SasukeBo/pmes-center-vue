@@ -45,9 +45,7 @@ export default {
             radius: ['45%', '70%'],
             center: ['50%', '50%'],
             label: {
-              show: false,
-              formatter: '{b}',
-              position: 'center'
+              show: false
             },
             itemStyle: {
               shadowColor: 'rgba(0,0,0,0.2)',

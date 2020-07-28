@@ -1,74 +1,6 @@
 <template>
   <div class="material-view">
-    <div class="header-block">
-      <el-row :gutter="24">
-        <el-col :span="14" class="chart-panel-col" style="padding-right: 0">
-          <div class="block-card chart-panel">
-            <div class="chart-block" ref="chart-mount"></div>
-            <div class="data-block" v-if="materialResult">
-              <div class="title">
-                {{ materialResult.material.customerCode }} ({{
-                  materialResult.material.name
-                }})
-              </div>
-              <div class="subtitle">
-                {{ materialResult.material.projectRemark }}
-              </div>
-              <div class="subtitle">
-                总产量：{{ materialResult.ok + materialResult.ng }}
-              </div>
-            </div>
-            <div class="yield" v-if="materialResult && materialResult.ok">
-              Yield:
-              {{
-                (
-                  (materialResult.ok * 100) /
-                  (materialResult.ok + materialResult.ng)
-                ).toFixed(2)
-              }}%
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="10" class="search-form-col" style="padding-left: 0">
-          <div class="block-card filter-form">
-            <div class="form-header">条件筛选</div>
-
-            <el-form size="mini" label-position="right" label-width="90px">
-              <el-form-item label="设备：">
-                <el-select
-                  v-model="searchForm.deviceID"
-                  placeholder="请选择设备"
-                >
-                  <el-option
-                    v-for="d in devices"
-                    :label="d.name"
-                    :value="d.id"
-                    :key="'device_' + d.id"
-                    >{{ d.name }}</el-option
-                  >
-                </el-select>
-              </el-form-item>
-              <el-form-item label="日期范围：" class="flex-form-item">
-                <el-date-picker
-                  v-model="searchForm.beginTime"
-                  type="date"
-                  placeholder="选择开始日期"
-                >
-                </el-date-picker>
-                <span class="date-picker-seperator">-</span>
-                <el-date-picker
-                  v-model="searchForm.endTime"
-                  type="date"
-                  placeholder="选择结束日期"
-                >
-                </el-date-picker>
-              </el-form-item>
-            </el-form>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-
+    <TotalYieldPie :id="id"></TotalYieldPie>
     <TopYieldByLine :id="id"></TopYieldByLine>
     <TopYieldPoint :id="id"></TopYieldPoint>
     <TopYieldDevice :id="id"></TopYieldDevice>
@@ -83,13 +15,13 @@
 </template>
 <script>
 import gql from 'graphql-tag'
-import echarts from 'echarts'
 import { pipeToUndefined } from '@/helpers'
 import MaterialDialog from './MaterialDialog.vue'
 import TopYieldDevice from './TopYieldDevice.vue'
 import TopYieldPoint from './TopYieldPoint.vue'
 import TopYieldCustom from './TopYieldCustom.vue'
 import TopYieldByLine from './TopYieldByLine.vue'
+import TotalYieldPie from './TotalYieldPie.vue'
 
 export default {
   name: 'Material',
@@ -99,7 +31,8 @@ export default {
     TopYieldDevice,
     TopYieldPoint,
     TopYieldCustom,
-    TopYieldByLine
+    TopYieldByLine,
+    TotalYieldPie
   },
   apollo: {
     devices: {
@@ -204,64 +137,7 @@ export default {
     now.setMonth(now.getMonth() - 12)
     this.searchForm.beginTime = now
   },
-  mounted() {
-    this.mychart = echarts.init(this.$refs['chart-mount'])
-  },
-  watch: {
-    materialResult: {
-      immediate: true,
-      handler: function(nv) {
-        if (!nv) return
-        this.option.series[0].data = [
-          { name: 'OK', value: nv.ok },
-          { name: 'NG', value: nv.ng }
-        ]
-        this.mychart.setOption(this.option)
-      }
-    }
-  },
   methods: {
-    editMaterial() {
-      if (this.$store.state.currentUser) {
-        this.materialForm = this.materialResult.material
-        this.isEdit = true
-        this.materialDialogVisible = true
-        return
-      }
-
-      this.$message({ type: 'warning', message: '此操作需要先登录您的账号' })
-    },
-    deleteMaterial() {
-      var id = this.id
-      if (this.$store.state.currentUser) {
-        this.$apollo
-          .mutate({
-            mutation: gql`
-              mutation($id: Int!) {
-                result: deleteMaterial(id: $id)
-              }
-            `,
-            variables: { id }
-          })
-          .then(({ data: { result } }) => {
-            var recent = localStorage.getItem('recent_view_material_id')
-            if (parseInt(recent) === parseInt(id)) {
-              localStorage.setItem('recent_view_material_id', '')
-            }
-
-            this.$router.push({ path: '/' })
-            this.$message({ type: 'success', message: result })
-          })
-          .catch((e) => {
-            this.$message({
-              type: 'error',
-              message: e.message.replace('GraphQL error:', '')
-            })
-          })
-      } else {
-        this.$message({ type: 'warning', message: '此操作需要先登录您的账号' })
-      }
-    },
     scrollTop() {
       var timer = setInterval(function() {
         var osTop =
