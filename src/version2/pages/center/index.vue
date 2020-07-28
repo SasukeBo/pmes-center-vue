@@ -85,7 +85,7 @@ html {
   }
 
   .app-body {
-    max-width: 1200px;
+    width: 100%;
     margin: auto;
     padding-top: 64px;
     position: relative;

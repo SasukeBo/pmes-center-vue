@@ -1,66 +1,69 @@
 <template>
   <div class="app-body-home">
     <div class="page-banner">
-      <img src="~@/assets/banner@2x.png" />
+      <img src="~@/version2/assets/images/banner.png" />
     </div>
 
     <div class="header-block" v-if="materials.length && recent">
-      <el-row :gutter="24">
-        <el-col :span="24" class="recent-view-col">
-          <div>
-            <div class="col-title">最近预览</div>
-            <div class="col-card">
-              <RecentMaterial :materialID="recent"></RecentMaterial>
-            </div>
+      <div class="header-block__inner">
+        <div class="header-block__inner-title">最近预览</div>
+        <div class="header-block__inner-flex">
+          <div class="header-block__inner-left">
+            <RecentMaterialPie :materialID="recent"></RecentMaterialPie>
           </div>
-        </el-col>
-      </el-row>
-    </div>
-
-    <TopYieldMaterial></TopYieldMaterial>
-
-    <div class="materials-block">
-      <div class="block-title">
-        <span class="block-title__content">料号列表</span>
-        <el-input
-          placeholder="请输入产品料号"
-          v-model="inputValue"
-          @keydown.native.enter.prevent="materialSearch = inputValue"
-        >
-          <el-button
-            slot="append"
-            type="info"
-            @click="materialSearch = inputValue"
-            >搜索</el-button
-          >
-        </el-input>
-      </div>
-
-      <div class="block-body" v-if="materials.length">
-        <el-row :gutter="24">
-          <el-col
-            :span="6"
-            v-for="m in materials"
-            :key="'material_' + m.id"
-            class="material-card-col"
-          >
-            <MaterialCard :material="m"></MaterialCard>
-          </el-col>
-        </el-row>
-      </div>
-
-      <div class="empty-block" v-else>
-        <img src="~@/assets/empty-material@2x.png" />
-        <div class="information">
-          暂无料号
+          <div class="header-block__inner-right">
+            <RecentMaterialBar :materialID="recent"></RecentMaterialBar>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div
-        class="loading"
-        v-show="$apollo.queries.materialWrap.loading"
-        v-loading="$apollo.queries.materialWrap.loading"
-      ></div>
+    <div class="body-block">
+      <TopYieldMaterial></TopYieldMaterial>
+
+      <div class="materials-block">
+        <div class="block-title">
+          <span class="block-title__content">料号列表</span>
+          <el-input
+            placeholder="请输入产品料号"
+            v-model="inputValue"
+            @keydown.native.enter.prevent="materialSearch = inputValue"
+          >
+            <el-button
+              slot="append"
+              type="info"
+              @click="materialSearch = inputValue"
+              >搜索</el-button
+            >
+          </el-input>
+        </div>
+
+        <div class="block-body" v-if="materials.length">
+          <el-row :gutter="24">
+            <el-col
+              :span="6"
+              v-for="m in materials"
+              :key="'material_' + m.id"
+              class="material-card-col"
+            >
+              <MaterialCard :material="m"></MaterialCard>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div class="empty-block" v-else>
+          <img src="~@/assets/empty-material@2x.png" />
+          <div class="information">
+            暂无料号
+          </div>
+        </div>
+
+        <div
+          class="loading"
+          v-show="$apollo.queries.materialWrap.loading"
+          v-loading="$apollo.queries.materialWrap.loading"
+        ></div>
+      </div>
     </div>
 
     <div class="footer">
@@ -74,13 +77,19 @@
 </template>
 <script>
 import MaterialCard from './MaterialCard.vue'
-import RecentMaterial from './RecentMaterial.vue'
 import TopYieldMaterial from './TopYieldMaterial.vue'
+import RecentMaterialBar from './RecentMaterialBar'
+import RecentMaterialPie from './RecentMaterialPie'
 import gql from 'graphql-tag'
 
 export default {
   name: 'Home',
-  components: { MaterialCard, RecentMaterial, TopYieldMaterial },
+  components: {
+    MaterialCard,
+    TopYieldMaterial,
+    RecentMaterialPie,
+    RecentMaterialBar
+  },
   apollo: {
     materialWrap: {
       query: gql`
@@ -184,7 +193,6 @@ export default {
 </script>
 <style lang="scss">
 .theme_1-app .app-body .app-body-home {
-  padding-top: 32px;
   margin-bottom: 70px;
 
   .loading {
@@ -270,7 +278,37 @@ export default {
     }
   }
 
+  .body-block {
+    max-width: 1200px;
+    margin: auto;
+  }
+
   .header-block {
+    background: #fff;
+    height: 500px;
+
+    .header-block__inner {
+      max-width: 1200px;
+      margin: auto;
+      height: 100%;
+    }
+
+    .header-block__inner-title {
+      font-size: 16px;
+      color: #666;
+      padding-top: 31px;
+      line-height: 16px;
+      font-weight: bold;
+    }
+
+    .header-block__inner-flex {
+      display: flex;
+    }
+
+    .header-block__inner-right {
+      flex: auto;
+    }
+
     .col-title {
       line-height: 16px;
       padding: 16px 0;
@@ -308,7 +346,7 @@ export default {
 
   .page-banner img {
     width: 100%;
-    height: 160px;
+    height: 350px;
     display: block;
   }
 }

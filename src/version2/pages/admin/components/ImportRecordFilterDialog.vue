@@ -61,7 +61,7 @@
           <el-option
             v-for="u in users"
             :key="u.id"
-            :label="u.account"
+            :label="u.name || u.account"
             :value="u.id"
           ></el-option>
         </el-select>
@@ -110,6 +110,7 @@ export default {
         query {
           users {
             id
+            name
             account
           }
         }

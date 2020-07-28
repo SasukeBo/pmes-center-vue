@@ -5,7 +5,7 @@ import Points from '@/version2/pages/admin/material/points.vue'
 import MaterialEdit from '@/version2/pages/admin/material/edit-form.vue'
 import MaterialCreate from '@/version2/pages/admin/material/create-form.vue'
 import MaterialImportRecord from '@/version2/pages/admin/material/import-record.vue'
-import MaterialDecodeTemplate from '@/version2/pages/admin/material/decode-template'
+import MaterialVersion from '@/version2/pages/admin/material/material_version'
 
 import Device from '@/version2/pages/admin/device/index.vue'
 import DeviceListView from '@/version2/pages/admin/device/list-view.vue'
@@ -47,25 +47,25 @@ const adminRoutes = {
           component: MaterialEdit
         },
         {
-          path: ':id/points',
-          name: 'console-material-points',
-          meta: { name: '检测项' },
+          path: ':id/versions',
+          name: 'console-material-versions',
+          meta: { name: '版本列表' },
+          props: true,
+          component: MaterialVersion
+        },
+        {
+          path: ':id/versions/:versionID/points',
+          name: 'console-material-versions__points',
+          meta: { name: '尺寸或点位' },
           props: true,
           component: Points
         },
         {
-          path: ':id/import_records',
-          name: 'console-material-import-record',
+          path: ':id/versions/:versionID/import_records',
+          name: 'console-material-versions__import-records',
           meta: { name: '导入记录' },
           props: true,
           component: MaterialImportRecord
-        },
-        {
-          path: ':id/decode_templates',
-          name: 'console-material-decode-template',
-          meta: { name: '解析模板' },
-          props: true,
-          component: MaterialDecodeTemplate
         }
       ]
     },

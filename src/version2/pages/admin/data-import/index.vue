@@ -26,9 +26,12 @@
             <span v-else>{{ scope.row.fileName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="解析模板">
+        <el-table-column label="版本号">
           <template slot-scope="scope">
-            {{ scope.row.decodeTemplate.name }}
+            <span v-if="scope.row.materialVersion">
+              {{ scope.row.materialVersion.version }}
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="料号">
@@ -36,7 +39,7 @@
             {{ scope.row.material.name }}
           </template>
         </el-table-column>
-        <el-table-column label="检测设备">
+        <el-table-column label="检测设备" width="100px">
           <template slot-scope="scope">
             {{ scope.row.device.name }}
           </template>
@@ -129,6 +132,16 @@
         @update-list="updateList"
       ></ImportForm>
     </el-drawer>
+
+    <div class="go-back">
+      <el-button
+        type="primary"
+        style="width: 100px"
+        size="small"
+        @click="$router.go(-1)"
+        >返回</el-button
+      >
+    </div>
   </div>
 </template>
 <script>
@@ -192,9 +205,9 @@ export default {
                 account
               }
               importType
-              decodeTemplate {
+              materialVersion {
                 id
-                name
+                version
               }
               yield
               createdAt
@@ -244,6 +257,12 @@ $--import-data-table-border__color: #dedede;
   height: 100%;
   padding: 56px 63px 0 63px;
   box-sizing: border-box;
+
+  .go-back {
+    position: absolute;
+    right: 64px;
+    bottom: 16px;
+  }
 
   .console-import-data__body {
     height: calc(100% - 96px);

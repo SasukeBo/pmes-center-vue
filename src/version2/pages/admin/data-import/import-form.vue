@@ -48,23 +48,6 @@
             ></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item label="解析模板:" prop="decodeTemplateID">
-          <el-select
-            clearable
-            size="small"
-            :disabled="!form.materialID"
-            v-model="form.decodeTemplateID"
-            placeholder="请先选择料号，再选择模板"
-          >
-            <el-option
-              v-for="m in decodeTemplates"
-              :key="m.id"
-              :label="m.name"
-              :value="m.id"
-            ></el-option>
-          </el-select>
-        </el-form-item>
       </el-form>
 
       <el-upload
@@ -108,14 +91,12 @@ export default {
       form: {
         materialID: undefined,
         deviceID: undefined,
-        decodeTemplateID: undefined,
         fileTokens: []
       },
       saving: false,
       searchMaterialsLoading: false,
       materials: [],
       devices: [],
-      decodeTemplates: [],
       rules: {
         materialID: [
           { required: true, message: '料号为必选项', trigger: 'blur' }
@@ -153,13 +134,11 @@ export default {
                 mutation(
                   $materialID: Int!
                   $deviceID: Int!
-                  $decodeTemplateID: Int!
                   $fileTokens: [String!]!
                 ) {
                   response: importData(
                     materialID: $materialID
                     deviceID: $deviceID
-                    decodeTemplateID: $decodeTemplateID
                     fileTokens: $fileTokens
                   )
                 }
@@ -185,7 +164,6 @@ export default {
     clearForm() {
       this.form.materialID = undefined
       this.form.deviceID = undefined
-      this.form.decodeTemplateID = undefined
       this.form.fileTokens = []
       this.$refs.form.clearValidate()
     },
@@ -270,37 +248,14 @@ export default {
           this.devices = response.devices
         })
         .catch((e) => this.$GraphQLError(e))
-    },
-    getDecodeTemplates() {
-      this.$apollo
-        .query({
-          query: gql`
-            query($materialID: Int!) {
-              response: listDecodeTemplate(materialID: $materialID) {
-                id
-                name
-              }
-            }
-          `,
-          client: 'adminClient',
-          variables: {
-            materialID: this.form.materialID
-          }
-        })
-        .then(({ data: { response } }) => {
-          this.decodeTemplates = response
-        })
-        .catch((e) => this.$GraphQLError(e))
     }
   },
   watch: {
     'form.materialID': function(val) {
       if (val) {
         this.getDevices()
-        this.getDecodeTemplates()
       } else {
         this.form.deviceID = undefined
-        this.form.decodeTemplateID = undefined
       }
     }
   }
@@ -339,6 +294,7 @@ export default {
 
     .data-file-upload {
       padding-left: 100px;
+      box-sizing: border-box;
       width: 420px;
       margin: auto;
 
