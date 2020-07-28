@@ -48,6 +48,8 @@ export default {
 </script>
 <style lang="scss">
 .size-view {
+  max-width: 1200px;
+  margin: auto;
   padding-top: 16px;
   padding-bottom: 32px;
 }

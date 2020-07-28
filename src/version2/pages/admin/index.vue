@@ -192,6 +192,7 @@ export default {
           box-sizing: border-box;
           color: #6a6a6a;
           font-size: 20px;
+          font-weight: bold;
         }
       }
     }

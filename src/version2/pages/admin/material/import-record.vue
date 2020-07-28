@@ -61,15 +61,19 @@
             {{ (scope.row.fileSize / 1024 / 1024).toFixed(2) }} MB
           </template>
         </el-table-column>
-        <el-table-column label="解析模板">
+        <el-table-column label="版本号">
           <template slot-scope="scope">
-            {{ scope.row.decodeTemplate ? scope.row.decodeTemplate.name : '-' }}
+            <span v-if="scope.row.materialVersion">
+              {{ scope.row.materialVersion.version }}
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column
           label="导入时间"
           :formatter="timeFormatter"
           prop="createdAt"
+          width="100px"
         ></el-table-column>
         <el-table-column label="数据总行数" prop="rowCount"></el-table-column>
         <el-table-column label="数据良率" prop="yield">
@@ -150,6 +154,17 @@
       @current-change="handleCurrentChange"
     ></Pagination>
 
+    <div class="go-back">
+      <el-button
+        type="primary"
+        size="small"
+        @click="$router.go(-1)"
+        style="width: 100px"
+      >
+        返回</el-button
+      >
+    </div>
+
     <ImportRecordFilterDialog
       :visible.sync="searchFormVisible"
       :form.sync="searchForm"
@@ -159,11 +174,15 @@
 <script>
 import Pagination from '@/version2/pages/admin/components/Pagination.vue'
 import ImportRecordFilterDialog from '@/version2/pages/admin/components/ImportRecordFilterDialog.vue'
+import { timeFormatter } from '@/helpers.js'
 import gql from 'graphql-tag'
 
 export default {
   name: 'MaterialImportRecords',
-  props: ['id', 'material'],
+  props: {
+    id: [Number, String],
+    versionID: [Number, String]
+  },
   components: { Pagination, ImportRecordFilterDialog },
   data() {
     return {
@@ -192,14 +211,14 @@ export default {
     importRecordsWrap: {
       query: gql`
         query(
-          $materialID: Int!
+          $id: Int!
           $deviceID: Int
           $page: Int!
           $limit: Int!
           $search: ImportRecordSearch!
         ) {
           importRecordsWrap: importRecords(
-            materialID: $materialID
+            materialVersionID: $id
             deviceID: $deviceID
             page: $page
             limit: $limit
@@ -231,9 +250,9 @@ export default {
                 account
               }
               importType
-              decodeTemplate {
+              materialVersion {
                 id
-                name
+                version
               }
               yield
               createdAt
@@ -244,7 +263,7 @@ export default {
       client: 'adminClient',
       variables() {
         return {
-          materialID: this.id,
+          id: this.versionID,
           page: this.page,
           limit: this.limit,
           search: this.searchForm
@@ -314,8 +333,7 @@ export default {
       this.page = val
     },
     timeFormatter() {
-      var t = new Date(arguments[2])
-      return t.toLocaleString()
+      return timeFormatter(arguments[2])
     },
     handleSelectionChange(values) {
       this.selectedRecords = values
@@ -426,6 +444,12 @@ export default {
 .console-import-record {
   height: 100%;
   position: relative;
+
+  .go-back {
+    position: absolute;
+    bottom: 16px;
+    right: 32px;
+  }
 
   .record-operation-btn {
     position: absolute;

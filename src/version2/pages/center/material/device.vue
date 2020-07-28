@@ -1,6 +1,6 @@
 <template>
   <div class="material-devices">
-    <TopYieldDevice :id="id"></TopYieldDevice>
+    <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
 
     <div class="devices-list">
       <el-table :data="deviceResults" style="width: 100%">
@@ -57,11 +57,24 @@ export default {
       deviceResults: []
     }
   },
+  computed: {
+    selectedVersionID() {
+      var versionID = this.$route.query.version_id
+      if (versionID && !isNaN(parseInt(versionID))) {
+        return versionID
+      }
+
+      return undefined
+    }
+  },
   apollo: {
     deviceResults: {
       query: gql`
-        query($materialID: Int!) {
-          deviceResults: analyzeDevices(materialID: $materialID) {
+        query($materialID: Int!, $versionID: Int) {
+          deviceResults: analyzeDevices(
+            materialID: $materialID
+            versionID: $versionID
+          ) {
             device {
               id
               name
@@ -73,7 +86,8 @@ export default {
       `,
       variables() {
         return {
-          materialID: this.id
+          materialID: this.id,
+          versionID: this.selectedVersionID
         }
       }
     }

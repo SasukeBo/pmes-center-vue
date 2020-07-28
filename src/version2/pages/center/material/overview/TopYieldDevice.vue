@@ -72,7 +72,8 @@ import { SeriesDataValueItemStyle } from '@/helpers.js'
 export default {
   name: 'TopYieldDevice',
   props: {
-    id: [String, Number]
+    id: [String, Number],
+    versionID: [String, Number]
   },
   data() {
     var t = new Date()
@@ -116,8 +117,11 @@ export default {
   apollo: {
     echartsResult: {
       query: gql`
-        query($input: GraphInput!) {
-          echartsResult: groupAnalyzeMaterial(analyzeInput: $input) {
+        query($input: GraphInput!, $versionID: Int) {
+          echartsResult: groupAnalyzeMaterial(
+            analyzeInput: $input
+            versionID: $versionID
+          ) {
             xAxisData
             seriesData
             seriesAmountData
@@ -126,6 +130,7 @@ export default {
       `,
       variables() {
         return {
+          versionID: this.versionID,
           input: {
             targetID: this.id,
             xAxis: 'Device',
@@ -158,12 +163,18 @@ export default {
         if (this.form.yAxis !== 'Amount') {
           value = (value * 100).toFixed(2)
         }
+        var itemStyle
+
         if (i < 3) {
-          return SeriesDataValueItemStyle(value, '#D92622', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#D92622', '#E04660', 'linear')
         } else if (i < 8) {
-          return SeriesDataValueItemStyle(value, '#FFB763', '#E04660', 'linear')
+          itemStyle = SeriesDataValueItemStyle('#FFB763', '#E04660', 'linear')
         }
-        return value
+
+        return {
+          value,
+          itemStyle
+        }
       })
 
       var name = `设备检测${this.yAxisNameMap[this.form.yAxis]}`

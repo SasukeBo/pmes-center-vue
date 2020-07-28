@@ -47,89 +47,7 @@
         </el-form>
       </div>
 
-      <div class="points-form" v-if="step === 2">
-        <div class="tip">
-          检测项录入支持导入，点击
-          <a
-            href="/downloads/xlsx?file_token=points_import_template"
-            target="_blank"
-            >下载模板</a
-          >
-        </div>
-
-        <div class="import-points">
-          <el-upload
-            action="/"
-            accept=".xlsx"
-            :http-request="handleUpload"
-            :limit="1"
-            ref="pointUpload"
-            :show-file-list="false"
-          >
-            <el-button size="small" type="primary"
-              ><img
-                src="~@/version2/assets/images/upload-btn-icon.png"
-              />导入</el-button
-            >
-          </el-upload>
-        </div>
-
-        <div class="table-form">
-          <div class="table-header table-row">
-            <div class="table-cell">检测点位</div>
-            <div class="table-cell">USL</div>
-            <div class="table-cell">Nominal</div>
-            <div class="table-cell">LSL</div>
-          </div>
-
-          <div class="table-body" ref="table-body">
-            <div
-              class="table-body__row table-row"
-              v-for="(p, i) in points"
-              :key="'point_' + i"
-            >
-              <div class="table-cell">
-                <TableCellForm
-                  :row="p"
-                  prop="name"
-                  @update="editCell"
-                ></TableCellForm>
-              </div>
-              <div class="table-cell">
-                <TableCellForm
-                  :row="p"
-                  prop="upperLimit"
-                  @update="editCell"
-                ></TableCellForm>
-              </div>
-              <div class="table-cell">
-                <TableCellForm
-                  :row="p"
-                  prop="nominal"
-                  @update="editCell"
-                ></TableCellForm>
-              </div>
-              <div class="table-cell">
-                <TableCellForm
-                  :row="p"
-                  prop="lowerLimit"
-                  @update="editCell"
-                ></TableCellForm>
-              </div>
-              <div class="delete-row-btn">
-                <img
-                  src="~@/version2/assets/images/pi-quxiao.png"
-                  @click="removeRow(p)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="table-footer" @click="addPoint()">
-            + 手动添加
-          </div>
-        </div>
-      </div>
+      <PointsForm v-if="step === 2" :dataset.sync="points"></PointsForm>
     </div>
 
     <div class="footer-btns">
@@ -157,14 +75,14 @@
 @import '@/version2/assets/scss/material_manage_createform.scss';
 </style>
 <script>
-import TableCellForm from '@/version2/pages/admin/components/TableCellForm.vue'
+import PointsForm from '@/version2/pages/admin/material/components/PointsForm.vue'
 import FButton from '@/version2/pages/admin/components/FButton.vue'
 import gql from 'graphql-tag'
 
 export default {
   components: {
     FButton,
-    TableCellForm
+    PointsForm
   },
   data() {
     return {
@@ -231,65 +149,6 @@ export default {
         .catch((e) => {
           this.submitting = false
           this.$GraphQLError(e)
-        })
-    },
-    addPoint() {
-      this.points.push({
-        name: '',
-        upperLimit: undefined,
-        nominal: undefined,
-        lowerLimit: undefined
-      })
-
-      var el = this.$refs['table-body']
-      setTimeout(() => {
-        el.scrollTo(0, el.scrollHeight)
-      }, 100)
-    },
-    editCell(val) {
-      var data = val.data
-      var prop = val.prop
-      var index = this.points.findIndex((p) => p.name === data.name)
-      this.points[index][prop] = data[prop]
-    },
-    removeRow(row) {
-      var index = this.points.findIndex((p) => p.name === row.name)
-      this.points.splice(index, 1)
-    },
-    handleUpload({ file }) {
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($file: Upload!) {
-              response: parseImportPoints(file: $file) {
-                id
-                name
-                nominal
-                upperLimit
-                lowerLimit
-              }
-            }
-          `,
-          client: 'adminClient',
-          variables: {
-            file
-          }
-        })
-        .then(({ data: { response } }) => {
-          var points = response.map((p) => {
-            delete p.__typename
-            delete p.id
-            return p
-          })
-          this.points = this.points.concat(points)
-          this.$refs.pointUpload.clearFiles()
-        })
-        .catch((e) => {
-          this.$message({
-            type: 'error',
-            message: e.message.replace('GraphQL error:', '')
-          })
-          this.$refs.pointUpload.clearFiles()
         })
     }
   }

@@ -1,13 +1,13 @@
 <template>
-  <div class="material-manage__listview">
+  <div class="material-manage__listview admin-page__content">
     <div
-      class="material-manage__listview-list"
+      class="admin-page__content-table"
       v-if="
         (materialsWrap.total > 0 && materialsWrap.materials.length > 0) ||
           pattern
       "
     >
-      <div class="material-manage__listview-header">
+      <div class="header">
         <div class="search-input">
           <el-input
             placeholder="搜索料号"
@@ -28,7 +28,8 @@
           >
         </div>
       </div>
-      <div class="material-manage__listview-body">
+
+      <div class="body">
         <el-table
           :data="materialsWrap.materials"
           stripe
@@ -60,7 +61,7 @@
             label="更新日期"
             :formatter="timeFormatter"
           ></el-table-column>
-          <el-table-column label="配置" class-name="config-column" width="400">
+          <el-table-column label="配置" class-name="config-column" width="250">
             <template slot-scope="scope">
               <span class="link" @click="fetchData(scope.row.id)"
                 >拉取Ftp数据</span
@@ -70,33 +71,11 @@
                 class="link"
                 @click="
                   redirect({
-                    name: 'console-material-points',
-                    params: { id: scope.row.id, material: scope.row }
+                    name: 'console-material-versions',
+                    params: { id: scope.row.id }
                   })
                 "
-                >检测项</span
-              >
-              <span> | </span>
-              <span
-                class="link"
-                @click="
-                  redirect({
-                    name: 'console-material-decode-template',
-                    params: { id: scope.row.id, material: scope.row }
-                  })
-                "
-                >解析模板</span
-              >
-              <span> | </span>
-              <span
-                class="link"
-                @click="
-                  redirect({
-                    name: 'console-material-import-record',
-                    params: { id: scope.row.id, material: scope.row }
-                  })
-                "
-                >导入记录</span
+                >版本管理</span
               >
               <span> | </span>
               <span
@@ -146,10 +125,13 @@
 </template>
 <style lang="scss">
 @import '~@/version2/assets/scss/material_manage_listview.scss';
+@import '~@/version2/assets/scss/admin/main_page_content.scss';
 </style>
 <script>
 import gql from 'graphql-tag'
 import Pagination from '@/version2/pages/admin/components/Pagination.vue'
+import { timeFormatter } from '@/helpers.js'
+
 export default {
   components: { Pagination },
   data() {
@@ -226,8 +208,7 @@ export default {
       this.$router.push(obj)
     },
     timeFormatter() {
-      var t = new Date(arguments[2])
-      return t.toLocaleString()
+      return timeFormatter(arguments[2])
     },
     remove(material) {
       var _this = this

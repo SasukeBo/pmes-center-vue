@@ -127,6 +127,7 @@ export default {
           points: listMaterialPoints(materialID: $materialID) {
             id
             name
+            index
             upperLimit
             lowerLimit
             nominal
