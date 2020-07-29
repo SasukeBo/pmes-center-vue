@@ -150,7 +150,7 @@ export default {
       statusMap: {
         Finished: '已完成',
         Failed: '失败',
-        Loading: '导入中',
+        Importing: '导入中',
         Reverted: '已撤销'
       },
       importRecordsWrap: {
