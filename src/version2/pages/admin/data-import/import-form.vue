@@ -55,6 +55,7 @@
         ref="upload"
         action="/posts"
         class="data-file-upload"
+        accept=".xlsx"
         :on-remove="handleUploadRemove"
         :on-error="handleUploadError"
         :on-success="handleUploadSuccess"
