@@ -100,7 +100,7 @@ export default {
           ) {
             id
             version
-            total
+            amount
             yield
             description
           }
