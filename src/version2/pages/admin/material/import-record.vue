@@ -76,6 +76,10 @@
           width="100px"
         ></el-table-column>
         <el-table-column label="数据总行数" prop="rowCount"></el-table-column>
+        <el-table-column
+          label="无效行数"
+          prop="rowInvalidCount"
+        ></el-table-column>
         <el-table-column label="数据良率" prop="yield">
           <template slot-scope="scope">
             <span
@@ -240,6 +244,7 @@ export default {
               blocked
               rowCount
               rowFinishedCount
+              rowInvalidCount
               status
               errorMessage
               originErrorMessage
