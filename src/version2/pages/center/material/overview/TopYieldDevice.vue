@@ -181,6 +181,8 @@ export default {
       var label = {
         show: true,
         position: 'top',
+        rotate: -60,
+        offset: [0, -10],
         formatter: this.form.yAxis === 'Amount' ? '{c}个' : '{c}%'
       }
 
