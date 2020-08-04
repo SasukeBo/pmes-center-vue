@@ -163,6 +163,8 @@ export default {
         var label = {
           show: true,
           position: 'top',
+          rotate: -60,
+          offset: [0, -10],
           formatter: '{c}%'
         }
 
@@ -170,7 +172,6 @@ export default {
           name,
           data,
           label: type === 'bar' ? label : undefined,
-          smooth: true,
           type,
           barMaxWidth: 20
         }

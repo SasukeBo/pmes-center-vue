@@ -210,7 +210,6 @@ export default {
             type: 'line',
             yAxisIndex: 1,
             boundaryGap: false,
-            smooth: true,
             showSymbol: false,
             lineStyle: {
               color: '#5E83F2',
