@@ -17,23 +17,7 @@
         </el-form-item>
 
         <el-form-item label="料号:" prop="materialID">
-          <el-select
-            v-model="form.materialID"
-            filterable
-            clearable
-            remote
-            size="small"
-            placeholder="请选择料号"
-            :remote-method="searchMaterials"
-            :loading="searchMaterialsLoading"
-          >
-            <el-option
-              v-for="m in materials"
-              :key="m.id"
-              :label="m.name"
-              :value="m.id"
-            ></el-option>
-          </el-select>
+          <el-input v-model="materialName" disabled> </el-input>
         </el-form-item>
         <el-form-item label="厂商:">
           <el-input
@@ -79,13 +63,15 @@ export default {
       type: Boolean,
       default: false
     },
-    data: Object
+    data: Object,
+    materialID: [String, Number]
   },
   data() {
     return {
       searchMaterialsLoading: false,
       saving: false,
-      materials: [],
+      material: undefined,
+      materialName: '',
       rules: {
         name: [
           { required: true, message: '设备名称为必填项', trigger: 'blur' }
@@ -100,6 +86,24 @@ export default {
         materialID: undefined,
         address: '',
         isRealtime: false
+      }
+    }
+  },
+  apollo: {
+    material: {
+      query: gql`
+        query($id: Int!) {
+          material(id: $id) {
+            id
+            name
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          id: this.materialID
+        }
       }
     }
   },
@@ -195,16 +199,23 @@ export default {
     }
   },
   watch: {
+    material: {
+      immediate: true,
+      handler: function(val) {
+        if (val) {
+          this.form.materialID = val.id
+          this.materialName = val.name
+        }
+      }
+    },
     visible: {
       immediate: true,
       handler: function(val) {
         if (this.visible && this.isEdit && this.data) {
           this.form.name = this.data.name
           this.form.deviceSupplier = this.data.deviceSupplier
-          this.form.materialID = this.data.material.id
           this.form.address = this.data.address
           this.form.isRealtime = this.data.isRealtime
-          this.materials.push(this.data.material)
         }
       }
     }

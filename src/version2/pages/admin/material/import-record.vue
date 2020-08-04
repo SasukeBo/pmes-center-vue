@@ -302,29 +302,43 @@ export default {
         })
     },
     revert(record) {
-      var btn = this.$refs[`revert_btn${record.id}`]
-      btn.loading = true
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($ids: [Int!]!) {
-              response: revertImports(ids: $ids)
-            }
-          `,
-          client: 'adminClient',
-          variables: {
-            ids: [record.id]
-          }
-        })
+      var _this = this
+      this.$confirm(
+        '撤销导入记录后将从系统中移除此次导入的数据，并且不再显示该导入记录，确定要撤销吗？',
+        '您正在撤销导入',
+        {
+          type: 'warning',
+          distinguishCancelAndClose: true,
+          confirmButtonText: '确定',
+          cancelButtonText: '放弃'
+        }
+      )
         .then(() => {
-          this.$message({ type: 'success', message: '撤销导入成功' })
-          btn.loading = false
-          this.$apollo.queries.importRecordsWrap.refetch()
+          var btn = _this.$refs[`revert_btn${record.id}`]
+          btn.loading = true
+          _this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($ids: [Int!]!) {
+                  response: revertImports(ids: $ids)
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                ids: [record.id]
+              }
+            })
+            .then(() => {
+              _this.$message({ type: 'success', message: '撤销导入成功' })
+              btn.loading = false
+              _this.$apollo.queries.importRecordsWrap.refetch()
+            })
+            .catch((e) => {
+              btn.loading = false
+              _this.$$GraphQLError(e)
+            })
         })
-        .catch((e) => {
-          btn.loading = false
-          this.$$GraphQLError(e)
-        })
+        .catch(() => undefined)
     },
     handleSizeChange(val) {
       this.limit = val

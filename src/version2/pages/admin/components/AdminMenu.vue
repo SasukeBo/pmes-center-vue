@@ -27,22 +27,20 @@
         </div>
       </div>
 
-      <div
-        :class="['tab-item', isActive('console-devices') ? 'is-active' : '']"
-      >
+      <div :class="['tab-item', isActive('system-config') ? 'is-active' : '']">
         <img
           class="bg-img"
-          :src="isActive('console-devices') ? activeItemBg : normalItemBg"
+          :src="isActive('system-config') ? activeItemBg : normalItemBg"
         />
         <div
           class="btn-content"
-          @click="$router.push({ name: 'console-devices' })"
+          @click="$router.push({ name: 'system-config' })"
         >
           <img
             class="manage-icon"
-            src="~@/version2/assets/images/device-manage.png"
+            src="~@/version2/assets/images/system-manage.png"
           />
-          <div class="manage-label">检测设备管理</div>
+          <div class="manage-label">系统配置</div>
         </div>
       </div>
     </div>

@@ -279,6 +279,7 @@ export default {
         var label = {
           show: true,
           position: 'top',
+          fontSize: 10,
           formatter: this.isRate ? '{c}%' : '{c}个'
         }
         var isLine = keys.length > 2

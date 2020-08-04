@@ -37,55 +37,6 @@
         </el-form>
 
         <div class="item-label">
-          产品属性列：<span class="tip"
-            >请添加产品属性并输入产品属性所在列，例如：属性 NO. 所在列 A</span
-          >
-        </div>
-
-        <el-table
-          :data="form.productColumns"
-          border
-          class="product-columns-table"
-          header-row-class-name="product-columns-table__header"
-          row-class-name="product-columns-table__row"
-        >
-          <el-table-column label="产品属性">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="label"
-                @update="editCell"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-          <el-table-column label="属性Token" prop="token"> </el-table-column>
-          <el-table-column label="前缀" prop="prefix"> </el-table-column>
-          <el-table-column label="所在列" prop="index">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="index"
-                @update="editCell"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-          <el-table-column label="值类型" prop="type">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="type"
-                type="select"
-                @update="editCell"
-                :options="columnTypeOptions"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="item-label">
           检测项列：<span class="tip"
             >请输入检测数据在文件中所在序列号，例如：FAI6 H</span
           >
@@ -109,11 +60,10 @@
 </template>
 <script>
 import FButton from '@/version2/pages/admin/components/FButton.vue'
-import TableCellForm from '@/version2/pages/admin/components/TableCellForm.vue'
 import PointForm from './point-form'
 import gql from 'graphql-tag'
 export default {
-  components: { FButton, PointForm, TableCellForm },
+  components: { FButton, PointForm },
   props: {
     versionID: [Number, String],
     visible: {
@@ -143,8 +93,7 @@ export default {
       form: {
         createdAtColumnIndex: undefined,
         dataRowIndex: undefined,
-        pointColumns: [],
-        productColumns: []
+        pointColumns: []
       }
     }
   },
@@ -160,13 +109,6 @@ export default {
             }
             dataRowIndex
             createdAtColumnIndex
-            productColumns {
-              prefix
-              label
-              token
-              index
-              type
-            }
           }
         }
       `,
