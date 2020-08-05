@@ -61,6 +61,7 @@
     }
 
     .admin-drawer-form-cell .el-input__inner {
+      text-align: center;
       background: rgba(243, 244, 244, 1);
       opacity: 1;
       border: none;
@@ -79,6 +80,7 @@
 
     .admin-drawer-form-cell.wide-input .el-input__inner {
       width: 300px;
+      text-align: left;
     }
 
     .cell-input {

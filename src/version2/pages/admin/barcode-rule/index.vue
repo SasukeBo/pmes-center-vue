@@ -15,7 +15,7 @@
         </div>
 
         <div class="add-button">
-          <el-button size="small" @click="add">新增</el-button>
+          <el-button size="small" @click="add">新增编码规则</el-button>
         </div>
       </div>
 
@@ -71,6 +71,7 @@
 
     <el-drawer
       :withHeader="false"
+      size="83%"
       direction="rtl"
       :close-on-press-escape="false"
       custom-class="barcode-rule-drawer"
@@ -166,6 +167,7 @@ export default {
   },
   methods: {
     add() {
+      this.editRule = undefined
       this.drawerVisible = true
     },
     edit(rule) {
@@ -194,6 +196,19 @@ export default {
     position: absolute;
     bottom: 16px;
     right: 32px;
+  }
+
+  .barcode-rule-drawer {
+    .el-drawer__body {
+      height: 100%;
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &:focus {
+      outline: none;
+    }
   }
 }
 </style>
