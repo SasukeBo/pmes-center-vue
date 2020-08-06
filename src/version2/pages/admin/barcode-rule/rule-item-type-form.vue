@@ -5,7 +5,7 @@
       placement="bottom"
       trigger="manual"
       popper-class="rule-item-type-form-popover"
-      :disabled="popperDisable"
+      :disabled="!isDatetime && !isCategory"
     >
       <div slot="reference" style="display: flex">
         <el-select
@@ -20,7 +20,7 @@
 
         <el-button
           style="margin-left: 8px"
-          v-show="!popperDisable"
+          v-show="isDatetime || isCategory"
           type="text"
           icon="el-icon-edit"
           @click="setPopperVisible(true)"
@@ -28,7 +28,7 @@
       </div>
 
       <div class="date-code-form">
-        <div class="body">
+        <div class="body" v-if="isDatetime">
           <div class="date-code-form__title">编码规则</div>
           <div class="date-code-form__item-label">DayCode：</div>
           <div class="date-code-form__item-form" style="margin-bottom: 16px">
@@ -48,9 +48,26 @@
           </div>
         </div>
 
-        <div class="footer">
+        <div class="footer" v-if="isDatetime">
           <div class="footer-inner">
             <el-button @click="submit" size="mini" type="primary"
+              >确定</el-button
+            >
+            <el-button @click="cancel" size="mini">取消</el-button>
+          </div>
+        </div>
+
+        <div class="body" v-if="isCategory">
+          <div class="date-code-form__title">取值区间</div>
+          <div class="date-code-form__item-form" style="margin-bottom: 16px">
+            <RuleItemCategorySetForm
+              :set.sync="form.categorySet"
+            ></RuleItemCategorySetForm>
+          </div>
+        </div>
+        <div class="footer" v-if="isCategory">
+          <div class="footer-inner">
+            <el-button @click="submitCategory" size="mini" type="primary"
               >确定</el-button
             >
             <el-button @click="cancel" size="mini">取消</el-button>
@@ -62,6 +79,7 @@
 </template>
 <script>
 import RuleItemRangeForm from './rule-item-range-form'
+import RuleItemCategorySetForm from './rule-item-category-set-form'
 
 export default {
   name: 'RuleItemTypeForm',
@@ -71,9 +89,10 @@ export default {
     dayCode: Array,
     dayCodeReject: Array,
     monthCode: Array,
-    monthCodeReject: Array
+    monthCodeReject: Array,
+    categorySet: Array
   },
-  components: { RuleItemRangeForm },
+  components: { RuleItemRangeForm, RuleItemCategorySetForm },
   data() {
     return {
       dateCodeFormVisible: false,
@@ -82,13 +101,17 @@ export default {
         dayCode: [],
         dayCodeReject: [],
         monthCode: [],
-        monthCodeReject: []
+        monthCodeReject: [],
+        categorySet: []
       }
     }
   },
   computed: {
-    popperDisable() {
-      return this.form.type !== 'Datetime'
+    isDatetime() {
+      return this.form.type === 'Datetime'
+    },
+    isCategory() {
+      return this.form.type === 'Category'
     }
   },
   watch: {
@@ -116,12 +139,17 @@ export default {
       this.$emit('update:monthCodeReject', this.form.monthCodeReject)
       this.setPopperVisible(false)
     },
+    submitCategory() {
+      this.$emit('update:categorySet', this.form.categorySet)
+      this.setPopperVisible(false)
+    },
     initData(val) {
       this.form.type = val.type
       this.form.dayCode = [].concat(val.dayCode || [])
       this.form.dayCodeReject = [].concat(val.dayCodeReject || [])
       this.form.monthCode = [].concat(val.monthCode || [])
       this.form.monthCodeReject = [].concat(val.monthCodeReject || [])
+      this.form.categorySet = [].concat(val.categorySet || [])
     },
     setPopperVisible(val) {
       this.$refs.popover.showPopper = val

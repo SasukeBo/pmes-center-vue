@@ -39,6 +39,7 @@
                 :dayCodeReject.sync="item.dayCodeReject"
                 :monthCode.sync="item.monthCode"
                 :monthCodeReject.sync="item.monthCodeReject"
+                :categorySet.sync="item.categorySet"
               ></RuleItemTypeForm>
             </TableCellForm>
           </div>

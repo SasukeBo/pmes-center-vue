@@ -151,6 +151,7 @@ export default {
                 dayCodeReject
                 monthCode
                 monthCodeReject
+                categorySet
               }
               createdAt
             }
