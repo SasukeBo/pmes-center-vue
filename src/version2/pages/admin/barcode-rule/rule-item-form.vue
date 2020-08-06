@@ -116,6 +116,4 @@ export default {
 </script>
 <style lang="scss">
 @import '@/version2/assets/scss/admin/admin_form_table.scss';
-.rule-item-form {
-}
 </style>

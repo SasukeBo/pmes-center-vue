@@ -172,6 +172,7 @@ export default {
             materialID: $materialID
             versionID: $versionID
           ) {
+            type
             label
             token
             prefix
@@ -300,7 +301,11 @@ export default {
         name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
       }
 
-      if (this.form.xAxis === 'Date') {
+      if (
+        this.form.xAxis === 'Date' ||
+        (this.xAxisAttribute &&
+          ['Datetime', 'Weekday'].includes(this.xAxisAttribute.type))
+      ) {
         data = data.map((d) => {
           var t = new Date(d)
           return t.toLocaleDateString()
