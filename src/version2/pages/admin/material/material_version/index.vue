@@ -91,6 +91,7 @@
     <el-drawer
       :withHeader="false"
       direction="rtl"
+      size="83%"
       :close-on-press-escape="false"
       custom-class="decode-template-drawer"
       :visible.sync="templateFormVisible"
@@ -105,6 +106,7 @@
     <el-drawer
       :withHeader="false"
       direction="rtl"
+      size="83%"
       :close-on-press-escape="false"
       custom-class="new-version-drawer"
       :visible.sync="versionFormVisible"
@@ -225,7 +227,6 @@ export default {
 <style lang="scss">
 .material-versions .decode-template-drawer,
 .material-versions .new-version-drawer {
-  width: 83% !important;
   .el-drawer__body {
     height: 100%;
     &:focus {

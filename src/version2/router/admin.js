@@ -6,12 +6,10 @@ import MaterialEdit from '@/version2/pages/admin/material/edit-form.vue'
 import MaterialCreate from '@/version2/pages/admin/material/create-form.vue'
 import MaterialImportRecord from '@/version2/pages/admin/material/import-record.vue'
 import MaterialVersion from '@/version2/pages/admin/material/material_version'
-
-import Device from '@/version2/pages/admin/device/index.vue'
-import DeviceListView from '@/version2/pages/admin/device/list-view.vue'
-import DeviceImportRecord from '@/version2/pages/admin/device/import-record.vue'
-
+import DeviceListView from '@/version2/pages/admin/material/device/list-view.vue'
 import DataImport from '@/version2/pages/admin/data-import/index.vue'
+import SystemConfig from '@/version2/pages/admin/config/index.vue'
+import BarCodeRule from '@/version2/pages/admin/barcode-rule/index.vue'
 
 const adminRoutes = {
   path: '/console',
@@ -66,28 +64,13 @@ const adminRoutes = {
           meta: { name: '导入记录' },
           props: true,
           component: MaterialImportRecord
-        }
-      ]
-    },
-    {
-      path: 'devices',
-      name: 'console-devices',
-      meta: { name: '设备管理' },
-      component: Device,
-      redirect: { name: 'console-device-listview' },
-      children: [
-        {
-          path: 'listview',
-          name: 'console-device-listview',
-          meta: { name: '设备列表' },
-          component: DeviceListView
         },
         {
-          path: ':id/import_records',
-          name: 'console-device-import-record',
-          meta: { name: '导入记录' },
+          path: ':id/devices',
+          name: 'console-material-devices',
           props: true,
-          component: DeviceImportRecord
+          meta: { name: '设备管理' },
+          component: DeviceListView
         }
       ]
     },
@@ -96,6 +79,18 @@ const adminRoutes = {
       name: 'data-import',
       meta: { name: '数据导入' },
       component: DataImport
+    },
+    {
+      path: 'system-config',
+      name: 'system-config',
+      meta: { name: '系统配置' },
+      component: SystemConfig
+    },
+    {
+      path: 'barcode-rule',
+      name: 'admin-barcode-rule',
+      meta: { name: '编码规则' },
+      component: BarCodeRule
     }
   ]
 }

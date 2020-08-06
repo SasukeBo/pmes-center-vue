@@ -23,9 +23,9 @@
       >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
-            <el-option label="设备" value="Device"></el-option>
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="班别" value="Shift"></el-option>
+            <el-option label="检测设备" value="Device"></el-option>
+            <el-option label="检测日期" value="Date"></el-option>
+            <el-option label="检测班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
               :key="a.token"
@@ -49,9 +49,9 @@
             placeholder="请选择分组字段"
             clearable
           >
-            <el-option label="设备" value="Device"></el-option>
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="班别" value="Shift"></el-option>
+            <el-option label="检测设备" value="Device"></el-option>
+            <el-option label="检测日期" value="Date"></el-option>
+            <el-option label="检测班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
               :key="a.token"
@@ -151,9 +151,9 @@ export default {
         B: '晚班'
       },
       categoryMap: {
-        Date: '日期(Date)',
-        Device: '设备(Device)',
-        Shift: '班别(Shift)'
+        Date: '检测日期(Date)',
+        Device: '检测设备(Device)',
+        Shift: '检测班别(Shift)'
       },
       echartsResult: {
         xAxisData: [],
@@ -172,6 +172,7 @@ export default {
             materialID: $materialID
             versionID: $versionID
           ) {
+            type
             label
             token
             prefix
@@ -281,6 +282,7 @@ export default {
           rotate: -60,
           offset: [0, -10],
           position: 'top',
+          fontSize: 10,
           formatter: this.isRate ? '{c}%' : '{c}个'
         }
         var isLine = keys.length > 2
@@ -297,17 +299,24 @@ export default {
     assembleXAxis(data) {
       var name = this.categoryMap[this.form.xAxis]
       if (!name && this.xAxisAttribute) {
-        name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+        name = `${this.xAxisAttribute.label}\n(${this.xAxisAttribute.token})`
       }
 
-      if (this.form.xAxis === 'Date') {
+      if (
+        this.form.xAxis === 'Date' ||
+        (this.xAxisAttribute &&
+          ['Datetime', 'Weekday'].includes(this.xAxisAttribute.type))
+      ) {
         data = data.map((d) => {
           var t = new Date(d)
           return t.toLocaleDateString()
         })
       }
 
-      if (this.xAxisAttribute) {
+      if (
+        this.xAxisAttribute &&
+        !['Datetime', 'Weekday'].includes(this.xAxisAttribute.type)
+      ) {
         data = data.map((d) => {
           if (!this.xAxisAttribute.prefix) {
             var prefix = d.slice(0, 1).toLocaleUpperCase()
@@ -469,7 +478,7 @@ export default {
     },
     assembleGrid() {
       return {
-        top: 100
+        top: 110
       }
     }
   },

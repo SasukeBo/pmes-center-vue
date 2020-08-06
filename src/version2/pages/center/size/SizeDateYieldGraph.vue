@@ -9,8 +9,8 @@
       <el-form inline size="mini">
         <el-form-item label="分组">
           <el-select v-model="form.groupBy" clearable>
-            <el-option label="设备" value="Device"></el-option>
-            <el-option label="班别" value="Shift"></el-option>
+            <el-option label="检测设备" value="Device"></el-option>
+            <el-option label="检测班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
               :key="a.token"

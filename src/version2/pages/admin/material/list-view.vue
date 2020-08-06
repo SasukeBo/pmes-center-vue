@@ -61,10 +61,17 @@
             label="更新日期"
             :formatter="timeFormatter"
           ></el-table-column>
-          <el-table-column label="配置" class-name="config-column" width="250">
+          <el-table-column label="操作" class-name="config-column" width="300">
             <template slot-scope="scope">
-              <span class="link" @click="fetchData(scope.row.id)"
-                >拉取Ftp数据</span
+              <span
+                class="link"
+                @click="
+                  redirect({
+                    name: 'console-material-devices',
+                    params: { id: scope.row.id }
+                  })
+                "
+                >设备管理</span
               >
               <span> | </span>
               <span
@@ -76,6 +83,10 @@
                   })
                 "
                 >版本管理</span
+              >
+              <span> | </span>
+              <span class="link" @click="fetchData(scope.row.id)"
+                >拉取Ftp数据</span
               >
               <span> | </span>
               <span
@@ -222,6 +233,12 @@ export default {
           cancelButtonText: '放弃'
         }
       ).then(() => {
+        var index = _this.materialsWrap.materials.findIndex(
+          (m) => m.id === material.id
+        )
+        if (index > -1) {
+          _this.materialsWrap.materials.splice(index, 1)
+        }
         _this.$apollo
           .mutate({
             mutation: gql`

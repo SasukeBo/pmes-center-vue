@@ -69,13 +69,13 @@ export default {
       this.$apollo
         .mutate({
           mutation: gql`
-            mutation($id: Int!) {
-              response: revertImport(id: $id)
+            mutation($ids: [Int!]!) {
+              response: revertImports(ids: $ids)
             }
           `,
           client: 'adminClient',
           variables: {
-            id: this.record.id
+            ids: [this.record.id]
           }
         })
         .then(() => {
@@ -112,7 +112,10 @@ export default {
                 }
               })
               .then(({ data: { response } }) => {
-                _this.$emit('update:rowFinishedCount', response.finishedRowCount)
+                _this.$emit(
+                  'update:rowFinishedCount',
+                  response.finishedRowCount
+                )
                 _this.$emit('update:status', response.status)
                 _this.$emit('update:yield', response.yield)
                 _this.$emit('update:rowCount', response.rowCount)

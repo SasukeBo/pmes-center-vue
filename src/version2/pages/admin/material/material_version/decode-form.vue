@@ -12,7 +12,15 @@
             版本：{{ template.materialVersion.version }}
           </span>
         </div>
-        <el-form :model="form" inline size="small" ref="form2" :rules="rules2">
+
+        <el-form
+          :model="form"
+          size="small"
+          ref="form2"
+          :rules="rules2"
+          label-width="120px"
+          label-position="left"
+        >
           <el-form-item label="数据起始行：" prop="dataRowIndex">
             <div class="cell-input">
               <el-input
@@ -34,56 +42,42 @@
               <span>列</span>
             </div>
           </el-form-item>
+
+          <el-form-item label="编码数据列：" prop="barCodeIndex">
+            <div class="cell-input">
+              <el-input
+                class="admin-drawer-form-cell"
+                placeholder="例：B"
+                v-model="form.barCodeIndex"
+              ></el-input>
+              <span>列</span>
+            </div>
+          </el-form-item>
+
+          <el-form-item label="选择编码规则：" prop="barCodeRuleID">
+            <el-select
+              v-model="form.barCodeRuleID"
+              class="admin-drawer-form-cell"
+              popper-class="decode-form-barcode-rule-select-popper"
+            >
+              <el-option
+                v-for="rule in barCodeRules"
+                :key="'rule_' + rule.id"
+                :label="rule.name"
+                :value="rule.id"
+              >
+                <div>
+                  <div>{{ rule.name }}</div>
+                  <div
+                    style="color: #8492a6; font-size: 13px; line-height: 13px"
+                  >
+                    {{ rule.remark }}
+                  </div>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
         </el-form>
-
-        <div class="item-label">
-          产品属性列：<span class="tip"
-            >请添加产品属性并输入产品属性所在列，例如：属性 NO. 所在列 A</span
-          >
-        </div>
-
-        <el-table
-          :data="form.productColumns"
-          border
-          class="product-columns-table"
-          header-row-class-name="product-columns-table__header"
-          row-class-name="product-columns-table__row"
-        >
-          <el-table-column label="产品属性">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="label"
-                @update="editCell"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-          <el-table-column label="属性Token" prop="token"> </el-table-column>
-          <el-table-column label="前缀" prop="prefix"> </el-table-column>
-          <el-table-column label="所在列" prop="index">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="index"
-                @update="editCell"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-          <el-table-column label="值类型" prop="type">
-            <template slot-scope="scope">
-              <TableCellForm
-                :row="scope.row"
-                :index="scope.$index"
-                prop="type"
-                type="select"
-                @update="editCell"
-                :options="columnTypeOptions"
-              ></TableCellForm>
-            </template>
-          </el-table-column>
-        </el-table>
 
         <div class="item-label">
           检测项列：<span class="tip"
@@ -91,7 +85,7 @@
           >
         </div>
 
-        <div class="points-form">
+        <div class="decode-template-form__points-form">
           <PointForm
             v-for="p in points"
             :key="'point_' + p.id"
@@ -109,11 +103,10 @@
 </template>
 <script>
 import FButton from '@/version2/pages/admin/components/FButton.vue'
-import TableCellForm from '@/version2/pages/admin/components/TableCellForm.vue'
 import PointForm from './point-form'
 import gql from 'graphql-tag'
 export default {
-  components: { FButton, PointForm, TableCellForm },
+  components: { FButton, PointForm },
   props: {
     versionID: [Number, String],
     visible: {
@@ -143,12 +136,41 @@ export default {
       form: {
         createdAtColumnIndex: undefined,
         dataRowIndex: undefined,
-        pointColumns: [],
-        productColumns: []
-      }
+        barCodeIndex: undefined,
+        barCodeRuleID: undefined,
+        pointColumns: []
+      },
+      barCodeRules: []
     }
   },
   apollo: {
+    barCodeRules: {
+      query: gql`
+        query($search: String, $limit: Int!, $page: Int!) {
+          barCodeRules: listBarCodeRules(
+            search: $search
+            limit: $limit
+            page: $page
+          ) {
+            rules {
+              id
+              name
+              remark
+            }
+          }
+        }
+      `,
+      client: 'adminClient',
+      variables() {
+        return {
+          limit: 20,
+          page: 1
+        }
+      },
+      update(data) {
+        return data.barCodeRules.rules
+      }
+    },
     template: {
       query: gql`
         query($id: Int!) {
@@ -158,15 +180,14 @@ export default {
               id
               version
             }
+            barCodeIndex
+            barCodeRule {
+              id
+              name
+              remark
+            }
             dataRowIndex
             createdAtColumnIndex
-            productColumns {
-              prefix
-              label
-              token
-              index
-              type
-            }
           }
         }
       `,
@@ -210,7 +231,7 @@ export default {
             .mutate({
               mutation: gql`
                 mutation($input: DecodeTemplateInput!) {
-                  response: saveDecodeTemplate(input: $input)
+                  response: updateDecodeTemplate(input: $input)
                 }
               `,
               client: 'adminClient',
@@ -224,6 +245,7 @@ export default {
             .then(() => {
               _this.saving = false
               _this.$message({ type: 'success', message: '保存成功' })
+              _this.closeForm()
             })
             .catch((e) => {
               _this.saving = false
@@ -249,10 +271,19 @@ export default {
       if (val) {
         this.form.createdAtColumnIndex = val.createdAtColumnIndex
         this.form.dataRowIndex = val.dataRowIndex
-        this.form.productColumns = val.productColumns.map((c) => {
-          delete c.__typename
-          return c
-        })
+        this.form.barCodeIndex = val.barCodeIndex
+        if (val.barCodeRule) {
+          this.form.barCodeRuleID = val.barCodeRule
+            ? val.barCodeRule.id
+            : undefined
+
+          var index = this.barCodeRules.findIndex(
+            (r) => val.barCodeRule.id === r.id
+          )
+          if (index === -1) {
+            this.barCodeRules.push(val.barCodeRule)
+          }
+        }
       }
     }
   }
@@ -260,64 +291,21 @@ export default {
 </script>
 <style lang="scss">
 @import '@/version2/assets/scss/admin/admin_drawer_form.scss';
-.decode-template-drawer {
-  .product-columns-table {
-    margin-top: 8px;
-
-    .product-columns-table__row {
-      height: 64px;
-
-      td {
-        padding: 0;
-      }
-
-      .cell {
-        text-align: center;
-      }
-    }
-
-    .table-cell-form__show {
-      text-align: center;
-    }
-
-    .product-columns-table__header {
-      height: 64px;
-      box-sizing: border-box;
-
-      th {
-        color: #666;
-        font-weight: bold;
-        font-size: 14px;
-        text-align: center;
-        background: #f3f4f4;
-      }
-    }
-
-    .el-table__empty-block {
-      display: none;
-    }
-
-    .product-columns-table__append-btns {
-      height: 64px;
-      box-sizing: border-box;
-      line-height: 64px;
-      text-align: center;
-      color: #5e83f2;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      &:hover {
-        color: rgba(94, 131, 242, 0.7);
-      }
-    }
+.decode-template-form.admin-drawer-form {
+  .admin-drawer-form__body .el-form-item {
+    margin-bottom: 24px;
   }
 
-  .points-form {
+  .decode-template-form__points-form {
     display: flex;
     flex-flow: wrap;
     padding-top: 8px;
+  }
+}
+
+.decode-form-barcode-rule-select-popper {
+  .el-select-dropdown__item {
+    height: 55px;
   }
 }
 </style>
