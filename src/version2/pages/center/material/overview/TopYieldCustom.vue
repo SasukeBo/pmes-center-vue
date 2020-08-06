@@ -299,7 +299,7 @@ export default {
     assembleXAxis(data) {
       var name = this.categoryMap[this.form.xAxis]
       if (!name && this.xAxisAttribute) {
-        name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+        name = `${this.xAxisAttribute.label}\n(${this.xAxisAttribute.token})`
       }
 
       if (
@@ -313,7 +313,10 @@ export default {
         })
       }
 
-      if (this.xAxisAttribute) {
+      if (
+        this.xAxisAttribute &&
+        !['Datetime', 'Weekday'].includes(this.xAxisAttribute.type)
+      ) {
         data = data.map((d) => {
           if (!this.xAxisAttribute.prefix) {
             var prefix = d.slice(0, 1).toLocaleUpperCase()
@@ -475,7 +478,7 @@ export default {
     },
     assembleGrid() {
       return {
-        top: 100
+        top: 110
       }
     }
   },

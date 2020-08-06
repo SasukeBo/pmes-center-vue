@@ -131,8 +131,7 @@ export default {
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
-        // groupBy: 'Shift',
-        groupBy: 'line',
+        groupBy: 'Shift',
         duration: [t],
         limit: 20,
         sort: 'ASC'
@@ -171,6 +170,7 @@ export default {
       query: gql`
         query($materialID: Int!) {
           attributes: productAttributes(materialID: $materialID) {
+            type
             label
             token
             prefix
@@ -287,6 +287,7 @@ export default {
           position: 'top',
           rotate: -60,
           offset: [0, -10],
+          fontSize: 10,
           formatter: this.form.yAxis === 'Amount' ? '{c}个' : '{c}%'
         }
         var isLine = keys.length > 2
@@ -301,7 +302,11 @@ export default {
       })
     },
     assembleXAxis(data) {
-      if (this.form.xAxis === 'Date') {
+      if (
+        this.form.xAxis === 'Date' ||
+        (this.xAxisAttribute &&
+          ['Datetime', 'Weekday'].includes(this.xAxisAttribute.type))
+      ) {
         data = data.map((d) => {
           var t = new Date(d)
           return t.toLocaleDateString()
@@ -318,7 +323,7 @@ export default {
 
       var name = this.categoryMap[this.form.xAxis]
       if (!name && this.xAxisAttribute) {
-        name = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+        name = `${this.xAxisAttribute.label}\n(${this.xAxisAttribute.token})`
       }
 
       return {
@@ -395,7 +400,41 @@ export default {
       }
     },
     assembleTitle() {
-      return undefined
+      var text
+      var subtext
+
+      if (this.form.duration) {
+        if (this.form.duration.length === 1) {
+          subtext = `${this.form.duration[0].toLocaleDateString()}之后的数据`
+        } else if (this.form.duration.length === 2) {
+          subtext = `从${this.form.duration[0].toLocaleDateString()}到${this.form.duration[1].toLocaleDateString()}的数据`
+        }
+      }
+
+      var xAxis = this.categoryMap[this.form.xAxis]
+      if (!xAxis && this.xAxisAttribute) {
+        xAxis = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+      }
+      text = `每个${xAxis}的${this.yAxisNameMap[this.form.yAxis]}`
+
+      if (this.form.groupBy) {
+        var groupBy = this.categoryMap[this.form.groupBy]
+        if (!groupBy && this.groupAttribute) {
+          groupBy = `${this.groupAttribute.label}(${this.groupAttribute.token})`
+        }
+        text = `按${groupBy}分组的` + text
+      }
+
+      return {
+        top: 0,
+        left: 'center',
+        text,
+        subtext,
+        textStyle: {
+          color: '#666',
+          fontSize: 14
+        }
+      }
     },
     assembleLegend(seriesData) {
       if (Object.keys(seriesData).length <= 1) {
