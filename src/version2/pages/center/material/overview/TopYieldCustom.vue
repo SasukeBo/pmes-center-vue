@@ -279,6 +279,8 @@ export default {
 
         var label = {
           show: true,
+          rotate: -60,
+          offset: [0, -10],
           position: 'top',
           fontSize: 10,
           formatter: this.isRate ? '{c}%' : '{c}个'
@@ -288,7 +290,6 @@ export default {
         return {
           name,
           data,
-          smooth: true,
           label: isLine ? undefined : label,
           type: isLine ? 'line' : 'bar',
           barMaxWidth: 20
@@ -405,7 +406,8 @@ export default {
         }
       }
     },
-    assembleLegend() {
+    assembleLegend(data) {
+      var show = true
       var _this = this
       var formatter = function(name) {
         switch (_this.form.groupBy) {
@@ -421,42 +423,69 @@ export default {
             return name
         }
       }
+      if (data.data) {
+        show = false
+      }
 
       return {
+        show,
         formatter,
         type: 'scroll',
         width: '60%',
-        top: 0,
+        top: 50,
         left: 'center'
       }
     },
     assembleTitle() {
-      if (this.form.groupBy) {
-        var name = this.categoryMap[this.form.groupBy]
-        if (!name && this.groupAttribute) {
-          name = `${this.groupAttribute.label}(${this.groupAttribute.token})`
-        }
+      var text
+      var subtext
 
-        return {
-          top: 30,
-          left: 'center',
-          text: `按${name}分组`,
-          textStyle: {
-            color: '#666',
-            fontSize: 14
-          }
+      if (this.form.duration) {
+        if (this.form.duration.length === 1) {
+          subtext = `${this.form.duration[0].toLocaleDateString()}之后的数据`
+        } else if (this.form.duration.length === 2) {
+          subtext = `从${this.form.duration[0].toLocaleDateString()}到${this.form.duration[1].toLocaleDateString()}的数据`
         }
       }
 
-      return undefined
+      var xAxis = this.categoryMap[this.form.xAxis]
+      if (!xAxis && this.xAxisAttribute) {
+        xAxis = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+      }
+      text = `每个${xAxis}的${this.yAxisNameMap[this.form.yAxis]}`
+
+      if (this.form.groupBy) {
+        var groupBy = this.categoryMap[this.form.groupBy]
+        if (!groupBy && this.groupAttribute) {
+          groupBy = `${this.groupAttribute.label}(${this.groupAttribute.token})`
+        }
+        text = `按${groupBy}分组的` + text
+      }
+
+      return {
+        top: 0,
+        left: 'center',
+        text,
+        subtext,
+        textStyle: {
+          color: '#666',
+          fontSize: 14
+        }
+      }
+    },
+    assembleGrid() {
+      return {
+        top: 100
+      }
     }
   },
   watch: {
     echartsResult(nv) {
       if (nv) {
         var options = {
+          grid: this.assembleGrid(),
           title: this.assembleTitle(),
-          legend: this.assembleLegend(),
+          legend: this.assembleLegend(nv.seriesData),
           toolbox: this.assmebleToolbox(),
           tooltip: this.assembleTooltip(nv.seriesAmountData),
           xAxis: this.assembleXAxis(nv.xAxisData),
@@ -495,7 +524,7 @@ export default {
 
   .custom-chart__head {
     display: flex;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 
     .title {
       color: #666;

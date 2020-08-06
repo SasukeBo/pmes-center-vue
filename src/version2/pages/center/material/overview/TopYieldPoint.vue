@@ -203,6 +203,8 @@ export default {
       var label = {
         show: true,
         position: 'top',
+        rotate: -60,
+        offset: [0, -10],
         formatter: '{c}%'
       }
 

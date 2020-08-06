@@ -285,13 +285,14 @@ export default {
         var label = {
           show: true,
           position: 'top',
+          rotate: -60,
+          offset: [0, -10],
           formatter: this.form.yAxis === 'Amount' ? '{c}个' : '{c}%'
         }
         var isLine = keys.length > 2
 
         return {
           data,
-          smooth: true,
           label: isLine ? undefined : label,
           type: isLine ? 'line' : 'bar',
           name: k,
