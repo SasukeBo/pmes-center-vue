@@ -60,6 +60,7 @@
   </div>
 </template>
 <script>
+import gql from 'graphql-tag'
 import FButton from '@/version2/pages/admin/components/FButton.vue'
 import RuleItemForm from './rule-item-form'
 export default {
@@ -97,12 +98,22 @@ export default {
       immediate: true,
       handler: function(val) {
         if (val && this.rule) {
-          this.form.name = this.rule.name
-          this.form.remark = this.rule.remark
-          this.form.codeLength = this.rule.codeLength
-          this.items = this.rule.items.map((item) => {
-            delete item.__typename
-            return item
+          var rule = { ...this.rule }
+          this.form.name = rule.name
+          this.form.remark = rule.remark
+          this.form.codeLength = rule.codeLength
+          this.items = rule.items.map((item) => {
+            var out = {
+              ...item,
+              indexRange: [].concat(item.indexRange || []),
+              dayCode: [].concat(item.dayCode || []),
+              monthCode: [].concat(item.monthCode || []),
+              dayCodeReject: [].concat(item.dayCodeReject || []),
+              monthCodeReject: [].concat(item.monthCodeReject || [])
+            }
+
+            delete out.__typename
+            return out
           })
         } else {
           this.form.name = ''
@@ -117,7 +128,40 @@ export default {
     closeForm() {
       this.$emit('update:visible', false)
     },
-    save() {}
+    save() {
+      this.saving = true
+      var id = this.rule ? this.rule.id : undefined
+
+      this.$apollo
+        .mutate({
+          mutation: gql`
+            mutation($input: BarCodeRuleInput!) {
+              response: saveBarCodeRule(input: $input)
+            }
+          `,
+          client: 'adminClient',
+          variables: {
+            input: {
+              id,
+              name: this.form.name,
+              remark: this.form.remark,
+              codeLength: this.form.codeLength,
+              items: this.items
+            }
+          }
+        })
+        .then(({ data: { response } }) => {
+          this.saving = false
+          this.$emit('update-list')
+          this.$message({ type: 'success', message: '保存成功' })
+          this.closeForm()
+        })
+        .catch((e) => {
+          this.saving = false
+          this.$GraphQLError(e)
+          this.closeForm()
+        })
+    }
   }
 }
 </script>

@@ -9,10 +9,18 @@
       ></el-input>
       <span style="padding: 0 8px">-</span>
       <el-input
+        v-if="index1"
         class="range-index-input"
-        :disabled="!index1"
         v-model="index2"
         placeholder="止"
+        size="small"
+      ></el-input>
+
+      <el-input
+        v-if="withReject && index1"
+        class="range-index-input wide-input"
+        v-model="rejectStr"
+        placeholder="请输入剔除字段,例:1,2,3,A,B,C"
         size="small"
       ></el-input>
     </div>
@@ -22,56 +30,71 @@
 export default {
   name: 'RuleItemRangeForm',
   props: {
-    range: Array
+    range: Array,
+    reject: Array,
+    withReject: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
       index1: undefined,
-      index2: undefined
+      index2: undefined,
+      rejectStr: ''
     }
   },
   watch: {
     range(val) {
-      if (val) {
-        this.initRange(val)
-      }
+      this.initForm(val)
     },
-    index1(val) {
-      var range = this.range || []
-      if (range.length > 0) {
-        range[0] = val
-      } else {
-        range.push(val)
-      }
-
-      this.$emit('update:range', range)
+    index1() {
+      this.updateRange()
     },
-    index2(val) {
-      var range = this.range || []
-      if (range.length > 1) {
-        range[1] = val
-      } else if (range.length > 0) {
-        range.push(val)
-      }
-
-      if (range.length > 0) {
-        this.$emit('update:range', range)
-      }
+    index2() {
+      this.updateRange()
+    },
+    rejectStr(val) {
+      if (!val) this.$emit('update:reject', [])
+      var rejects = val.split(',')
+      this.$emit('update:reject', rejects)
     }
   },
   methods: {
-    initRange(val) {
+    updateRange() {
+      var range = [this.index1, this.index2]
+      if (!range[0]) {
+        this.$emit('update:range', [])
+        return
+      }
+      if (!range[1]) {
+        this.$emit('update:range', range.slice(0, 1))
+        return
+      }
+      this.$emit('update:range', range)
+    },
+    initForm(val) {
       if (!val) return
       if (val.length > 0 && val[0]) {
         this.index1 = val[0]
+      } else {
+        this.index1 = undefined
+        this.index2 = undefined
       }
+
       if (val.length > 1 && val[1]) {
         this.index2 = val[1]
+      } else {
+        this.index2 = undefined
+      }
+
+      if (this.withReject) {
+        this.rejectStr = this.reject.join()
       }
     }
   },
   created() {
-    this.initRange(this.range)
+    this.initForm(this.range)
   }
 }
 </script>
@@ -100,6 +123,12 @@ export default {
         opacity: 1;
         border-radius: 8px;
       }
+    }
+
+    &.wide-input {
+      width: 286px;
+      margin-left: 10px;
+      box-sizing: border-box;
     }
   }
 }

@@ -32,7 +32,14 @@
 
           <div class="table-cell">
             <TableCellForm use-slot>
-              <RuleItemTypeForm :row.sync="item"></RuleItemTypeForm>
+              <RuleItemTypeForm
+                :row="item"
+                :type.sync="item.type"
+                :dayCode.sync="item.dayCode"
+                :dayCodeReject.sync="item.dayCodeReject"
+                :monthCode.sync="item.monthCode"
+                :monthCodeReject.sync="item.monthCodeReject"
+              ></RuleItemTypeForm>
             </TableCellForm>
           </div>
 

@@ -31,8 +31,8 @@
       >
         <el-form-item label="X轴" prop="xAxis">
           <el-select v-model="form.xAxis" placeholder="请选择X轴属性">
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="班别" value="Shift"></el-option>
+            <el-option label="检测日期" value="Date"></el-option>
+            <el-option label="检测班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
               :key="a.token"
@@ -56,8 +56,8 @@
             placeholder="请选择分组字段"
             clearable
           >
-            <el-option label="日期" value="Date"></el-option>
-            <el-option label="班别" value="Shift"></el-option>
+            <el-option label="检测日期" value="Date"></el-option>
+            <el-option label="检测班别" value="Shift"></el-option>
             <el-option
               v-for="a in attributes"
               :key="a.token"
@@ -153,8 +153,8 @@ export default {
         UnYield: '不良率(Reject Ratio)'
       },
       categoryMap: {
-        Date: '日期(Date)',
-        Shift: '班别(Shift)'
+        Date: '检测日期(Date)',
+        Shift: '检测班别(Shift)'
       },
       echartsResult: {
         xAxisData: [],

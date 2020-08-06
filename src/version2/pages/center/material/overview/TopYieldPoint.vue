@@ -44,7 +44,7 @@
           <el-input v-model="form[a.token]" style="width: 300px"></el-input>
         </el-form-item>
 
-        <el-form-item label="班别">
+        <el-form-item label="检测班别">
           <el-select v-model="form.shift" clearable>
             <el-option label="白班" value="A"></el-option>
             <el-option label="晚班" value="B"></el-option>

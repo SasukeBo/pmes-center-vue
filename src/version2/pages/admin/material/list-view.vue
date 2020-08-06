@@ -233,6 +233,12 @@ export default {
           cancelButtonText: '放弃'
         }
       ).then(() => {
+        var index = _this.materialsWrap.materials.findIndex(
+          (m) => m.id === material.id
+        )
+        if (index > -1) {
+          _this.materialsWrap.materials.splice(index, 1)
+        }
         _this.$apollo
           .mutate({
             mutation: gql`

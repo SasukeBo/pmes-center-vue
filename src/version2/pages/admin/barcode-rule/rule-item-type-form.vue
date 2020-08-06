@@ -9,7 +9,7 @@
     >
       <div slot="reference" style="display: flex">
         <el-select
-          v-model="type"
+          v-model="form.type"
           @change="selectChange"
           popper-class="rule-item-type-form-select-popper"
         >
@@ -33,14 +33,16 @@
           <div class="date-code-form__item-label">DayCode：</div>
           <div class="date-code-form__item-form" style="margin-bottom: 16px">
             <RuleItemRangeForm
-              :range.sync="dayCode"
+              :range.sync="form.dayCode"
+              :reject.sync="form.dayCodeReject"
               with-reject
             ></RuleItemRangeForm>
           </div>
           <div class="date-code-form__item-label">MonthCode：</div>
           <div class="date-code-form__item-form">
             <RuleItemRangeForm
-              :range.sync="monthCode"
+              :range.sync="form.monthCode"
+              :reject.sync="form.monthCodeReject"
               with-reject
             ></RuleItemRangeForm>
           </div>
@@ -51,9 +53,7 @@
             <el-button @click="submit" size="mini" type="primary"
               >确定</el-button
             >
-            <el-button @click="setPopperVisible(false)" size="mini"
-              >取消</el-button
-            >
+            <el-button @click="cancel" size="mini">取消</el-button>
           </div>
         </div>
       </div>
@@ -66,20 +66,29 @@ import RuleItemRangeForm from './rule-item-range-form'
 export default {
   name: 'RuleItemTypeForm',
   props: {
-    row: Object
+    row: Object,
+    type: String,
+    dayCode: Array,
+    dayCodeReject: Array,
+    monthCode: Array,
+    monthCodeReject: Array
   },
   components: { RuleItemRangeForm },
   data() {
     return {
       dateCodeFormVisible: false,
-      type: '',
-      dayCode: [],
-      monthCode: []
+      form: {
+        type: '',
+        dayCode: [],
+        dayCodeReject: [],
+        monthCode: [],
+        monthCodeReject: []
+      }
     }
   },
   computed: {
     popperDisable() {
-      return this.type !== 'Datetime'
+      return this.form.type !== 'Datetime'
     }
   },
   watch: {
@@ -88,18 +97,31 @@ export default {
     }
   },
   methods: {
+    cancel() {
+      this.setPopperVisible(false)
+      setTimeout(() => {
+        this.initData(this.row)
+      }, 300)
+    },
     selectChange(val) {
       if (val === 'Datetime') {
         this.setPopperVisible(true)
       }
+      this.$emit('update:type', this.form.type)
     },
     submit() {
-      alert('hello world')
+      this.$emit('update:dayCode', this.form.dayCode)
+      this.$emit('update:dayCodeReject', this.form.dayCodeReject)
+      this.$emit('update:monthCode', this.form.monthCode)
+      this.$emit('update:monthCodeReject', this.form.monthCodeReject)
+      this.setPopperVisible(false)
     },
     initData(val) {
-      this.type = val.type
-      this.dayCode = val.dayCode || []
-      this.monthCode = val.monthCode || []
+      this.form.type = val.type
+      this.form.dayCode = [].concat(val.dayCode || [])
+      this.form.dayCodeReject = [].concat(val.dayCodeReject || [])
+      this.form.monthCode = [].concat(val.monthCode || [])
+      this.form.monthCodeReject = [].concat(val.monthCodeReject || [])
     },
     setPopperVisible(val) {
       this.$refs.popover.showPopper = val

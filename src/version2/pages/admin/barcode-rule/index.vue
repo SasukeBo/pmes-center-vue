@@ -148,7 +148,9 @@ export default {
                 indexRange
                 type
                 dayCode
+                dayCodeReject
                 monthCode
+                monthCodeReject
               }
               createdAt
             }
