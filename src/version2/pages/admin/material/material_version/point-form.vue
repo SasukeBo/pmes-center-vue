@@ -3,7 +3,7 @@
     <span class="point-label">{{ value.name }}:</span>
     <el-input
       size="small"
-      class="decode-template-form-cell"
+      class="admin-drawer-form-cell"
       v-model="columnValue"
       @input="handleValueChange"
     ></el-input>

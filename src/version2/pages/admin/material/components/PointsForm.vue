@@ -26,7 +26,7 @@
       </el-upload>
     </div>
 
-    <div class="table-form">
+    <div class="admin-table-form">
       <div class="table-header table-row">
         <div class="table-cell">检测点位</div>
         <div class="table-cell">USL</div>
@@ -181,7 +181,7 @@ export default {
 }
 </script>
 <style lang="scss">
-@import '@/version2/assets/scss/variables.scss';
+@import '@/version2/assets/scss/admin/admin_form_table.scss';
 
 .points-form {
   height: 100%;
@@ -219,69 +219,6 @@ export default {
       img {
         margin-right: 4px;
       }
-    }
-  }
-
-  .table-form {
-    box-sizing: border-box;
-    padding: 32px 0;
-    padding-right: 48px;
-
-    .table-row {
-      display: flex;
-      text-align: center;
-
-      .table-cell {
-        flex: 1;
-        height: 64px;
-        box-sizing: border-box;
-        text-align: center;
-        line-height: 64px;
-        border: $--points-form-table-border;
-        border-left: none;
-        border-bottom: none;
-        padding: 0 16px;
-
-        &:first-child {
-          border-left: $--points-form-table-border;
-        }
-      }
-    }
-
-    .table-header .table-cell {
-      background: rgba(243, 244, 244, 1);
-      font-weight: bold;
-      font-size: 14px;
-      color: $--font-color__normal;
-    }
-
-    .table-body__row {
-      position: relative;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background: rgba(243, 244, 244, 0.8);
-      }
-
-      .delete-row-btn {
-        cursor: pointer;
-        height: 64px;
-        position: absolute;
-        line-height: 64px;
-        right: -31px;
-      }
-    }
-
-    .table-footer {
-      cursor: pointer;
-      color: $--font-color__main;
-      font-size: 14px;
-      font-weight: bold;
-      height: 64px;
-      box-sizing: border-box;
-      line-height: 64px;
-      text-align: center;
-      border: $--points-form-table-border;
     }
   }
 }

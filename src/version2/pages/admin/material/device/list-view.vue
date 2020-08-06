@@ -15,26 +15,6 @@
         >
       </div>
 
-      <div class="material-select">
-        <el-select
-          v-model="searchForm.materialID"
-          filterable
-          clearable
-          remote
-          size="small"
-          placeholder="料号筛选"
-          :remote-method="searchMaterials"
-          :loading="searchMaterialsLoading"
-        >
-          <el-option
-            v-for="m in materials"
-            :key="m.id"
-            :label="m.name"
-            :value="m.id"
-          ></el-option>
-        </el-select>
-      </div>
-
       <div class="add-button">
         <el-button size="small" @click="appendButton">添加设备</el-button>
       </div>
@@ -87,17 +67,17 @@
             >
             <span> | </span>
             <el-button
+              v-if="false"
               class="op-btn"
               type="text"
               @click="
                 $router.push({
                   name: 'console-device-import-record',
-                  params: { id: scope.row.id }
+                  params: { id: id, device_id: scope.row.id }
                 })
               "
               >导入记录</el-button
             >
-            <span> | </span>
             <el-button
               class="op-btn danger"
               type="text"
@@ -130,6 +110,7 @@
         :visible.sync="drawerVisible"
         :data="editDevice"
         :isEdit="isEdit"
+        :materialID="id"
         @refetchDevice="$apollo.queries.deviceWrap.refetch()"
       ></DeviceForm>
     </el-drawer>
@@ -142,6 +123,9 @@ import gql from 'graphql-tag'
 export default {
   name: 'DeviceList',
   components: { Pagination, DeviceForm },
+  props: {
+    id: [String, Number]
+  },
   apollo: {
     deviceWrap: {
       query: gql`
@@ -173,7 +157,7 @@ export default {
       variables() {
         return {
           pattern: this.search,
-          materialID: this.searchForm.materialID,
+          materialID: this.id,
           page: this.page,
           limit: this.limit
         }
@@ -185,7 +169,6 @@ export default {
       page: 1,
       limit: 20,
       searchMaterialsLoading: false,
-      materials: [],
       isEdit: false,
       editDevice: undefined,
       drawerVisible: false,
@@ -246,45 +229,6 @@ export default {
     },
     handleCurrentChange(val) {
       this.page = val
-    },
-    searchMaterials(query) {
-      if (query !== '') {
-        this.searchMaterialsLoading = true
-        this.$apollo
-          .query({
-            query: gql`
-              query($pattern: String, $page: Int!, $limit: Int!) {
-                response: materials(
-                  pattern: $pattern
-                  page: $page
-                  limit: $limit
-                ) {
-                  materials {
-                    id
-                    name
-                  }
-                }
-              }
-            `,
-            client: 'adminClient',
-            variables: {
-              pattern: query,
-              page: 1,
-              limit: 20
-            }
-          })
-          .then(({ data: { response } }) => {
-            this.searchMaterialsLoading = false
-            this.materials = response.materials
-          })
-          .catch((e) => {
-            this.searchMaterialsLoading = false
-            this.$message({
-              type: 'error',
-              message: e.message.replace('GraphQL error:', '')
-            })
-          })
-      }
     }
   }
 }
