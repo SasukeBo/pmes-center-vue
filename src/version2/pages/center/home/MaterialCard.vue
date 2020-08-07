@@ -51,13 +51,8 @@ export default {
               shadowColor: 'rgba(0,0,0,0.2)',
               shadowBlur: 10
             },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: '16',
-                fontWeight: 'bold'
-              }
-            },
+            hoverAnimation: false,
+            legendHoverLink: false,
             data: []
           }
         ]
