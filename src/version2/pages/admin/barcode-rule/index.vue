@@ -177,9 +177,41 @@ export default {
       this.editRule = rule
       this.drawerVisible = true
     },
-    remove(rule) {},
-    handleSizeChange() {},
-    handleCurrentChange() {},
+    remove(rule) {
+      var _this = this
+      this.$confirm('确定要删除该编码规则吗？', `您正在删除 ${rule.name}`, {
+        type: 'warning',
+        distinguishCancelAndClose: true,
+        confirmButtonText: '确定',
+        cancelButtonText: '放弃'
+      })
+        .then(() => {
+          _this.$apollo
+            .mutate({
+              mutation: gql`
+                mutation($id: Int!) {
+                  response: deleteBarCodeRule(id: $id)
+                }
+              `,
+              client: 'adminClient',
+              variables: {
+                id: rule.id
+              }
+            })
+            .then(() => {
+              _this.$message({ type: 'success', message: '删除成功' })
+              _this.$apollo.queries.barCodeRules.refetch()
+            })
+            .catch((e) => _this.$GraphQLError(e))
+        })
+        .catch(() => undefined)
+    },
+    handleSizeChange(val) {
+      this.form.limit = val
+    },
+    handleCurrentChange(val) {
+      this.form.page = val
+    },
     timeFormatter(val) {
       return timeFormatter(val.createdAt)
     },
