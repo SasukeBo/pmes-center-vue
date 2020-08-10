@@ -1,11 +1,11 @@
-import Center from '@//pages/center'
-import Home from '@//pages/center/home'
-import MaterialView from '@//pages/center/material'
-import MaterialOverview from '@//pages/center/material/overview'
-import MaterialSizes from '@//pages/center/material/size'
-import MaterialDevices from '@//pages/center/material/device'
-import DeviceView from '@//pages/center/device'
-import SizeView from '@//pages/center/size'
+import Center from '@/pages/center'
+import Home from '@/pages/center/home'
+import MaterialView from '@/pages/center/material'
+import MaterialOverview from '@/pages/center/material/overview'
+import MaterialSizes from '@/pages/center/material/size'
+import MaterialDevices from '@/pages/center/material/device'
+import DeviceView from '@/pages/center/device'
+import SizeView from '@/pages/center/size'
 
 const centerRoutes = {
   path: '/center',
