@@ -28,7 +28,7 @@ function SeriesDataValueItemStyle(color1, color2, type) {
 function timeFormatter(str) {
   var t = new Date(str)
   var year = t.getFullYear() + ''
-  var month = t.getMonth() + ''
+  var month = t.getMonth() + 1 + ''
   var date = t.getDate() + ''
 
   var time = t.toTimeString().slice(0, 5)
