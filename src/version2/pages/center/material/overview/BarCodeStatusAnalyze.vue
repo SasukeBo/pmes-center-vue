@@ -43,6 +43,8 @@ export default {
     versionID: [Number, String]
   },
   data() {
+    var t = new Date()
+    t.setDate(t.getDate() - 7)
     return {
       pickerOptions: {
         shortcuts: [
@@ -77,7 +79,7 @@ export default {
       },
       pieChart: undefined,
       barChart: undefined,
-      duration: [],
+      duration: [t],
       chartResult: undefined,
       statusCodeMap: {
         Illegal: '值非法',
@@ -167,7 +169,7 @@ export default {
         <span style="display: inline-block; width: 8px;height: 8px;border-radius: 50%; background: #8C33DE; margin-right: 8px"></span>${
           params.name
         }<br>
-        良率(Yield): ${(params.data * 100).toFixed(2)}%<br>
+        占比(Yield): ${(params.data * 100).toFixed(2)}%<br>
         数量(Amount): ${data[params.dataIndex]}
         `
       }
@@ -266,6 +268,12 @@ export default {
         textStyle: {
           color: '#333',
           fontSize: 16,
+          fontWeight: 500
+        },
+        subtext: '默认时间范围为最近一周',
+        subtextStyle: {
+          color: '#666',
+          fontSize: 14,
           fontWeight: 400
         }
       }
