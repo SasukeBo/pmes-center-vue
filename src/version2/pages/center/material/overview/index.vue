@@ -5,32 +5,30 @@
     <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
     <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
     <TopYieldCustom :id="id" :versionID="selectedVersionID"></TopYieldCustom>
-
-    <MaterialDialog
-      :visible.sync="materialDialogVisible"
-      :isEdit.sync="isEdit"
-      :material="materialForm"
-    ></MaterialDialog>
+    <BarCodeStatusAnalyze
+      :id="id"
+      :versionID="selectedVersionID"
+    ></BarCodeStatusAnalyze>
   </div>
 </template>
 <script>
-import MaterialDialog from './MaterialDialog.vue'
 import TopYieldDevice from './TopYieldDevice.vue'
 import TopYieldPoint from './TopYieldPoint.vue'
 import TopYieldCustom from './TopYieldCustom.vue'
 import TopYieldByLine from './TopYieldByLine.vue'
 import TotalYieldPie from './TotalYieldPie.vue'
+import BarCodeStatusAnalyze from './BarCodeStatusAnalyze'
 
 export default {
   name: 'Material',
   props: ['id'],
   components: {
-    MaterialDialog,
     TopYieldDevice,
     TopYieldPoint,
     TopYieldCustom,
     TopYieldByLine,
-    TotalYieldPie
+    TotalYieldPie,
+    BarCodeStatusAnalyze
   },
   data() {
     return {

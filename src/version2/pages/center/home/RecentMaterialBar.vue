@@ -1,6 +1,8 @@
 <template>
-  <div class="material-recent-bar">
-    <div class="chart" ref="chart">图表渲染失败</div>
+  <div
+    class="material-recent-bar"
+    v-loading="$apollo.queries.echartsResult.loading"
+  >
     <div
       class="chart-empty"
       v-if="
@@ -11,6 +13,7 @@
     >
       暂无数据
     </div>
+    <div class="chart" ref="chart"></div>
   </div>
 </template>
 <script>
