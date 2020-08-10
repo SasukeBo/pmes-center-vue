@@ -217,6 +217,7 @@ export default {
           this.form.address = this.data.address
           this.form.isRealtime = this.data.isRealtime
         }
+        this.form.materialID = this.materialID
       }
     }
   }

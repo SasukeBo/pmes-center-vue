@@ -5,6 +5,7 @@
   >
     <div class="duration-picker">
       <el-date-picker
+        size="small"
         v-model="duration"
         type="daterange"
         align="right"
@@ -169,7 +170,7 @@ export default {
         <span style="display: inline-block; width: 8px;height: 8px;border-radius: 50%; background: #8C33DE; margin-right: 8px"></span>${
           params.name
         }<br>
-        占比(Yield): ${(params.data * 100).toFixed(2)}%<br>
+        占比(Ratio): ${(params.data * 100).toFixed(2)}%<br>
         数量(Amount): ${data[params.dataIndex]}
         `
       }
@@ -264,7 +265,7 @@ export default {
       return {
         top: 0,
         left: 38,
-        text: '识别码扫描错误原因分布',
+        text: '产品条码扫描错误原因分布',
         textStyle: {
           color: '#333',
           fontSize: 16,
