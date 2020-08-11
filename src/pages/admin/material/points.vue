@@ -262,6 +262,7 @@ export default {
               response: parseImportPoints(file: $file) {
                 id
                 name
+                index
                 nominal
                 upperLimit
                 lowerLimit
