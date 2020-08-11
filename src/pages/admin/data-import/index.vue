@@ -2,9 +2,7 @@
   <div class="console-import-data">
     <div class="console-import-data__header">
       <el-button class="import-btn" size="small" @click="drawerVisible = true"
-        ><img
-          src="~@//assets/images/icon-file.png"
-        />添加文件</el-button
+        ><img src="~@//assets/images/icon-file.png" />添加文件</el-button
       >
     </div>
 
@@ -29,19 +27,23 @@
         <el-table-column label="版本号">
           <template slot-scope="scope">
             <span v-if="scope.row.materialVersion">
-              {{ scope.row.materialVersion.version }}
+              {{
+                scope.row.materialVersion
+                  ? scope.row.materialVersion.version
+                  : '-'
+              }}
             </span>
             <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="料号">
           <template slot-scope="scope">
-            {{ scope.row.material.name }}
+            {{ scope.row.material ? scope.row.material.name : '-' }}
           </template>
         </el-table-column>
         <el-table-column label="检测设备" width="100px">
           <template slot-scope="scope">
-            {{ scope.row.device.name }}
+            {{ scope.row.device ? scope.row.device.name : '-' }}
           </template>
         </el-table-column>
         <el-table-column
