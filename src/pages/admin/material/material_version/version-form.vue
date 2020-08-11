@@ -48,8 +48,8 @@
   </div>
 </template>
 <script>
-import FButton from '@//pages/admin/components/FButton.vue'
-import PointsForm from '@//pages/admin/material/components/PointsForm.vue'
+import FButton from '@/pages/admin/components/FButton.vue'
+import PointsForm from '@/pages/admin/material/components/PointsForm.vue'
 import gql from 'graphql-tag'
 
 export default {
