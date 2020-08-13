@@ -172,6 +172,7 @@ export default {
           attributes: productAttributes(materialID: $materialID) {
             type
             label
+            name
             token
             prefix
           }
@@ -323,7 +324,7 @@ export default {
 
       var name = this.categoryMap[this.form.xAxis]
       if (!name && this.xAxisAttribute) {
-        name = `${this.xAxisAttribute.label}\n(${this.xAxisAttribute.token})`
+        name = `${this.xAxisAttribute.label}\n(${this.xAxisAttribute.name})`
       }
 
       return {
@@ -413,14 +414,14 @@ export default {
 
       var xAxis = this.categoryMap[this.form.xAxis]
       if (!xAxis && this.xAxisAttribute) {
-        xAxis = `${this.xAxisAttribute.label}(${this.xAxisAttribute.token})`
+        xAxis = `${this.xAxisAttribute.label}(${this.xAxisAttribute.name})`
       }
       text = `每个${xAxis}的${this.yAxisNameMap[this.form.yAxis]}`
 
       if (this.form.groupBy) {
         var groupBy = this.categoryMap[this.form.groupBy]
         if (!groupBy && this.groupAttribute) {
-          groupBy = `${this.groupAttribute.label}(${this.groupAttribute.token})`
+          groupBy = `${this.groupAttribute.label}(${this.groupAttribute.name})`
         }
         text = `按${groupBy}分组的` + text
       }
