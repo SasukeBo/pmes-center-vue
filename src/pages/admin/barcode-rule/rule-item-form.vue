@@ -3,7 +3,7 @@
     <div class="admin-table-form">
       <div class="table-header table-row">
         <div class="table-cell">名称</div>
-        <div class="table-cell">标识</div>
+        <div class="table-cell">英文名称</div>
         <div class="table-cell">值类型</div>
         <div class="table-cell">索引范围</div>
       </div>
@@ -25,7 +25,7 @@
           <div class="table-cell">
             <TableCellForm
               :row="item"
-              prop="key"
+              prop="name"
               @update="editCell"
             ></TableCellForm>
           </div>

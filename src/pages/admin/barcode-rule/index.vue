@@ -145,6 +145,7 @@ export default {
               items {
                 label
                 key
+                name
                 indexRange
                 type
                 dayCode
