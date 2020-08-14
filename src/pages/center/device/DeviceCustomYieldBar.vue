@@ -127,6 +127,7 @@ export default {
     t.setHours(0, 0, 0, 0)
 
     return {
+      updateSeriesTimeout: undefined,
       isLine: false,
       formVisible: false,
       form: {
@@ -510,10 +511,17 @@ export default {
       }
     },
     updateSeries(params) {
+      clearTimeout(this.updateSeriesTimeout)
       var option = {
         series: this.assembleSeries(this.echartsResult.seriesData, params)
       }
-      this.yieldChart.setOption(option)
+      if (!params) {
+        this.updateSeriesTimeout = setTimeout(() => {
+          this.yieldChart.setOption(option)
+        }, 500)
+      } else {
+        this.yieldChart.setOption(option)
+      }
     }
   },
   watch: {
