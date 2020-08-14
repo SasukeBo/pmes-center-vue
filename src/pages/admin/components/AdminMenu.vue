@@ -2,7 +2,7 @@
   <div class="admin-menu">
     <div class="logo-link">
       <img
-        src="~@//assets/images/logo.png"
+        src="~@/assets/images/logo.png"
         @click="$router.push({ name: 'data-center' })"
       />
     </div>
@@ -21,7 +21,7 @@
         >
           <img
             class="manage-icon"
-            src="~@//assets/images/material-manage.png"
+            src="~@/assets/images/material-manage.png"
           />
           <div class="manage-label">料号管理</div>
         </div>
@@ -36,10 +36,7 @@
           class="btn-content"
           @click="$router.push({ name: 'system-config' })"
         >
-          <img
-            class="manage-icon"
-            src="~@//assets/images/system-manage.png"
-          />
+          <img class="manage-icon" src="~@/assets/images/system-manage.png" />
           <div class="manage-label">系统配置</div>
         </div>
       </div>
@@ -51,14 +48,14 @@
           <div class="button-area"></div>
           <div class="content">导入数据</div>
         </div>
-        <img src="~@//assets/images/import-entry.png" />
+        <img src="~@/assets/images/import-entry.png" />
       </div>
     </div>
   </div>
 </template>
 <script>
-import activeItemBg from '@//assets/images/menu-item-active.png'
-import normalItemBg from '@//assets/images/menu-item-normal.png'
+import activeItemBg from '@/assets/images/menu-item-active.png'
+import normalItemBg from '@/assets/images/menu-item-normal.png'
 
 export default {
   data() {
@@ -171,10 +168,6 @@ export default {
     }
 
     &.is-active {
-      .bg-img {
-        z-index: 100;
-      }
-
       .manage-label {
         color: #fff;
       }
