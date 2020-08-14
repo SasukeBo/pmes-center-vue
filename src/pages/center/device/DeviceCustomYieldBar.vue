@@ -127,6 +127,7 @@ export default {
     t.setHours(0, 0, 0, 0)
 
     return {
+      isLine: false,
       formVisible: false,
       form: {
         xAxis: 'Date',
@@ -266,7 +267,7 @@ export default {
         }
       })
     },
-    assembleSeries(seriesData) {
+    assembleSeries(seriesData, params) {
       var keys = Object.keys(seriesData)
       if (keys.length === 0) {
         return [{ data: [], name: 'data', type: 'bar' }]
@@ -278,7 +279,15 @@ export default {
             return undefined
           }
           if (this.form.yAxis !== 'Amount') {
-            return (item * 100).toFixed(2)
+            item = (item * 100).toFixed(2)
+          }
+          if (params && params.seriesName !== k) {
+            return {
+              value: item,
+              itemStyle: {
+                color: '#ddd'
+              }
+            }
           }
           return item
         })
@@ -291,12 +300,11 @@ export default {
           fontSize: 10,
           formatter: this.form.yAxis === 'Amount' ? '{c}个' : '{c}%'
         }
-        var isLine = keys.length > 2
 
         return {
           data,
-          label: isLine ? undefined : label,
-          type: isLine ? 'line' : 'bar',
+          label: this.isLine ? undefined : label,
+          type: this.isLine ? 'line' : 'bar',
           name: k,
           barMaxWidth: 20
         }
@@ -378,9 +386,9 @@ export default {
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: center; background: ${
             param.color
           }"></span>
-          <span>${seriesName}: ${param.data}${_this.isRate ? '%' : '个'}${
-            _this.isRate ? amount : ''
-          }</span>
+          <span>${seriesName}: ${param.data.value || param.data}${
+            _this.isRate ? '%' : '个'
+          }${_this.isRate ? amount : ''}</span>
           </div>
           `
           message += rest
@@ -438,12 +446,7 @@ export default {
       }
     },
     assembleLegend(seriesData) {
-      if (Object.keys(seriesData).length <= 1) {
-        return {
-          show: false
-        }
-      }
-
+      var show = true
       var _this = this
       var formatter = function(name) {
         switch (_this.form.groupBy) {
@@ -459,22 +462,67 @@ export default {
             return name
         }
       }
+      if (seriesData.data) {
+        show = false
+      }
 
-      return { formatter, type: 'scroll', width: '60%', top: 0, left: 'center' }
+      return {
+        show,
+        formatter,
+        type: 'scroll',
+        width: '60%',
+        top: 50,
+        left: 'center'
+      }
+    },
+    assmebleToolbox() {
+      var _this = this
+      return {
+        feature: {
+          myTool1: {
+            show: true,
+            title: '切换为折线图',
+            icon:
+              'M160 832h704v64H160zM268.8 563.2l159.04 127.2 111.04-237.92 142.56 126.72 210.88-404.32-56.64-29.76L662.56 476.8l-145.44-129.28-112.96 242.08L243.2 460.8 130.56 723.36l58.88 25.28L268.8 563.2z',
+            onclick: function() {
+              _this.isLine = true
+              var option = {
+                series: _this.assembleSeries(_this.echartsResult.seriesData)
+              }
+              _this.yieldChart.setOption(option)
+            }
+          },
+          myTool2: {
+            show: true,
+            title: '切换为柱状图',
+            icon:
+              'M0 832 1024 832 1024 960 0 960zM128 576 256 576 256 768 128 768zM320 320 448 320 448 768 320 768zM512 512 640 512 640 768 512 768zM704 128 832 128 832 768 704 768z',
+            onclick: function() {
+              _this.isLine = false
+              _this.updateSeries()
+            }
+          }
+        }
+      }
+    },
+    assembleGrid() {
+      return {
+        top: 110
+      }
+    },
+    updateSeries(params) {
+      var option = {
+        series: this.assembleSeries(this.echartsResult.seriesData, params)
+      }
+      this.yieldChart.setOption(option)
     }
   },
   watch: {
     echartsResult(nv) {
       if (nv) {
         var options = {
-          toolbox: {
-            feature: {
-              magicType: {
-                type: ['line', 'bar']
-              },
-              saveAsImage: {}
-            }
-          },
+          grid: this.assembleGrid(),
+          toolbox: this.assmebleToolbox(),
           legend: this.assembleLegend(nv.seriesData),
           title: this.assembleTitle(),
           tooltip: this.assembleTooltip(nv.seriesAmountData),
@@ -490,6 +538,13 @@ export default {
   },
   mounted() {
     this.yieldChart = echarts.init(this.$refs.chart)
+    var _this = this
+    this.yieldChart.on('mouseover', function(params) {
+      _this.updateSeries(params)
+    })
+    this.yieldChart.on('mouseout', function() {
+      _this.updateSeries()
+    })
   }
 }
 </script>

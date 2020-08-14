@@ -132,12 +132,13 @@ export default {
           { validator: checkUniqueAttributeForXAxisAndGroupBy, trigger: 'blur' }
         ]
       },
+      isLine: false,
       form: {
         xAxis: 'Date',
         yAxis: 'Yield',
         groupBy: 'Shift',
         duration: [t],
-        limit: undefined,
+        limit: 20,
         sort: 'ASC'
       },
       attributes: [],
@@ -265,16 +266,26 @@ export default {
         }
       })
     },
-    assembleSeries(seriesData) {
+    assembleSeries(seriesData, params) {
       var keys = Object.keys(seriesData)
       if (keys.length === 0) {
         return [{ data: [], name: 'data', type: 'bar' }]
       }
 
       return keys.map((name) => {
-        var data = seriesData[name].map((item) => {
+        var data = seriesData[name].map((item, i) => {
           if (item === 0) return undefined
-          if (this.form.yAxis !== 'Amount') return (item * 100).toFixed(2)
+          if (this.form.yAxis !== 'Amount') {
+            item = (item * 100).toFixed(2)
+          }
+          if (params && params.seriesName !== name) {
+            return {
+              value: item,
+              itemStyle: {
+                color: '#ddd'
+              }
+            }
+          }
           return item
         })
 
@@ -286,13 +297,12 @@ export default {
           fontSize: 10,
           formatter: this.isRate ? '{c}%' : '{c}个'
         }
-        var isLine = keys.length > 2
 
         return {
           name,
           data,
-          label: isLine ? undefined : label,
-          type: isLine ? 'line' : 'bar',
+          label: this.isLine ? undefined : label,
+          type: this.isLine ? 'line' : 'bar',
           barMaxWidth: 20
         }
       })
@@ -346,12 +356,32 @@ export default {
       }
     },
     assmebleToolbox() {
+      var _this = this
       return {
         feature: {
-          magicType: {
-            type: ['line', 'bar']
+          myTool1: {
+            show: true,
+            title: '切换为折线图',
+            icon:
+              'M160 832h704v64H160zM268.8 563.2l159.04 127.2 111.04-237.92 142.56 126.72 210.88-404.32-56.64-29.76L662.56 476.8l-145.44-129.28-112.96 242.08L243.2 460.8 130.56 723.36l58.88 25.28L268.8 563.2z',
+            onclick: function() {
+              _this.isLine = true
+              var option = {
+                series: _this.assembleSeries(_this.echartsResult.seriesData)
+              }
+              _this.yieldChart.setOption(option)
+            }
           },
-          saveAsImage: {}
+          myTool2: {
+            show: true,
+            title: '切换为柱状图',
+            icon:
+              'M0 832 1024 832 1024 960 0 960zM128 576 256 576 256 768 128 768zM320 320 448 320 448 768 320 768zM512 512 640 512 640 768 512 768zM704 128 832 128 832 768 704 768z',
+            onclick: function() {
+              _this.isLine = false
+              _this.updateSeries()
+            }
+          }
         }
       }
     },
@@ -388,9 +418,9 @@ export default {
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: center; background: ${
             param.color
           }"></span>
-          <span>${seriesName}: ${param.data}${_this.isRate ? '%' : '个'}${
-            _this.isRate ? amount : ''
-          }</span>
+          <span>${seriesName}: ${param.data.value || param.data}${
+            _this.isRate ? '%' : '个'
+          }${_this.isRate ? amount : ''}</span>
           </div>
           `
           message += rest
@@ -481,6 +511,12 @@ export default {
       return {
         top: 110
       }
+    },
+    updateSeries(params) {
+      var option = {
+        series: this.assembleSeries(this.echartsResult.seriesData, params)
+      }
+      this.yieldChart.setOption(option)
     }
   },
   watch: {
@@ -503,6 +539,13 @@ export default {
   },
   mounted() {
     this.yieldChart = echarts.init(this.$refs.chart)
+    var _this = this
+    this.yieldChart.on('mouseover', function(params) {
+      _this.updateSeries(params)
+    })
+    this.yieldChart.on('mouseout', function() {
+      _this.updateSeries()
+    })
   }
 }
 </script>
