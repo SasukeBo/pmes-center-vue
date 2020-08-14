@@ -123,6 +123,7 @@ export default {
 
   .admin-main {
     flex: 1;
+    overflow: hidden;
 
     .admin-header {
       display: flex;
