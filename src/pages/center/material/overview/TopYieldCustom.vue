@@ -278,12 +278,11 @@ export default {
           if (this.form.yAxis !== 'Amount') {
             item = (item * 100).toFixed(2)
           }
-          if (params && params.seriesName !== name) {
+          if (params) {
+            var color = params.seriesName !== name ? '#ddd' : '#000'
             return {
               value: item,
-              itemStyle: {
-                color: '#ddd'
-              }
+              itemStyle: { color }
             }
           }
           return item
