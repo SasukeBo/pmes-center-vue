@@ -32,7 +32,18 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="生产日期数据列：" prop="createdAtColumnIndex">
+          <el-form-item label="设备名称所在行：" prop="deviceNameRowIndex">
+            <div class="cell-input">
+              <el-input
+                class="admin-drawer-form-cell"
+                placeholder="例：2"
+                v-model="form.deviceNameRowIndex"
+              ></el-input>
+              <span>行</span>
+            </div>
+          </el-form-item>
+
+          <el-form-item label="检测日期数据列：" prop="createdAtColumnIndex">
             <div class="cell-input">
               <el-input
                 class="admin-drawer-form-cell"
@@ -129,6 +140,9 @@ export default {
         dataRowIndex: [
           { required: true, message: '此为必填项', trigger: 'blur' }
         ],
+        deviceNameRowIndex: [
+          { required: true, message: '此为必填项', trigger: 'blur' }
+        ],
         createdAtColumnIndex: [
           { required: true, message: '此为必填项', trigger: 'blur' }
         ]
@@ -136,6 +150,7 @@ export default {
       form: {
         createdAtColumnIndex: undefined,
         dataRowIndex: undefined,
+        deviceNameRowIndex: undefined,
         barCodeIndex: undefined,
         barCodeRuleID: undefined,
         pointColumns: []
@@ -187,6 +202,7 @@ export default {
               remark
             }
             dataRowIndex
+            deviceNameRowIndex
             createdAtColumnIndex
           }
         }
@@ -271,6 +287,7 @@ export default {
       if (val) {
         this.form.createdAtColumnIndex = val.createdAtColumnIndex
         this.form.dataRowIndex = val.dataRowIndex
+        this.form.deviceNameRowIndex = val.deviceNameRowIndex
         this.form.barCodeIndex = val.barCodeIndex
         if (val.barCodeRule) {
           this.form.barCodeRuleID = val.barCodeRule
