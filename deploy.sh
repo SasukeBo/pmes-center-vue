@@ -15,7 +15,7 @@ if [ ! -d "/dist" ]; then
 fi
 
 # 复制生成文件
-cp -rf /project/dist/**/* /dist
+cp -rf /project/dist/* /dist
 
 # 启动服务
 serve -s /dist
