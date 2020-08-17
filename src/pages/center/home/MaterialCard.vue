@@ -5,15 +5,18 @@
     </div>
     <div class="card-sub-title">
       {{ material.projectRemark }}
-      <span>总产出：{{ material.ok + material.ng }}</span>
+      <span>总产出：{{ materialResult.ok + materialResult.ng }}</span>
     </div>
 
     <div ref="chart-mount" class="percent-pie-chart"></div>
-    <div class="yield-rate" v-if="material.ok + material.ng > 0">
+    <div class="yield-rate" v-loading="$apollo.queries.materialResult.loading">
       <span class="rate yield"
         >Yield:
         {{
-          ((material.ok * 100) / (material.ok + material.ng)).toFixed(2)
+          (
+            (materialResult.ok * 100) /
+            (materialResult.ok + materialResult.ng)
+          ).toFixed(2)
         }}%</span
       >
     </div>
@@ -27,6 +30,7 @@
 </template>
 <script>
 import echarts from 'echarts'
+import gql from 'graphql-tag'
 
 export default {
   name: 'MaterialCard',
@@ -56,14 +60,36 @@ export default {
             data: []
           }
         ]
+      },
+      materialResult: {
+        ok: 0,
+        ng: 0
+      }
+    }
+  },
+  apollo: {
+    materialResult: {
+      query: gql`
+        query($id: Int!) {
+          materialResult: material(id: $id) {
+            id
+            ok
+            ng
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.material.id
+        }
       }
     }
   },
   methods: {
     renderChart() {
       this.option.series[0].data = [
-        { name: 'OK', value: this.material.ok },
-        { name: 'NG', value: this.material.ng }
+        { name: 'OK', value: this.materialResult.ok },
+        { name: 'NG', value: this.materialResult.ng }
       ]
       this.mychart.setOption(this.option)
     },
@@ -75,9 +101,18 @@ export default {
       })
     }
   },
+  watch: {
+    materialResult: {
+      immediate: true,
+      handler: function(val) {
+        if (val) {
+          this.renderChart()
+        }
+      }
+    }
+  },
   mounted() {
     this.mychart = echarts.init(this.$refs['chart-mount'])
-    this.renderChart()
   }
 }
 </script>
