@@ -282,6 +282,7 @@ export default {
         }
       `,
       client: 'adminClient',
+      fetchPolicy: 'network-only',
       variables() {
         return {
           id: this.versionID,

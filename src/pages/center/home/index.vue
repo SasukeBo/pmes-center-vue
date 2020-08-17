@@ -99,8 +99,6 @@ export default {
             materials {
               id
               name
-              ok
-              ng
               customerCode
               projectRemark
             }
