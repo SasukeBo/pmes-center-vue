@@ -287,7 +287,13 @@ export default {
           id: this.versionID,
           page: this.page,
           limit: this.limit,
-          search: this.searchForm
+          search: {
+            date: this.searchForm.date,
+            duration: this.searchForm.duration || [],
+            status: this.searchForm.status || [],
+            fileName: this.searchForm.fileName || undefined,
+            userID: this.searchForm.userID || undefined
+          }
         }
       },
       skip() {
