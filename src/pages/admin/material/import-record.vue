@@ -389,6 +389,7 @@ export default {
               fileToken: downloadImportRecords(ids: $ids)
             }
           `,
+          fetchPolicy: 'network-only',
           client: 'adminClient',
           variables: { ids }
         })
