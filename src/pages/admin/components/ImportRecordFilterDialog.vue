@@ -57,6 +57,7 @@
           style="width: 220px"
           v-model="searchForm.userID"
           placeholder="选择用户"
+          clearable
         >
           <el-option
             v-for="u in users"
@@ -93,7 +94,7 @@ export default {
       statusMap: {
         Finished: '已完成',
         Failed: '失败',
-        Loading: '导入中',
+        Importing: '导入中',
         Reverted: '已撤销'
       },
       dialogVisible: false,

@@ -1,6 +1,14 @@
 <template>
   <div class="console-import-record">
     <div class="record-operation-btn">
+      <el-button
+        type="primary"
+        size="small"
+        @click="downloadSelected()"
+        :loading="downloading"
+        :disabled="downloading"
+        >下载已选</el-button
+      >
       <el-button type="primary" size="small" @click="revertSelected()"
         >撤销已选</el-button
       >
@@ -144,6 +152,13 @@
               @click="revert(scope.row)"
               >撤销</el-button
             >
+            <el-button
+              v-if="['Finished', 'Importing'].includes(scope.row.status)"
+              class="import-record-revert"
+              type="text"
+              @click="downloadFile(scope.row.id)"
+              >下载</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -193,9 +208,10 @@ export default {
       page: 1,
       limit: 20,
       forceUpdateTable: true,
+      downloading: false,
       searchForm: {
         duration: [],
-        status: []
+        status: ['Finished', 'Importing', 'Failed']
       },
       selectedRecords: [],
       searchFormVisible: false,
@@ -356,6 +372,49 @@ export default {
     },
     handleSelectionChange(values) {
       this.selectedRecords = values
+    },
+    downloadSelected() {
+      var length = this.selectedRecords.length
+      if (length === 0) return
+      var ids = this.selectedRecords.map((r) => r.id)
+
+      this.download(ids)
+    },
+    download(ids) {
+      this.downloading = true
+      this.$apollo
+        .query({
+          query: gql`
+            query($ids: [Int!]!) {
+              fileToken: downloadImportRecords(ids: $ids)
+            }
+          `,
+          client: 'adminClient',
+          variables: { ids }
+        })
+        .then(({ data }) => {
+          this.downloading = false
+          var el = document.createElement('form')
+          el.setAttribute('action', '/downloads/xlsx')
+          el.setAttribute('method', 'GET')
+          el.setAttribute('target', '_blank')
+          el.setAttribute('style', 'display:none')
+          var input = document.createElement('input')
+          input.setAttribute('type', 'hidden')
+          input.setAttribute('name', 'file_token')
+          input.setAttribute('value', data.fileToken)
+          el.appendChild(input)
+          document.body.appendChild(el)
+          el.submit()
+          document.body.removeChild(el)
+        })
+        .catch((e) => {
+          this.downloading = false
+          this.$GraphQLError(e)
+        })
+    },
+    downloadFile(id) {
+      this.download([id])
     },
     revertSelected() {
       var length = this.selectedRecords.length
