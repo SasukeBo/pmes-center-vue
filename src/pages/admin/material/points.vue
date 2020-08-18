@@ -18,9 +18,7 @@
         :show-file-list="false"
       >
         <el-button size="small" type="primary"
-          ><img
-            src="~@//assets/images/upload-btn-icon.png"
-          />导入</el-button
+          ><img src="~@//assets/images/upload-btn-icon.png" />导入</el-button
         >
       </el-upload>
     </div>
@@ -210,11 +208,13 @@ export default {
             mutation: gql`
               mutation(
                 $materialID: Int!
+                $versionID: Int!
                 $saveItems: [PointCreateInput]!
                 $deleteItems: [Int!]!
               ) {
                 response: savePoints(
                   materialID: $materialID
+                  versionID: $versionID
                   saveItems: $saveItems
                   deleteItems: $deleteItems
                 )
@@ -223,6 +223,7 @@ export default {
             client: 'adminClient',
             variables: {
               materialID: this.id,
+              vesionID: this.versionID,
               saveItems: this.tablePoints,
               deleteItems: this.deleteItems
             }
