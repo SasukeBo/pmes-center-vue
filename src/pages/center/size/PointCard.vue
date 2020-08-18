@@ -108,7 +108,7 @@ export default {
   },
   data() {
     var t = new Date()
-    t.setMonth(t.getMonth() - 1)
+    t.setDate(t.getDate() - 7)
     t.setHours(0, 0, 0, 0)
 
     return {

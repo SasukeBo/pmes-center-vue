@@ -20,7 +20,7 @@
         {{ deviceResult.device.name }}
       </div>
       <div class="sub-title">
-        近三个月产量：{{ deviceResult.ok + deviceResult.ng }}个
+        近一周产量：{{ deviceResult.ok + deviceResult.ng }}个
       </div>
     </div>
   </div>
@@ -82,7 +82,7 @@ export default {
       `,
       variables() {
         var t = new Date()
-        t.setMonth(t.getMonth() - 3)
+        t.setDate(t.getDate() - 7)
         t.setHours(0, 0, 0, 0)
 
         return {
