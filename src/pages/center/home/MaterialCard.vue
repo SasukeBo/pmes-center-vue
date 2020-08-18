@@ -91,7 +91,7 @@ export default {
         { name: 'OK', value: this.materialResult.ok },
         { name: 'NG', value: this.materialResult.ng }
       ]
-      this.mychart.setOption(this.option)
+      if (this.mychart) this.mychart.setOption(this.option)
     },
     goToDetail() {
       localStorage.setItem('recent_view_material_id', this.material.id)

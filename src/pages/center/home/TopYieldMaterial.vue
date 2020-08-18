@@ -1,7 +1,11 @@
 <template>
   <div class="top-yield-material-chart">
-    <div class="top-yield-material-chart__title">近一月·top20不良料号</div>
-    <div class="top-yield-material-chart__mount" ref="chart"></div>
+    <div class="top-yield-material-chart__title">近一周·top20不良料号</div>
+    <div
+      class="top-yield-material-chart__mount"
+      ref="chart"
+      v-loading="$apollo.queries.echartsResult.loading"
+    ></div>
   </div>
 </template>
 <script>
@@ -34,7 +38,7 @@ export default {
       `,
       variables() {
         var t = new Date()
-        t.setDate(t.getDate() - 30)
+        t.setDate(t.getDate() - 7)
         t.setHours(0, 0, 0, 0)
         return {
           duration: [t],
