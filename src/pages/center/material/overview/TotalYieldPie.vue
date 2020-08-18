@@ -1,5 +1,8 @@
 <template>
-  <div class="material-overview-yield-pie">
+  <div
+    class="material-overview-yield-pie"
+    v-loading="$apollo.queries.materialResult.loading"
+  >
     <div class="yield-chart-block">
       <div class="chart-mount" ref="chart"></div>
       <div class="chart-content">

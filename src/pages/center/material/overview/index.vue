@@ -1,14 +1,14 @@
 <template>
   <div class="material-view">
     <TotalYieldPie :id="id" :versionID="selectedVersionID"></TotalYieldPie>
-    <TopYieldByLine :id="id" :versionID="selectedVersionID"></TopYieldByLine>
-    <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
-    <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
     <TopYieldCustom :id="id" :versionID="selectedVersionID"></TopYieldCustom>
     <BarCodeStatusAnalyze
       :id="id"
       :versionID="selectedVersionID"
     ></BarCodeStatusAnalyze>
+    <TopYieldByLine :id="id" :versionID="selectedVersionID"></TopYieldByLine>
+    <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
+    <TopYieldPoint :id="id" :versionID="selectedVersionID"></TopYieldPoint>
   </div>
 </template>
 <script>
