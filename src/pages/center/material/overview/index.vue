@@ -36,16 +36,6 @@ export default {
       isEdit: false,
       materialForm: {},
       materialDialogVisible: false,
-      searchForm: {
-        deviceID: undefined,
-        timeDuration: [],
-        lineID: undefined,
-        mouldID: undefined,
-        jigID: undefined,
-        shiftNumber: undefined,
-        beginTime: undefined,
-        endTime: undefined
-      },
       option: {
         color: ['#3FE3D3', '#E04660'],
         series: [
@@ -86,11 +76,6 @@ export default {
   },
   created() {
     this.activePanel = this.$route.name
-
-    this.searchForm.endTime = new Date()
-    var now = new Date()
-    now.setMonth(now.getMonth() - 12)
-    this.searchForm.beginTime = now
   },
   methods: {
     scrollTop() {
