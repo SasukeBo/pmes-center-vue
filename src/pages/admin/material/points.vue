@@ -223,7 +223,7 @@ export default {
             client: 'adminClient',
             variables: {
               materialID: this.id,
-              vesionID: this.versionID,
+              versionID: this.versionID,
               saveItems: this.tablePoints,
               deleteItems: this.deleteItems
             }
