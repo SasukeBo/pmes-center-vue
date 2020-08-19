@@ -13,10 +13,7 @@
           v-if="status === 'Loading' && false"
           @click="cancel"
         />
-        <img
-          src="~@//assets/images/pi-error.png"
-          v-if="status === 'Failed'"
-        />
+        <img src="~@//assets/images/pi-error.png" v-if="status === 'Failed'" />
         <img
           src="~@//assets/images/pi-success.png"
           v-if="status === 'Finished'"
@@ -120,8 +117,15 @@ export default {
                 _this.$emit('update:yield', response.yield)
                 _this.$emit('update:rowCount', response.rowCount)
                 _this.$emit('update:fileSize', response.fileSize)
+                if (['Finished', 'Failed'].includes(val)) {
+                  clearInterval(_this.percentageInterval)
+                }
               })
-          }, 300)
+              .catch((e) => {
+                _this.$$GraphQLError(e)
+                clearInterval(_this.percentageInterval)
+              })
+          }, 1000)
         }
 
         if (['Finished', 'Failed'].includes(val)) {
