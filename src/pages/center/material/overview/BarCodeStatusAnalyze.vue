@@ -46,6 +46,7 @@ export default {
   data() {
     var t = new Date()
     t.setDate(t.getDate() - 7)
+    t.setHours(0, 0, 0, 0)
     return {
       pickerOptions: {
         shortcuts: [

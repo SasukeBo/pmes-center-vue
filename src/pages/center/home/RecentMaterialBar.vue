@@ -46,7 +46,7 @@ export default {
       variables() {
         var t = new Date()
         t.setDate(t.getDate() - 7)
-        t.setHours(0, 0, 0)
+        t.setHours(0, 0, 0, 0)
         return {
           input: {
             targetID: this.materialID,
