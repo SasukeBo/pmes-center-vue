@@ -83,7 +83,11 @@
           <el-input-number v-model="form.limit" :min="1"></el-input-number>
         </el-form-item>
 
-        <el-form-item label="排序" prop="sort">
+        <el-form-item label="是否排序" prop="needSort">
+          <el-checkbox v-model="form.needSort">排序</el-checkbox>
+        </el-form-item>
+
+        <el-form-item label="排序" prop="sort" v-if="form.needSort">
           <el-switch
             v-model="form.sort"
             active-text="递减"
@@ -136,6 +140,7 @@ export default {
         groupBy: 'Shift',
         duration: [t],
         limit: 20,
+        needSort: false,
         sort: 'ASC'
       },
       rules: {
@@ -220,7 +225,7 @@ export default {
             attributeGroup,
             duration: this.form.duration,
             limit: this.form.limit,
-            sort: this.form.sort
+            sort: this.form.needSort ? this.form.sort : undefined
           }
         }
       },
