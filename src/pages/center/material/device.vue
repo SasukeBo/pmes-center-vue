@@ -3,7 +3,11 @@
     <TopYieldDevice :id="id" :versionID="selectedVersionID"></TopYieldDevice>
 
     <div class="devices-list">
-      <el-table :data="deviceResults" style="width: 100%">
+      <el-table
+        :data="deviceResults"
+        style="width: 100%"
+        v-loading="$apollo.queries.deviceResults.loading"
+      >
         <el-table-column label="设备">
           <template slot-scope="scope">
             {{ scope.row.device.name }}
